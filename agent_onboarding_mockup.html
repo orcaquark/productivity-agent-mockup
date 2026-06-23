@@ -76,9 +76,20 @@
   .slider-card{ background: var(--card); border:1px solid #e3ddf0; border-radius:18px; padding:20px; margin-bottom:14px; }
   .slider-label{ display:flex; justify-content:space-between; font-size:13px; color:var(--text); font-weight:500; margin-bottom:14px; }
   .slider-label span{ color:var(--violet); font-family:'JetBrains Mono', monospace; font-size:12px; }
-  .track{ height:6px; border-radius:4px; background:#e3ddf0; position:relative; margin-bottom:6px; }
+  .track{ height:6px; border-radius:4px; background:#e3ddf0; position:relative; margin-bottom:6px; touch-action:none; cursor:pointer; }
   .track .fill{ position:absolute; left:0; top:0; bottom:0; border-radius:4px; background: var(--violet); }
-  .track .knob{ position:absolute; top:50%; transform:translate(-50%,-50%); width:20px; height:20px; border-radius:50%; background:#fff; border:3px solid var(--violet); }
+  .track .knob{
+    position:absolute; top:50%; transform:translate(-50%,-50%); width:20px; height:20px; border-radius:50%;
+    background:#fff; border:3px solid var(--violet); touch-action:none; cursor:grab;
+  }
+  .track .knob:active{ cursor:grabbing; }
+
+  .learn-more-panel{
+    display:none; margin-top:10px; padding:12px 13px; background:var(--violet-soft);
+    border-radius:12px; font-size:11.5px; color:var(--text-muted); line-height:1.55;
+  }
+  .learn-more-panel.open{ display:block; }
+  .learn-more-panel b{ color:var(--text); }
   .scale-labels{ display:flex; justify-content:space-between; font-size:10.5px; color:var(--text-faint); margin-bottom:6px; }
   .drag-hint{ font-size:10px; color:var(--text-faint); font-style:italic; }
 
@@ -98,7 +109,10 @@
   .privacy-note .ic{ font-size:15px; flex-shrink:0; }
   .privacy-note p{ font-size:11.5px; color:#4a4458; line-height:1.5; }
   .privacy-note b{ color:var(--text); }
-  .learn-more{ font-size:11px; color:var(--violet); display:inline-block; margin-top:4px; font-weight:600; }
+  .learn-more{
+    font-size:11px; color:var(--violet); display:inline-block; margin-top:4px; font-weight:600;
+    background:none; border:none; padding:0; cursor:pointer; font-family:inherit; text-align:left;
+  }
 
   .save-note{ display:flex; align-items:center; gap:6px; font-size:11px; color:var(--text-faint); margin-bottom:10px; justify-content:center; }
 
@@ -172,15 +186,21 @@
       <div class="step-sub">You can change this any time — we'll also back off automatically if nudges aren't landing.</div>
 
       <div class="slider-card">
-        <div class="slider-label">Nudge frequency <span>LIGHT TOUCH</span></div>
-        <div class="track"><div class="fill" style="width:28%"></div><div class="knob" style="left:28%"></div></div>
+        <div class="slider-label">Nudge frequency <span id="freq-label">LIGHT TOUCH</span></div>
+        <div class="track" id="freq-track">
+          <div class="fill" id="freq-fill" style="width:28%"></div>
+          <div class="knob" id="freq-knob" style="left:28%" tabindex="0" role="slider" aria-label="Nudge frequency" aria-valuemin="0" aria-valuemax="100" aria-valuenow="28"></div>
+        </div>
         <div class="scale-labels"><span>Rarely</span><span>Sometimes</span><span>Often</span></div>
         <div class="drag-hint">Drag to adjust</div>
       </div>
 
       <div class="slider-card">
-        <div class="slider-label">Tone <span>MATTER-OF-FACT</span></div>
-        <div class="track"><div class="fill" style="width:55%"></div><div class="knob" style="left:55%"></div></div>
+        <div class="slider-label">Tone <span id="tone-label">MATTER-OF-FACT</span></div>
+        <div class="track" id="tone-track">
+          <div class="fill" id="tone-fill" style="width:55%"></div>
+          <div class="knob" id="tone-knob" style="left:55%" tabindex="0" role="slider" aria-label="Tone" aria-valuemin="0" aria-valuemax="100" aria-valuenow="55"></div>
+        </div>
         <div class="scale-labels"><span>Quiet</span><span>Direct</span><span>Cheerful</span></div>
         <div class="drag-hint">Drag to adjust</div>
       </div>
@@ -254,7 +274,10 @@
         <p>Visible only to you — none of this is shown to friends unless you choose to share it.</p>
         <span></span>
       </div>
-      <a class="learn-more" href="#" tabindex="0">Learn more about how this data is used →</a>
+      <button class="learn-more" id="learn-more-link" tabindex="0" onclick="toggleLearnMore()">Learn more about how this data is used →</button>
+      <div class="learn-more-panel" id="learn-more-panel">
+        <p>Planning style and tone come directly from what you picked here. Peak focus times start from your answers too, then get refined from your actual completions over time — and your picks always win if the two disagree. Nothing here is shared with friends, and you can export or delete it anytime from <b>Settings → Data</b>.</p>
+      </div>
     </div>
     <div class="footer">
       <div class="save-note">✓ Your answers save automatically as you go</div>
@@ -285,6 +308,55 @@
   function toggleChip(el){
     el.classList.toggle('selected');
   }
+
+  function setupSlider(trackId, fillId, knobId, labelId, labels){
+    var track = document.getElementById(trackId);
+    var fill = document.getElementById(fillId);
+    var knob = document.getElementById(knobId);
+    var label = document.getElementById(labelId);
+    var dragging = false;
+
+    function pctFromEvent(e){
+      var rect = track.getBoundingClientRect();
+      var clientX = (e.touches && e.touches[0]) ? e.touches[0].clientX : e.clientX;
+      var x = clientX - rect.left;
+      return Math.max(0, Math.min(100, (x / rect.width) * 100));
+    }
+    function update(pct){
+      pct = Math.round(pct);
+      fill.style.width = pct + '%';
+      knob.style.left = pct + '%';
+      knob.setAttribute('aria-valuenow', pct);
+      var idx = pct < 34 ? 0 : (pct < 67 ? 1 : 2);
+      label.textContent = labels[idx];
+    }
+    function start(e){ dragging = true; update(pctFromEvent(e)); e.preventDefault(); }
+    function move(e){ if(dragging){ update(pctFromEvent(e)); e.preventDefault(); } }
+    function end(){ dragging = false; }
+
+    track.addEventListener('pointerdown', start);
+    window.addEventListener('pointermove', move, { passive:false });
+    window.addEventListener('pointerup', end);
+    track.addEventListener('touchstart', start, { passive:false });
+    window.addEventListener('touchmove', move, { passive:false });
+    window.addEventListener('touchend', end);
+
+    knob.addEventListener('keydown', function(e){
+      var current = parseFloat(knob.style.left) || 0;
+      if(e.key === 'ArrowRight' || e.key === 'ArrowUp'){ update(Math.min(100, current + 5)); e.preventDefault(); }
+      if(e.key === 'ArrowLeft' || e.key === 'ArrowDown'){ update(Math.max(0, current - 5)); e.preventDefault(); }
+    });
+  }
+  setupSlider('freq-track', 'freq-fill', 'freq-knob', 'freq-label', ['LIGHT TOUCH', 'SOME CHECK-INS', 'FREQUENT']);
+  setupSlider('tone-track', 'tone-fill', 'tone-knob', 'tone-label', ['QUIET', 'DIRECT, MATTER-OF-FACT', 'CHEERFUL']);
+
+  function toggleLearnMore(){
+    var panel = document.getElementById('learn-more-panel');
+    var link = document.getElementById('learn-more-link');
+    var open = panel.classList.toggle('open');
+    link.textContent = open ? 'Show less ↑' : 'Learn more about how this data is used →';
+  }
+
   document.querySelectorAll('[tabindex="0"]').forEach(function(el){
     if(!el.hasAttribute('role')) el.setAttribute('role','button');
     el.addEventListener('keydown', function(e){
