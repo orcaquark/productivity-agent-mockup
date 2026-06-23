@@ -79,6 +79,7 @@
   }
   .tag.fixed{ background:var(--sage-soft); color:var(--sage); }
   .tag.flag{ background:var(--coral-soft); color:var(--coral); }
+  .tag.original{ background:#e3ddf0; color:var(--violet); }
 
   .legend{ max-width:1180px; margin:60px auto 0; border-top:1px solid var(--line); padding-top:28px; }
   .legend h2{ font-family:'Fraunces', serif; font-weight:500; font-size:18px; margin-bottom:6px; }
@@ -105,7 +106,7 @@
 <div class="header">
   <div class="eyebrow">Productivity Agent · Design Review v2</div>
   <h1>Stress-testing the design against real failure modes</h1>
-  <p>Same three screens as before, hardened against accessibility gaps, trust gaps, irreversible mistakes, edge cases, and privacy leaks we hadn't addressed yet. Each card below is tagged <span class="tag fixed">FIXED</span> for something now visible in the mockup, or <span class="tag flag">FLAGGED</span> for something worth spec'ing separately before build (see the deferred list at the bottom).</p>
+  <p>Same three screens as before, hardened against accessibility gaps, trust gaps, irreversible mistakes, edge cases, and privacy leaks we hadn't addressed yet. Each section opens with the <b>original design rationale</b> (tagged R1, R2…) from the first review, followed by what changed in this pass — tagged <span class="tag fixed">FIXED</span> for something now visible in the mockup, or <span class="tag flag">FLAGGED</span> for something worth spec'ing separately before build (see the deferred list at the bottom).</p>
 </div>
 
 <div class="changelog">
@@ -139,6 +140,43 @@
       <div class="frame"><iframe src="productivity_agent_mockup.html" scrolling="no"></iframe></div>
     </div>
     <div class="notes">
+
+      <div class="cat-label">Original design rationale</div>
+      <div class="note">
+        <div class="num">R1</div>
+        <div class="note-text"><div class="t">Thread motif, not a feed</div>
+        <div class="d">Cards are connected by a visible line rather than stacked as a generic feed — signals these are one continuous read on the user's day, not unrelated notifications competing for attention.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">R2</div>
+        <div class="note-text"><div class="t">Briefing leads with pattern, not score</div>
+        <div class="d">"4 of 6 rings" and "third day this week" describe behavior in context. No grade, no implied judgment.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">R3</div>
+        <div class="note-text"><div class="t">"Why am I seeing this" on every nudge</div>
+        <div class="d">A transparency link is always present, not buried in settings — gives the user a way to sanity-check the agent's reasoning in the moment.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">R4</div>
+        <div class="note-text"><div class="t">"Not now" is equal weight to "Move it"</div>
+        <div class="d">Dismissal isn't a smaller, greyed-out afterthought — declining a nudge is a first-class action, not friction to push through.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">R5</div>
+        <div class="note-text"><div class="t">Trend card explicitly avoids a single number</div>
+        <div class="d">States "no single score here" directly in-product, and gives the Tuesday dip context (offsite) rather than leaving it to read as a failure.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">R6</div>
+        <div class="note-text"><div class="t">Missed-task reasons are descriptive, not judgmental</div>
+        <div class="d">"Pushed 3 times," "no time block set" — observations about the task, never framed as something wrong with the person.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">R7</div>
+        <div class="note-text"><div class="t">Kudos is a single, skippable suggestion</div>
+        <div class="d">One friend, one moment, with a real "Skip" — not a leaderboard or a pressure-based ask to perform social encouragement.</div></div>
+      </div>
 
       <div class="cat-label">Accessibility</div>
       <div class="note">
@@ -204,6 +242,38 @@
     </div>
     <div class="notes">
 
+      <div class="cat-label">Original design rationale</div>
+      <div class="note">
+        <div class="num">R8</div>
+        <div class="note-text"><div class="t">"Skip for now" on every step</div>
+        <div class="d">Personalization is additive, never a gate — someone can reach the product without answering anything.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">R9</div>
+        <div class="note-text"><div class="t">No right-answer framing on planning style</div>
+        <div class="d">Subhead states directly that there's no correct option — pre-empts the instinct to answer how the agent "wants" rather than how they actually behave.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">R10</div>
+        <div class="note-text"><div class="t">Two separate sliders: frequency and tone</div>
+        <div class="d">Avoids collapsing "how much" and "how it sounds" into one setting — users may want light-touch + cheerful, or frequent + quiet.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">R11</div>
+        <div class="note-text"><div class="t">"Nudges are suggestions, not alerts"</div>
+        <div class="d">Sets expectations before the user has received a single nudge — reframes the relationship from the start.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">R12</div>
+        <div class="note-text"><div class="t">Editable summary before commit</div>
+        <div class="d">Final step shows everything back with per-item "Edit," so onboarding ends with confirmation, not a black box.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">R13</div>
+        <div class="note-text"><div class="t">Privacy stated inline, not just in a policy doc</div>
+        <div class="d">"None of this is shown to friends unless you choose to share it" appears in the flow itself, where the decision is actually being made.</div></div>
+      </div>
+
       <div class="cat-label">Expectation-setting</div>
       <div class="note">
         <div class="num">10</div>
@@ -260,6 +330,38 @@
       <div class="frame tall"><iframe src="agent_settings_mockup.html" scrolling="no"></iframe></div>
     </div>
     <div class="notes">
+
+      <div class="cat-label">Original design rationale</div>
+      <div class="note">
+        <div class="num">R14</div>
+        <div class="note-text"><div class="t">"From you" vs. "Inferred" tags</div>
+        <div class="d">Distinguishes what the user explicitly stated from what the agent observed — corrections feel like fixing a guess, not arguing with the system.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">R15</div>
+        <div class="note-text"><div class="t">Correction always wins, stated explicitly</div>
+        <div class="d">The note under "What the agent has learned" commits to this in writing, not just in backend logic — sets a trust expectation the team has to honor.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">R16</div>
+        <div class="note-text"><div class="t">"Auto-reduce when ignored" is a visible toggle</div>
+        <div class="d">The fatigue-protection guardrail isn't just backend behavior — it's surfaced as something the user can see is on, building confidence the agent won't nag.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">R17</div>
+        <div class="note-text"><div class="t">Score display is off by default</div>
+        <div class="d">Trend view is the default experience; the single productivity number is opt-in, reversing the typical "score-first" pattern of habit apps.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">R18</div>
+        <div class="note-text"><div class="t">Friend sharing defaults to off, kudos defaults to on</div>
+        <div class="d">Low-stakes social (suggesting kudos) and higher-stakes social (sharing your own progress/scores) are split into separate toggles with different defaults.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">R19</div>
+        <div class="note-text"><div class="t">Reset and turn-off are easy to find, not hidden</div>
+        <div class="d">Leaving personalization is a plain list item, not a multi-step retention flow — consistent with personalization being additive, not a trap.</div></div>
+      </div>
 
       <div class="cat-label">Destructive-action safety</div>
       <div class="note">
