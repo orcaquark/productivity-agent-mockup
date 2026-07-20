@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Kindred — Agent Settings</title>
+<title>Kindred — Personalization Settings</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
@@ -274,7 +274,7 @@
   }
   .inline-note.show{ display:flex; }
 
-  /* status banner shown when nudges/agent are paused or off */
+  /* status banner shown when nudges/personalization are paused or off */
   .status-banner{
     display:none; align-items:flex-start; justify-content:space-between; gap:10px;
     background: var(--violet-soft); border:1px solid var(--violet-dim); border-radius:14px;
@@ -319,12 +319,12 @@
   <div class="notch"></div>
   <div class="topbar">
     <div class="back">←</div>
-    <div class="title">Agent settings</div>
+    <div class="title">Personalization settings</div>
   </div>
 
   <div class="scroll">
 
-    <!-- Status banner: hidden until the agent is paused or turned off -->
+    <!-- Status banner: hidden until personalization is paused or turned off -->
     <div class="status-banner" id="status-banner">
       <div class="sb-text" id="sb-text"></div>
       <div class="sb-action" id="sb-action" tabindex="0" role="button"></div>
@@ -332,7 +332,7 @@
 
     <div id="agent-dependent-sections">
 
-      <div class="eyebrow">What the agent has learned</div>
+      <div class="eyebrow">Your personalization</div>
       <div class="group">
         <div class="row clickable" tabindex="0" role="button" onclick="cyclePlanning()">
           <div class="row-text">
@@ -414,7 +414,7 @@
         <div class="row">
           <div class="row-text">
             <div class="t">Auto-reduce when ignored</div>
-            <div class="d">Agent backs off if you dismiss nudges often</div>
+            <div class="d">Nudges ease up automatically if you dismiss them often</div>
           </div>
           <div class="switch on" id="sw-autoreduce" tabindex="0" role="switch" aria-checked="true" onclick="toggleSwitch('sw-autoreduce')"><div class="knob"></div></div>
         </div>
@@ -500,8 +500,8 @@
     <div class="group">
       <div class="row clickable" tabindex="0" role="button" onclick="exportData()">
         <div class="row-text">
-          <div class="t">Export my agent data</div>
-          <div class="d">Download everything the agent has stored, as a file</div>
+          <div class="t">Export my personalization data</div>
+          <div class="d">Download everything Kindred has learned for your personalization, as a file</div>
         </div>
         <div class="chev">›</div>
       </div>
@@ -509,7 +509,7 @@
 
       <div class="row clickable" tabindex="0" role="button" onclick="openSheet('reset')">
         <div class="row-text">
-          <div class="t">Reset what the agent has learned</div>
+          <div class="t">Reset your personalization</div>
           <div class="d">Start over with onboarding preferences only</div>
         </div>
         <div class="chev">›</div>
@@ -518,7 +518,7 @@
 
       <div class="danger-row neutral" tabindex="0" role="button" onclick="openSheet('pause')">
         <div>
-          <div class="t">Pause agent</div>
+          <div class="t">Pause personalization</div>
           <div class="d">Stop everything temporarily — resumes automatically</div>
         </div>
         <div class="chev" style="color:var(--violet);">›</div>
@@ -526,7 +526,7 @@
 
       <div class="danger-row" tabindex="0" role="button" onclick="openSheet('turnoff')">
         <div>
-          <div class="t">Turn off Productivity Agent</div>
+          <div class="t">Turn off personalization</div>
           <div class="d">Keep tasks and rings, lose personalization</div>
         </div>
         <div class="chev" style="color:var(--coral-warn);">›</div>
@@ -534,7 +534,7 @@
 
       <div class="danger-row" tabindex="0" role="button" onclick="openSheet('delete')">
         <div>
-          <div class="t">Delete all agent data</div>
+          <div class="t">Delete all personalization data</div>
           <div class="d">Permanently erases learned patterns and history</div>
         </div>
         <div class="chev" style="color:var(--coral-warn);">›</div>
@@ -668,19 +668,19 @@
     banner.classList.remove('turnedOff');
 
     if(kind === 'paused'){
-      text.innerHTML = '<b>Agent paused.</b> Nudges, briefings, and reports are off ' + detail + '.';
+      text.innerHTML = '<b>Personalization paused.</b> Nudges, briefings, and reports are off ' + detail + '.';
       action.textContent = 'Resume now';
       action.onclick = resumeAgent;
       dependent.classList.add('agent-disabled');
     } else if(kind === 'turnedOff'){
       banner.classList.add('turnedOff');
-      text.innerHTML = '<b>Productivity Agent is off.</b> Your tasks and rings are unaffected.';
+      text.innerHTML = '<b>Personalization is off.</b> Your tasks and rings are unaffected.';
       action.textContent = 'Turn back on';
       action.onclick = resumeAgent;
       dependent.classList.add('agent-disabled');
     } else if(kind === 'deleted'){
       banner.classList.add('turnedOff');
-      text.innerHTML = '<b>Agent data deleted.</b> Your patterns and history are gone — the agent starts learning again from scratch. Tasks and rings are unaffected.';
+      text.innerHTML = '<b>Personalization data deleted.</b> Your patterns and history are gone — we&#39;ll start learning your personalization again from scratch. Tasks and rings are unaffected.';
       action.textContent = 'Dismiss';
       action.onclick = resumeAgent;
       dependent.classList.remove('agent-disabled');
@@ -696,7 +696,7 @@
   var sheetContent = {
     pause: {
       icon: '⏸️',
-      title: 'Pause the agent?',
+      title: 'Pause personalization?',
       body: "Nudges, briefings, and reports all stop until you resume. Nothing is deleted, and your settings stay exactly as they are.",
       actions: [
         { label: 'Pause for 1 day', style: 'primary', onClick: function(){ showBanner('paused', 'for 1 day'); } },
@@ -706,24 +706,24 @@
     },
     turnoff: {
       icon: '⚠️',
-      title: 'Turn off Productivity Agent?',
-      body: "You'll stop receiving nudges, briefings, and trend reports. Your tasks and rings stay exactly as they are. <b>This won't delete anything</b> — you can turn the agent back on later and pick up where you left off.",
+      title: 'Turn off personalization?',
+      body: "You'll stop receiving nudges, briefings, and trend reports. Your tasks and rings stay exactly as they are. <b>This won't delete anything</b> — you can turn personalization back on later and pick up where you left off.",
       actions: [
-        { label: 'Turn off agent', style: 'danger', onClick: function(){ showBanner('turnedOff'); } }
+        { label: 'Turn off personalization', style: 'danger', onClick: function(){ showBanner('turnedOff'); } }
       ]
     },
     delete: {
       icon: '⚠️',
-      title: 'Delete all agent data?',
-      body: "This permanently erases everything the agent has learned — your patterns, nudge history, and trend data. <b>This cannot be undone.</b> Your tasks and rings themselves are not affected.",
+      title: 'Delete all personalization data?',
+      body: "This permanently erases everything we've learned for your personalization — your patterns, nudge history, and trend data. <b>This cannot be undone.</b> Your tasks and rings themselves are not affected.",
       actions: [
         { label: 'Delete everything', style: 'danger', onClick: function(){ resetLearnedValues(); showBanner('deleted'); } }
       ]
     },
     reset: {
       icon: '↺',
-      title: 'Reset what the agent has learned?',
-      body: "Clears your planning style, tone, and focus-time pattern back to defaults. Your task and ring history is not affected, and the agent will start learning again from scratch.",
+      title: 'Reset your personalization?',
+      body: "Clears your planning style, tone, and focus-time pattern back to defaults. Your task and ring history is not affected, and personalization will start learning again from scratch.",
       actions: [
         { label: 'Reset preferences', style: 'danger', onClick: function(){
             resetLearnedValues();
