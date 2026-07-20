@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Kindred — Agent Onboarding</title>
+<title>Kindred — Personalization Onboarding</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
@@ -56,6 +56,10 @@
     font-family:'JetBrains Mono', monospace; font-size:10px; color:var(--text-faint);
     white-space:nowrap; flex-shrink:0;
   }
+  .intro-label{
+    flex:1; font-family:'JetBrains Mono', monospace; font-size:10.5px; letter-spacing:0.12em;
+    text-transform:uppercase; color:var(--text-faint);
+  }
 
   .screen{ flex:1; overflow-y:auto; padding:6px 24px 24px; scrollbar-width:none; }
   .screen::-webkit-scrollbar{ display:none; }
@@ -95,6 +99,18 @@
   .learn-more-panel b{ color:var(--text); }
   .scale-labels{ display:flex; justify-content:space-between; font-size:10.5px; color:var(--text-faint); margin-bottom:6px; }
   .drag-hint{ font-size:10px; color:var(--text-faint); font-style:italic; }
+
+  .preview-card{ padding:16px 17px; }
+  .preview-label{
+    font-family:'JetBrains Mono', monospace; font-size:10px; letter-spacing:0.1em; text-transform:uppercase;
+    color:var(--violet); margin-bottom:8px;
+  }
+  .preview-text{ font-size:12.5px; line-height:1.55; color:#4a4458; }
+  .preview-text b{ color:var(--text); font-weight:600; }
+
+  .tone-heading{ font-family:'JetBrains Mono', monospace; font-size:10.5px; letter-spacing:0.1em; text-transform:uppercase; color:var(--violet); margin:20px 0 4px; }
+  .tone-sub{ font-size:12px; color:var(--text-muted); line-height:1.5; margin-bottom:14px; }
+  .option .d.quoted{ font-style:italic; }
 
   .time-grid{ display:flex; flex-wrap:wrap; gap:8px; }
   .time-chip{ padding:10px 14px; min-height:40px; display:flex; align-items:center; border-radius:12px; background: var(--card); border:1px solid #e3ddf0; font-size:12.5px; color:var(--text-muted); cursor:pointer; }
@@ -137,17 +153,49 @@
 <div class="phone">
   <div class="notch"></div>
 
-  <!-- STEP 1: How do you plan -->
-  <div class="step-page active" data-step="1">
+  <!-- STEP 0: Welcome / what to expect -->
+  <div class="step-page active" data-step="0">
     <div class="topbar">
       <button class="back" aria-label="Go back" disabled></button>
+      <div class="intro-label">Getting started</div>
+      <div class="time-est">~30 SEC</div>
+    </div>
+    <div class="screen">
+      <div class="step-tag">Before you start</div>
+      <div class="step-title">Here's what to expect</div>
+      <div class="step-sub">Four quick questions tune how Kindred times and words your suggestions.</div>
+
+      <div class="slider-card preview-card">
+        <div class="preview-label">Example · Evening briefing</div>
+        <div class="preview-text">You closed <b>4 of 6</b> rings today. Your focus held strongest before noon — that's the third day this week your completions cluster before 1pm.</div>
+      </div>
+      <div class="slider-card preview-card">
+        <div class="preview-label">Example · Suggested nudge</div>
+        <div class="preview-text">Move "Read 20 min" to 8:40am? You finish reading tasks 3x more often when they're scheduled before your commute.</div>
+      </div>
+
+      <div class="privacy-note">
+        <div class="ic">🔒</div>
+        <p><b>Your first briefing lands tonight.</b> Nudges take about a week. Everything here is visible only to you, and you can change any answer later.</p>
+      </div>
+    </div>
+    <div class="footer">
+      <div class="cta" tabindex="0" onclick="goToStep(1)">Let's get started</div>
+      <button class="skip" onclick="skipToDefaults()">Skip setup — use smart defaults</button>
+    </div>
+  </div>
+
+  <!-- STEP 1: How do you plan -->
+  <div class="step-page" data-step="1">
+    <div class="topbar">
+      <button class="back" aria-label="Go back" onclick="goToStep(0)">←</button>
       <div class="progress"><div class="seg filled"></div><div class="seg"></div><div class="seg"></div><div class="seg"></div></div>
       <div class="time-est">~1 MIN</div>
     </div>
     <div class="screen">
       <div class="step-tag">Step 1 of 4</div>
       <div class="step-title">How do you usually plan your day?</div>
-      <div class="step-sub">This shapes how your agent times suggestions. There's no right answer, and you can change it later.</div>
+      <div class="step-sub">This shapes how your suggestions get timed and personalized. There's no right answer, and you can change it later.</div>
 
       <div class="option selected" tabindex="0" data-group="plan" data-summary="Night-before planner" onclick="selectOption(this)">
         <div class="opt-icon">🗓️</div>
@@ -198,17 +246,26 @@
         <div class="drag-hint">Drag to adjust</div>
       </div>
 
-      <div class="slider-card">
-        <div class="slider-label">Tone <span id="tone-label">MATTER-OF-FACT</span></div>
-        <div class="track" id="tone-track">
-          <div class="fill" id="tone-fill" style="width:55%"></div>
-          <div class="knob" id="tone-knob" style="left:55%" tabindex="0" role="slider" aria-label="Tone" aria-valuemin="0" aria-valuemax="100" aria-valuenow="55"></div>
-        </div>
-        <div class="scale-labels"><span>Quiet</span><span>Direct</span><span>Cheerful</span></div>
-        <div class="drag-hint">Drag to adjust</div>
+      <div class="tone-heading">Tone</div>
+      <div class="tone-sub">Same nudge, three ways to say it — pick the one that sounds like you.</div>
+
+      <div class="option" tabindex="0" data-group="tone" data-summary="Quiet" onclick="selectOption(this)">
+        <div class="opt-icon">🤍</div>
+        <div class="opt-text"><div class="t">Quiet</div><div class="d quoted">"Reading task's still open — 8:40am tends to work better for you."</div></div>
+        <div class="opt-check"></div>
+      </div>
+      <div class="option selected" tabindex="0" data-group="tone" data-summary="Direct, matter-of-fact" onclick="selectOption(this)">
+        <div class="opt-icon">🎯</div>
+        <div class="opt-text"><div class="t">Direct, matter-of-fact</div><div class="d quoted">"Move 'Read 20 min' to 8:40am? You finish it 3x more often then."</div></div>
+        <div class="opt-check">✓</div>
+      </div>
+      <div class="option" tabindex="0" data-group="tone" data-summary="Cheerful" onclick="selectOption(this)">
+        <div class="opt-icon">✨</div>
+        <div class="opt-text"><div class="t">Cheerful</div><div class="d quoted">"Psst — your reading goes way better before 9am. Want to move it?"</div></div>
+        <div class="opt-check"></div>
       </div>
 
-      <div class="privacy-note">
+      <div class="privacy-note" style="margin-top:18px;">
         <div class="ic">💬</div>
         <p>Nudges are <b>suggestions, not alerts</b> — dismiss any of them and we'll learn from it. You'll also see a daily limit in settings, so this never piles up.</p>
       </div>
@@ -242,7 +299,7 @@
 
       <div class="privacy-note" style="margin-top:18px;">
         <div class="ic">✏️</div>
-        <p>You can always see and <b>edit what the agent has learned</b> about you from settings. If what we observe disagrees with what you picked here, your edits always win.</p>
+        <p>You can always see and <b>edit your personalization</b> from settings. If what we observe disagrees with what you picked here, your edits always win.</p>
       </div>
     </div>
     <div class="footer">
@@ -260,7 +317,7 @@
     </div>
     <div class="screen">
       <div class="step-tag">Step 4 of 4</div>
-      <div class="step-title">Your agent is tuned in</div>
+      <div class="step-title">Your personalization is dialed in</div>
       <div class="step-sub">Here's what we'll use to start. Nothing here is permanent.</div>
 
       <div class="summary-card">
@@ -281,14 +338,14 @@
     </div>
     <div class="footer">
       <div class="save-note">✓ Your answers save automatically as you go</div>
-      <div class="cta" tabindex="0" id="finish-btn" onclick="finishOnboarding()">Start using my agent</div>
+      <div class="cta" tabindex="0" id="finish-btn" onclick="finishOnboarding()">Start using Kindred</div>
     </div>
   </div>
 
 </div>
 
 <div class="label-row">
-  <div class="page-dot active" data-dot="1">1 · Planning style</div>
+  <div class="page-dot" data-dot="1">1 · Planning style</div>
   <div class="page-dot" data-dot="2">2 · Nudge tuning</div>
   <div class="page-dot" data-dot="3">3 · Focus times</div>
   <div class="page-dot" data-dot="4">4 · Confirm</div>
@@ -296,10 +353,10 @@
 </div>
 
 <script>
-  var currentStep = 1;
+  var currentStep = 0;
 
   function goToStep(n){
-    if(n < 1 || n > 4) return;
+    if(n < 0 || n > 4) return;
     document.querySelectorAll('.step-page').forEach(function(p){ p.classList.remove('active'); });
     document.querySelector('.step-page[data-step="' + n + '"]').classList.add('active');
     document.querySelectorAll('.page-dot').forEach(function(d){
@@ -318,6 +375,13 @@
     btn.setAttribute('disabled', 'true');
   }
 
+  function skipToDefaults(){
+    // Jumps straight to the confirm screen using whatever is already
+    // pre-selected (plan, frequency, tone, focus times) — no answers lost,
+    // just no extra taps for someone who doesn't want to walk through it.
+    goToStep(4);
+  }
+
   function selectOption(el){
     var group = el.getAttribute('data-group');
     document.querySelectorAll('[data-group="'+group+'"]').forEach(function(o){
@@ -332,8 +396,7 @@
   }
 
   var sliderDisplay = {
-    freq: { idx: 0, labels: ['Light touch', 'Some check-ins', 'Frequent'] },
-    tone: { idx: 1, labels: ['Quiet', 'Direct, matter-of-fact', 'Cheerful'] }
+    freq: { idx: 0, labels: ['Light touch', 'Some check-ins', 'Frequent'] }
   };
 
   function setupSlider(trackId, fillId, knobId, labelId, labels, stateKey){
@@ -376,14 +439,15 @@
     });
   }
   setupSlider('freq-track', 'freq-fill', 'freq-knob', 'freq-label', ['LIGHT TOUCH', 'SOME CHECK-INS', 'FREQUENT'], 'freq');
-  setupSlider('tone-track', 'tone-fill', 'tone-knob', 'tone-label', ['QUIET', 'DIRECT, MATTER-OF-FACT', 'CHEERFUL'], 'tone');
 
   function updateSummary(){
     var planEl = document.querySelector('.option.selected[data-group="plan"]');
     document.getElementById('summary-plan').textContent = planEl ? planEl.getAttribute('data-summary') : 'Not set yet';
 
     document.getElementById('summary-freq').textContent = sliderDisplay.freq.labels[sliderDisplay.freq.idx];
-    document.getElementById('summary-tone').textContent = sliderDisplay.tone.labels[sliderDisplay.tone.idx];
+
+    var toneEl = document.querySelector('.option.selected[data-group="tone"]');
+    document.getElementById('summary-tone').textContent = toneEl ? toneEl.getAttribute('data-summary') : 'Not set yet';
 
     var times = Array.from(document.querySelectorAll('.time-chip.selected')).map(function(c){ return c.textContent; });
     document.getElementById('summary-focus').textContent = times.length
