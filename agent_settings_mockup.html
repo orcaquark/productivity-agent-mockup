@@ -247,6 +247,7 @@
     display:flex; align-items:center; justify-content:space-between;
     padding:14px 16px; cursor:pointer; min-height:48px;
   }
+  .transparency-link:not(:last-child){ border-bottom:1px solid #ece7f6; }
   .transparency-link .t{ font-size:12.5px; color:var(--violet); font-weight:600; }
 
   .seg-toggle{ display:flex; gap:6px; }
@@ -382,6 +383,10 @@
           <div class="t">See exactly what data this uses</div>
           <div class="chev">›</div>
         </div>
+        <div class="transparency-link" tabindex="0" role="button" onclick="openAuditSheet()">
+          <div class="t">See what's changed</div>
+          <div class="chev">›</div>
+        </div>
       </div>
 
       <div class="group-spacer"></div>
@@ -468,7 +473,7 @@
           </div>
           <div class="switch on" id="sw-kudos" tabindex="0" role="switch" aria-checked="true" onclick="toggleSwitch('sw-kudos')"><div class="knob"></div></div>
         </div>
-        <div class="row">
+        <div class="row" style="border-bottom:none;">
           <div class="row-text">
             <div class="t">Share my progress with friends</div>
             <div class="d">Off — your missed tasks and scores stay private</div>
@@ -573,19 +578,51 @@
     el.setAttribute('aria-checked', on ? 'true' : 'false');
   }
 
+  // ---------- audit trail ----------
+  var auditLog = [
+    { label: 'Peak focus times', value: 'Early AM, Mid AM', when: 'Jul 18 · inferred from your activity' },
+    { label: 'Tone preference', value: 'Direct', when: 'Jul 12 · set during onboarding' },
+    { label: 'Planning style', value: 'Night-before', when: 'Jul 12 · set during onboarding' }
+  ];
+  function logAuditChange(label, value){
+    auditLog.unshift({ label: label, value: value, when: 'Just now · you changed this' });
+  }
+  function openAuditSheet(){
+    document.getElementById('sheet-icon').textContent = '🕘';
+    document.getElementById('sheet-title').textContent = "What's changed";
+    document.getElementById('sheet-body').innerHTML = auditLog.map(function(e){
+      return '<b>' + e.label + '</b> → ' + e.value + '<br><span style="color:var(--text-faint);font-size:10.5px;">' + e.when + '</span>';
+    }).join('<br><br>');
+    var actionsEl = document.getElementById('sheet-actions');
+    actionsEl.innerHTML = '';
+    var closeBtn = document.createElement('div');
+    closeBtn.className = 'sheet-btn cancel';
+    closeBtn.textContent = 'Close';
+    closeBtn.setAttribute('tabindex', '0');
+    closeBtn.setAttribute('role', 'button');
+    closeBtn.onclick = closeSheet;
+    bindKeyboard(closeBtn);
+    actionsEl.appendChild(closeBtn);
+    document.getElementById('sheet-overlay').style.display = 'flex';
+  }
+
   // ---------- learned-traits rows ----------
   var planningOptions = ['Night-before','Morning of','No real plan','Varies week to week'];
   var planningIndex = 0;
   function cyclePlanning(){
     planningIndex = (planningIndex + 1) % planningOptions.length;
-    document.getElementById('planning-text').textContent = planningOptions[planningIndex];
+    var val = planningOptions[planningIndex];
+    document.getElementById('planning-text').textContent = val;
+    logAuditChange('Planning style', val);
   }
 
   var toneOptions = ['Direct','Cheerful','Quiet'];
   var toneIndex = 0;
   function cycleTone(){
     toneIndex = (toneIndex + 1) % toneOptions.length;
-    document.getElementById('tone-text').textContent = toneOptions[toneIndex];
+    var val = toneOptions[toneIndex];
+    document.getElementById('tone-text').textContent = val;
+    logAuditChange('Tone preference', val);
   }
 
   function toggleFocusPanel(){
@@ -594,6 +631,8 @@
   function toggleFocusChip(el){
     el.classList.toggle('selected');
     updateFocusSummary();
+    var selected = Array.from(document.querySelectorAll('.fchip.selected')).map(function(c){ return c.textContent; });
+    logAuditChange('Peak focus times', selected.length ? selected.join(', ') : 'No pattern yet');
   }
   function updateFocusSummary(){
     var selected = Array.from(document.querySelectorAll('.fchip.selected')).map(function(c){ return c.textContent; });
@@ -612,6 +651,7 @@
     document.getElementById('tone-text').textContent = 'Not set yet';
     document.querySelectorAll('.fchip').forEach(function(c){ c.classList.remove('selected'); });
     updateFocusSummary();
+    auditLog.unshift({ label: 'Personalization', value: 'Reset to defaults', when: 'Just now · you reset this' });
   }
 
   // ---------- nudges ----------
