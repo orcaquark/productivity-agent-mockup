@@ -167,8 +167,6 @@
     width:7px; height:7px; border-radius:50%; background:var(--sage); flex-shrink:0;
   }
   .chip.task .go{ color:var(--sage); font-weight:700; margin-left:2px; }
-  .chip.done{ background:var(--sage-dim); color:var(--sage); border-color:transparent; cursor:default; }
-  .chip.done .dot.done{ background:var(--sage); }
   .chip-caption{ font-size:10px; color:var(--text-faint); margin-top:8px; line-height:1.4; }
 
   .kudos-feedback{
@@ -219,11 +217,41 @@
   .bar-labels span{ flex:1; text-align:center; font-size:9.5px; color:var(--text-faint); font-family:'JetBrains Mono', monospace; }
   .trend-note{ margin-top:12px; font-size:12px; color:var(--text-muted); line-height:1.5; border-top:1px solid #ece7f6; padding-top:12px; }
 
+  .trend-toggle{
+    font-size:11.5px; color:var(--violet); margin-top:12px; display:inline-flex; align-items:center;
+    min-height:32px; background:none; border:none; padding:0; border-bottom:1px solid var(--violet-dim); font-family:inherit; cursor:pointer;
+  }
+
+  .modal-overlay{
+    position:absolute; inset:0; background:rgba(20,16,32,0.45); display:none;
+    align-items:center; justify-content:center; z-index:50; padding:28px; border-radius:44px;
+  }
+  .modal-overlay.open{ display:flex; }
+  .modal-box{
+    background:var(--card); border-radius:20px; padding:22px 20px; max-width:280px;
+    box-shadow:0 20px 50px -12px rgba(40,20,80,0.35);
+  }
+  .modal-icon{ font-size:20px; margin-bottom:10px; }
+  .modal-title{ font-family:'Fraunces', serif; font-size:17px; color:var(--text); margin-bottom:8px; line-height:1.3; }
+  .modal-body{ font-size:12.5px; color:var(--text-muted); line-height:1.55; margin-bottom:18px; }
+  .modal-btn{
+    width:100%; padding:11px 0; min-height:42px; border-radius:12px; background:var(--violet); color:#fff;
+    font-size:13px; font-weight:600; border:none; font-family:inherit; cursor:pointer;
+  }
+
   .miss-item{ display:flex; justify-content:space-between; align-items:flex-start; padding:10px 0; border-bottom:1px solid #ece7f6; gap:10px; }
   .miss-item:last-child{ border-bottom:none; padding-bottom:0; }
+  .miss-body{ flex:1; min-width:0; }
   .miss-name{ font-size:13px; color:var(--text); font-weight:500; margin-bottom:3px; max-width:200px; }
   .miss-why{ font-size:11.5px; color:var(--text-muted); }
   .miss-tag{ font-size:10px; font-family:'JetBrains Mono', monospace; color:var(--text-faint); white-space:nowrap; padding-top:2px; }
+  .miss-cta{
+    font-size:11.5px; font-weight:600; color:var(--violet); margin-top:7px; background:none; border:none;
+    padding:0; min-height:24px; font-family:inherit; cursor:pointer; display:inline-flex; align-items:center;
+  }
+  .miss-feedback{ display:none; align-items:center; gap:10px; margin-top:7px; font-size:11.5px; color:var(--sage); font-weight:600; }
+  .miss-feedback.show{ display:flex; }
+  .miss-feedback .undo{ color:var(--violet); font-weight:600; font-size:11.5px; background:none; border:none; font-family:inherit; min-height:24px; }
 
   .kudos-row{ display:flex; align-items:center; gap:12px; }
   .avatar{
@@ -317,20 +345,32 @@
           <div class="card">
             <div class="card-label">This week's pattern</div>
             <div class="trend-head">
-              <div class="big">82<small>%</small></div>
-              <div class="delta">↑ steadier than last week</div>
+              <div class="big" id="trend-big">82<small>%</small></div>
+              <div class="delta" id="trend-delta">↑ steadier than last week</div>
             </div>
-            <div class="bars">
-              <div class="bar" style="height:40%"></div>
-              <div class="bar" style="height:65%"></div>
-              <div class="bar" style="height:50%"></div>
-              <div class="bar" style="height:80%"></div>
-              <div class="bar" style="height:70%"></div>
-              <div class="bar" style="height:90%"></div>
-              <div class="bar today" style="height:67%"></div>
+            <div id="trend-week-view">
+              <div class="bars">
+                <div class="bar" style="height:40%"></div>
+                <div class="bar" style="height:65%"></div>
+                <div class="bar" style="height:50%"></div>
+                <div class="bar" style="height:80%"></div>
+                <div class="bar" style="height:70%"></div>
+                <div class="bar" style="height:90%"></div>
+                <div class="bar today" style="height:67%"></div>
+              </div>
+              <div class="bar-labels"><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span></div>
             </div>
-            <div class="bar-labels"><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span></div>
-            <div class="trend-note">No single score here — just the shape of your week. Tuesday's dip lines up with the team offsite, not a slip.</div>
+            <div id="trend-month-view" style="display:none;">
+              <div class="bars">
+                <div class="bar" style="height:52%"></div>
+                <div class="bar" style="height:61%"></div>
+                <div class="bar" style="height:74%"></div>
+                <div class="bar today" style="height:82%"></div>
+              </div>
+              <div class="bar-labels"><span>Wk 1</span><span>Wk 2</span><span>Wk 3</span><span>Wk 4</span></div>
+            </div>
+            <div class="trend-note" id="trend-note">No single score here — just the shape of your week. Tuesday's dip lines up with the team offsite, not a slip.</div>
+            <button class="trend-toggle" tabindex="0" id="trend-toggle-btn" onclick="toggleTrendView()">See full month →</button>
           </div>
         </div>
 
@@ -338,12 +378,22 @@
           <div class="node-dot muted">·</div>
           <div class="card">
             <div class="card-label">What got missed</div>
-            <div class="miss-item">
-              <div><div class="miss-name truncate">Submit expense report</div><div class="miss-why">Pushed 3 times — usually means it's not actually urgent</div></div>
+            <div class="miss-item" id="miss-expense">
+              <div class="miss-body">
+                <div class="miss-name truncate">Submit expense report</div>
+                <div class="miss-why">Pushed 3 times — usually means it's not actually urgent</div>
+                <button class="miss-cta" tabindex="0" id="miss-cta-expense" onclick="resolveMissed('expense')">Move to today</button>
+                <div class="miss-feedback" id="miss-feedback-expense"></div>
+              </div>
               <div class="miss-tag">2D AGO</div>
             </div>
-            <div class="miss-item">
-              <div><div class="miss-name truncate">Call dentist</div><div class="miss-why">Created during a busy stretch, no time block set</div></div>
+            <div class="miss-item" id="miss-dentist">
+              <div class="miss-body">
+                <div class="miss-name truncate">Call dentist</div>
+                <div class="miss-why">Created during a busy stretch, no time block set</div>
+                <button class="miss-cta" tabindex="0" id="miss-cta-dentist" onclick="resolveMissed('dentist')">Add a time block</button>
+                <div class="miss-feedback" id="miss-feedback-dentist"></div>
+              </div>
               <div class="miss-tag">TODAY</div>
             </div>
           </div>
@@ -439,6 +489,15 @@
     <div class="nav-item"><div class="nav-dot"></div>Friends</div>
     <div class="nav-item"><div class="nav-dot"></div>Profile</div>
   </div>
+
+  <div class="modal-overlay" id="ring-modal-overlay" onclick="if(event.target===this) closeRingModal()">
+    <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="ring-modal-title">
+      <div class="modal-icon">🔗</div>
+      <div class="modal-title" id="ring-modal-title">This would open Rings</div>
+      <div class="modal-body">In the real app, this deep-links to the Rings tab scoped to <b id="ring-modal-name">Gym</b> — it doesn't close the ring from here. Closing a ring likely involves more than one tap (duration, reps, streak), so this mockup shows the intended destination instead of faking that interaction.</div>
+      <button class="modal-btn" tabindex="0" onclick="closeRingModal()">Got it</button>
+    </div>
+  </div>
 </div>
 </div>
 
@@ -463,6 +522,34 @@
     var btn = document.getElementById('why-btn');
     var open = panel.classList.toggle('open');
     btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  }
+  var trendMonthOpen = false;
+  function toggleTrendView(){
+    trendMonthOpen = !trendMonthOpen;
+    document.getElementById('trend-week-view').style.display = trendMonthOpen ? 'none' : 'block';
+    document.getElementById('trend-month-view').style.display = trendMonthOpen ? 'block' : 'none';
+    document.getElementById('trend-big').innerHTML = trendMonthOpen ? '69<small>%</small>' : '82<small>%</small>';
+    document.getElementById('trend-delta').textContent = trendMonthOpen ? 'trending up over 4 weeks' : '↑ steadier than last week';
+    document.getElementById('trend-note').textContent = trendMonthOpen
+      ? "Each bar averages a full week. The climb tracks with your focus-time nudges landing more consistently."
+      : "No single score here — just the shape of your week. Tuesday's dip lines up with the team offsite, not a slip.";
+    document.getElementById('trend-toggle-btn').textContent = trendMonthOpen ? '← Back to this week' : 'See full month →';
+  }
+  var missedActions = {
+    expense: { done: '✓ Moved to today', undone: 'Move to today' },
+    dentist: { done: '✓ Time block added', undone: 'Add a time block' }
+  };
+  function resolveMissed(id){
+    document.getElementById('miss-cta-' + id).style.display = 'none';
+    var fb = document.getElementById('miss-feedback-' + id);
+    fb.classList.add('show');
+    fb.innerHTML = '<span>' + missedActions[id].done + '</span><button class="undo" onclick="undoMissed(\'' + id + '\')">Undo</button>';
+  }
+  function undoMissed(id){
+    document.getElementById('miss-cta-' + id).style.display = 'inline-flex';
+    var fb = document.getElementById('miss-feedback-' + id);
+    fb.classList.remove('show');
+    fb.innerHTML = '';
   }
   function resolveNudge(kind){
     document.getElementById('nudge-actions').style.display = 'none';
@@ -497,13 +584,11 @@
     fb.innerHTML = '';
   }
   function openRing(name){
-    var chip = document.getElementById('gym-chip');
-    chip.classList.remove('task');
-    chip.classList.add('done');
-    chip.innerHTML = '<span class="dot done"></span>' + name + ' ring closed ✓';
-    chip.onclick = null;
-    chip.removeAttribute('role');
-    chip.removeAttribute('tabindex');
+    document.getElementById('ring-modal-name').textContent = name;
+    document.getElementById('ring-modal-overlay').classList.add('open');
+  }
+  function closeRingModal(){
+    document.getElementById('ring-modal-overlay').classList.remove('open');
   }
   // keyboard support for div-as-button interactive elements
   document.querySelectorAll('[tabindex="0"]').forEach(function(el){
