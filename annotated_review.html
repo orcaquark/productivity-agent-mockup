@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Kindred — Productivity Agent · Design Review</title>
+<title>Kindred — Personalization · Design Review</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
@@ -90,9 +90,9 @@
 <body>
 
 <div class="header">
-  <div class="eyebrow">Productivity Agent · Design Review</div>
+  <div class="eyebrow">Personalization · Design Review</div>
   <h1>Why each screen works the way it does</h1>
-  <p>A walkthrough of the three Productivity Agent screens, organized by the reasoning behind each decision rather than by build history. Items tagged <span class="tag open">OPEN</span> are known gaps worth a ticket before this goes further — everything else reflects something already present in the screen next to it.</p>
+  <p>A walkthrough of the three personalization screens, organized by the reasoning behind each decision rather than by build history. Items tagged <span class="tag open">OPEN</span> are known gaps worth a ticket before this goes further — everything else reflects something already present in the screen next to it.</p>
 </div>
 
 <div class="board">
@@ -100,7 +100,7 @@
   <!-- SECTION 1: Home -->
   <div class="section">
     <div class="frame-col">
-      <div class="section-title">1. Agent home</div>
+      <div class="section-title">1. Personalization home</div>
       <div class="section-sub">Try the New user toggle, the nudge card, and the kudos card</div>
       <div class="frame"><iframe src="productivity_agent_mockup.html" scrolling="no"></iframe></div>
     </div>
@@ -184,54 +184,61 @@
   <!-- SECTION 2: Onboarding -->
   <div class="section">
     <div class="frame-col">
-      <div class="section-title">2. Agent onboarding</div>
-      <div class="section-sub">Single-step wizard — Back / Continue / Skip move between steps, with state preserved</div>
+      <div class="section-title">2. Personalization onboarding</div>
+      <div class="section-sub">Opens on a short expectations screen, then a single-step wizard — Back / Continue / Skip move between steps, with state preserved</div>
       <div class="frame"><iframe src="agent_onboarding_mockup.html" scrolling="no"></iframe></div>
     </div>
     <div class="notes">
 
-      <div class="cat-label">Tone & framing</div>
+      <div class="cat-label">Before you start</div>
       <div class="note">
         <div class="num">14</div>
+        <div class="note-text"><div class="t">A welcome screen sets expectations before question one</div>
+        <div class="d">Shows a sample briefing and a sample nudge side by side so "personalization" means something concrete, then one line covers both the timeline (briefing tonight, nudges in about a week) and the privacy commitment — kept short and near the top so it's visible without scrolling. A "Skip setup — use smart defaults" link jumps straight to confirm for anyone who'd rather not answer anything at all.</div></div>
+      </div>
+
+      <div class="cat-label">Tone & framing</div>
+      <div class="note">
+        <div class="num">15</div>
         <div class="note-text"><div class="t">"Skip for now" is on every step, and worded so it's clearly reversible</div>
         <div class="d">Personalization is additive, never a gate — "you can set this up later" removes the fear that skipping forfeits it permanently.</div></div>
       </div>
       <div class="note">
-        <div class="num">15</div>
-        <div class="note-text"><div class="t">No right-answer framing on planning style</div>
-        <div class="d">The subhead states directly that there's no correct option — pre-empts the instinct to answer how the agent "wants" rather than how someone actually behaves.</div></div>
-      </div>
-      <div class="note">
         <div class="num">16</div>
-        <div class="note-text"><div class="t">Two separate sliders: frequency and tone</div>
-        <div class="d">Avoids collapsing "how much" and "how it sounds" into one setting — someone may want light-touch + cheerful, or frequent + quiet. Both are draggable, with keyboard arrow-key support.</div></div>
+        <div class="note-text"><div class="t">No right-answer framing on planning style</div>
+        <div class="d">The subhead states directly that there's no correct option — pre-empts the instinct to answer how Kindred "wants" rather than how someone actually behaves.</div></div>
       </div>
       <div class="note">
         <div class="num">17</div>
+        <div class="note-text"><div class="t">Frequency stays a slider; tone became sample-cards</div>
+        <div class="d">"How much" and "how it sounds" are still two separate settings — someone may want light-touch + cheerful, or frequent + quiet. But tone no longer asks someone to place themselves on an abstract Quiet↔Cheerful scale: it shows the same nudge written three ways and asks which one sounds like them. Selecting a card sets the same underlying value the slider used to; frequency keeps its draggable track with keyboard arrow-key support.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">18</div>
         <div class="note-text"><div class="t">"Nudges are suggestions, not alerts," with a stated daily ceiling</div>
         <div class="d">Sets expectations before a single nudge has been sent, and points to a concrete limit in settings so "light touch" isn't just a vibe.</div></div>
       </div>
 
       <div class="cat-label">Trust through the flow</div>
       <div class="note">
-        <div class="num">18</div>
+        <div class="num">19</div>
         <div class="note-text"><div class="t">Time estimate per step, plus an autosave note at the end</div>
         <div class="d">"~1 MIN" sets a realistic bar so people don't bail assuming it's longer; "your answers save automatically" removes the anxiety of losing progress mid-flow.</div></div>
       </div>
       <div class="note">
-        <div class="num">19</div>
+        <div class="num">20</div>
         <div class="note-text"><div class="t">A real "Learn more" panel, and an editable, live summary before commit</div>
         <div class="d">"Learn more about how this data is used" expands inline with the longer explanation. The confirm screen reads back your actual choices from every prior step — not placeholder text — and each item links straight back to where it came from.</div></div>
       </div>
       <div class="note">
-        <div class="num">20</div>
+        <div class="num">21</div>
         <div class="note-text"><div class="t">Deselecting every focus time has an explicit fallback</div>
         <div class="d">"No pattern yet — we'll use your activity instead" replaces a silent, unexplained zero-selection state.</div></div>
       </div>
 
       <div class="cat-label">Open</div>
       <div class="note">
-        <div class="num">21</div>
+        <div class="num">22</div>
         <div class="note-text"><div class="t">No calendar-conflict awareness in nudge timing<span class="tag open">OPEN</span></div>
         <div class="d">Onboarding asks when someone's sharpest, but a later nudge ("Move to 8:40am?") could land on a meeting. Worth checking calendar availability, not just historical pattern.</div></div>
       </div>
@@ -241,76 +248,76 @@
   <!-- SECTION 3: Settings -->
   <div class="section">
     <div class="frame-col">
-      <div class="section-title">3. Agent settings</div>
-      <div class="section-sub">Every row is interactive — try "Pause agent," now sitting above "Turn off"</div>
+      <div class="section-title">3. Personalization settings</div>
+      <div class="section-sub">Every row is interactive — try "Pause personalization," now sitting above "Turn off"</div>
       <div class="frame tall"><iframe src="agent_settings_mockup.html" scrolling="no"></iframe></div>
     </div>
     <div class="notes">
 
-      <div class="cat-label">Trust in what the agent learned</div>
-      <div class="note">
-        <div class="num">22</div>
-        <div class="note-text"><div class="t">"From you" vs. "Inferred" tags, and corrections always win</div>
-        <div class="d">Distinguishes what the user explicitly stated from what the agent observed — and states plainly that a correction overrides what's inferred, so fixing it feels like correcting a guess, not arguing with the system.</div></div>
-      </div>
+      <div class="cat-label">Trust in your personalization</div>
       <div class="note">
         <div class="num">23</div>
+        <div class="note-text"><div class="t">"From you" vs. "Inferred" tags, and corrections always win</div>
+        <div class="d">Distinguishes what the user explicitly stated from what personalization observed — and states plainly that a correction overrides what's inferred, so fixing it feels like correcting a guess, not arguing with the system.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">24</div>
         <div class="note-text"><div class="t">"See exactly what data this uses" is a real, working link</div>
         <div class="d">Opens an explanation of what's self-reported vs. inferred and confirms nothing leaves the account unless the person taps Export.</div></div>
       </div>
 
       <div class="cat-label">Fatigue & scoring</div>
       <div class="note">
-        <div class="num">24</div>
+        <div class="num">25</div>
         <div class="note-text"><div class="t">"Auto-reduce when ignored" is a visible, working toggle</div>
-        <div class="d">The fatigue-protection guardrail isn't just backend behavior — it's something the user can see is on, building confidence the agent won't nag.</div></div>
+        <div class="d">The fatigue-protection guardrail isn't just backend behavior — it's something the user can see is on, building confidence it won't nag.</div></div>
       </div>
       <div class="note">
-        <div class="num">25</div>
+        <div class="num">26</div>
         <div class="note-text"><div class="t">Score display is off by default</div>
         <div class="d">Trend view is the default experience; the single productivity number is opt-in, reversing the typical "score-first" pattern of habit apps.</div></div>
       </div>
 
       <div class="cat-label">Reversibility & commitment levels</div>
       <div class="note">
-        <div class="num">26</div>
-        <div class="note-text"><div class="t">Four distinct levels: Need a break, Pause agent, Turn off, Delete</div>
-        <div class="d">"Need a break" pauses nudges only — briefings and reports keep going. "Pause agent" (new, sits above "Turn off") stops everything for a chosen duration and resumes automatically. "Turn off" is indefinite until manually resumed. "Delete" is the only one that's permanent. Each is a meaningfully different commitment, not variations of one button.</div></div>
+        <div class="num">27</div>
+        <div class="note-text"><div class="t">Four distinct levels: Need a break, Pause personalization, Turn off, Delete</div>
+        <div class="d">"Need a break" pauses nudges only — briefings and reports keep going. "Pause personalization" (new, sits above "Turn off") stops everything for a chosen duration and resumes automatically. "Turn off" is indefinite until manually resumed. "Delete" is the only one that's permanent. Each is a meaningfully different commitment, not variations of one button.</div></div>
       </div>
       <div class="note">
-        <div class="num">27</div>
+        <div class="num">28</div>
         <div class="note-text"><div class="t">Destructive or paused states always confirm and show their effect</div>
-        <div class="d">Confirming a pause, turn-off, or delete opens a sheet stating exactly what's kept and lost, then shows a banner reflecting what actually happened — pause and turn-off offer Resume / Turn back on and dim the sections that stop updating; delete shows its own message ("patterns and history are gone, starting fresh") since resuming isn't really what happened there, and the agent stays active rather than appearing off.</div></div>
+        <div class="d">Confirming a pause, turn-off, or delete opens a sheet stating exactly what's kept and lost, then shows a banner reflecting what actually happened — pause and turn-off offer Resume / Turn back on and dim the sections that stop updating; delete shows its own message ("patterns and history are gone, starting fresh") since resuming isn't really what happened there, and personalization stays active rather than appearing off.</div></div>
       </div>
 
       <div class="cat-label">Accessibility & control</div>
       <div class="note">
-        <div class="num">28</div>
+        <div class="num">29</div>
         <div class="note-text"><div class="t">Toggle state never relies on color alone</div>
         <div class="d">The knob's position and the background fill both change, so state reads correctly even for users who can't distinguish the on/off color difference.</div></div>
       </div>
       <div class="note">
-        <div class="num">29</div>
+        <div class="num">30</div>
         <div class="note-text"><div class="t">Light / Dark / Auto is a real, working theme swap</div>
         <div class="d">Relevant for migraine, light sensitivity, and plain preference — selecting Dark actually re-themes the screen rather than just marking a button as selected.</div></div>
       </div>
       <div class="note">
-        <div class="num">30</div>
+        <div class="num">31</div>
         <div class="note-text"><div class="t">Friend sharing defaults to off, kudos suggestions default to on</div>
         <div class="d">Low-stakes social (suggesting kudos) and higher-stakes social (sharing your own progress/scores) are split into separate toggles with different defaults.</div></div>
       </div>
 
       <div class="cat-label">Data rights</div>
       <div class="note">
-        <div class="num">31</div>
+        <div class="num">32</div>
         <div class="note-text"><div class="t">Export sits above the destructive options</div>
         <div class="d">Someone shouldn't have to choose between keeping a copy of their data and deleting it — exporting is always available first.</div></div>
       </div>
 
       <div class="cat-label">Open</div>
       <div class="note">
-        <div class="num">32</div>
-        <div class="note-text"><div class="t">"What the agent has learned" still has no audit trail<span class="tag open">OPEN</span></div>
+        <div class="num">33</div>
+        <div class="note-text"><div class="t">"Your personalization" still has no audit trail<span class="tag open">OPEN</span></div>
         <div class="d">"See exactly what data this uses" explains the categories but not a full screen showing the specific signals (which days, which tasks) feeding each inferred trait.</div></div>
       </div>
     </div>
