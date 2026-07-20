@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Kindred — Productivity Agent</title>
+<title>Kindred — Personalization</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
@@ -258,7 +258,7 @@
   <div class="notch"></div>
   <div class="scroll">
 
-    <div class="eyebrow">Thursday · Productivity Agent</div>
+    <div class="eyebrow">Thursday · Personalization</div>
     <div class="greeting"><span id="greet-name">Evening, Maya.</span></div>
     <div class="subline" id="subline">Here's where your thread picked up today.</div>
 
@@ -435,7 +435,7 @@
   <div class="navbar">
     <div class="nav-item"><div class="nav-dot"></div>Tasks</div>
     <div class="nav-item"><div class="nav-dot"></div>Rings</div>
-    <div class="nav-item active" aria-current="page"><div class="nav-dot"></div>Agent</div>
+    <div class="nav-item active" aria-current="page"><div class="nav-dot"></div>For You</div>
     <div class="nav-item"><div class="nav-dot"></div>Friends</div>
     <div class="nav-item"><div class="nav-dot"></div>Profile</div>
   </div>
@@ -452,7 +452,7 @@
     var sub = document.getElementById('subline');
     if(s==='new'){
       greet.textContent = 'Welcome, Maya.';
-      sub.textContent = "Your agent doesn't know you yet — insights show up here as you use Kindred.";
+      sub.textContent = "Your personalization hasn't kicked in yet — insights show up here as you use Kindred.";
     } else {
       greet.textContent = 'Evening, Maya.';
       sub.textContent = "Here's where your thread picked up today.";
