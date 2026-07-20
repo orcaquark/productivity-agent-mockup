@@ -159,24 +159,36 @@
       <div class="note">
         <div class="num">10</div>
         <div class="note-text"><div class="t">An "insight" chip and an "open task" chip used to look identical</div>
-        <div class="d">"Mornings work for you" (an observation) and "Gym ring open" (an action) now have distinct styling — the ring chip has its own color, icon, and a real tap target — plus a caption spelling out the difference. <b>Note:</b> tapping it closes the ring directly here, which is a mockup shortcut so the interaction is demonstrable — in the real app this should navigate to the Rings tab scoped to that ring, not resolve it in place from a chip.</div></div>
+        <div class="d">"Mornings work for you" (an observation) and "Gym ring open" (an action) now have distinct styling — the ring chip has its own color, icon, and a real tap target — plus a caption spelling out the difference. <b>Resolved:</b> tapping it used to close the ring directly in place, which was a mockup shortcut. Closing a ring is likely more than a single tap of state (duration, reps, streak), so it shouldn't resolve inline the way a nudge or kudos can. Tapping now opens a short explainer modal instead, stating plainly that the real interaction is a deep link into the Rings tab scoped to that ring — showing the intended destination rather than faking a completion the mockup can't actually represent.</div></div>
       </div>
       <div class="note">
         <div class="num">11</div>
+        <div class="note-text"><div class="t">A modal for a design decision, not a real product surface</div>
+        <div class="d">This confirm-style dialog isn't meant to model UI that ships — it's a placeholder that documents an intentional deferral for whoever builds this next, in the same spirit as the "mockup shortcut" notes elsewhere in this doc. Dismissible by the "Got it" button or by tapping outside it.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">12</div>
         <div class="note-text"><div class="t">Day-one users get an explanation, not a blank or fabricated screen</div>
         <div class="d">The New user state explains why each card is empty and what unlocks it, instead of inventing a pattern that doesn't exist yet.</div></div>
       </div>
 
+      <div class="cat-label">Every card resolves to an action</div>
+      <div class="note">
+        <div class="num">13</div>
+        <div class="note-text"><div class="t">Trend and missed-task cards now do something, not just report something</div>
+        <div class="d">The other three cards already end in a real action — move a nudge, close a ring, send kudos. These two were read-only. "This week's pattern" gets a "See full month" toggle that swaps in an actual second data view (4 weekly averages instead of 7 daily bars), reusing the same expand pattern as "Why am I seeing this" and "Learn more" rather than adding a decorative button. "What got missed" gets a per-item action tied to the specific reason it lists, not a generic one — the repeatedly-pushed expense report gets "Move to today," the dentist call flagged as having no time block gets "Add a time block" — and both resolve with the same confirm/undo pattern already used for nudges and kudos.</div></div>
+      </div>
+
       <div class="cat-label">Open</div>
       <div class="note">
-        <div class="num">12</div>
+        <div class="num">14</div>
         <div class="note-text"><div class="t">Missed task names are visible on a shared or unlocked screen<span class="tag open">OPEN</span></div>
         <div class="d">"Submit expense report" sitting on a home screen is fine alone, less fine on a lock-screen preview or a screen-share. Worth a "blur sensitive task names" setting.</div></div>
       </div>
       <div class="note">
-        <div class="num">13</div>
+        <div class="num">15</div>
         <div class="note-text"><div class="t">Jordan's streak is shown to someone else without Jordan's consent<span class="tag open">OPEN</span></div>
-        <div class="d">The kudos card surfaces another person's activity. That needs its own opt-in on Jordan's side, not just the viewer's settings.</div></div>
+        <div class="d">The kudos card surfaces another person's activity. That needs its own opt-in on Jordan's side, not just the viewer's settings. Harder to mock up meaningfully here — this view is Maya's alone, so there's no real surface in this file to grant or preview Jordan's consent from.</div></div>
       </div>
     </div>
   </div>
@@ -192,53 +204,58 @@
 
       <div class="cat-label">Before you start</div>
       <div class="note">
-        <div class="num">14</div>
+        <div class="num">16</div>
         <div class="note-text"><div class="t">A welcome screen sets expectations before question one</div>
-        <div class="d">Shows a sample briefing and a sample nudge side by side so "personalization" means something concrete, then one line covers both the timeline (briefing tonight, nudges in about a week) and the privacy commitment — kept short and near the top so it's visible without scrolling. A "Skip setup — use smart defaults" link jumps straight to confirm for anyone who'd rather not answer anything at all.</div></div>
+        <div class="d">Shows a sample briefing and a sample nudge side by side so "personalization" means something concrete, then a single privacy/timing line underneath covers when to expect results (briefing tonight, nudges in about a week) and confirms it's visible only to you. Topbar is stripped down to a back button and a progress bar; no second text label competing with the "Before you start" tag. A "Skip setup — use defaults" link jumps straight to confirm for anyone who'd rather not answer anything at all.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">17</div>
+        <div class="note-text"><div class="t">Progress bar carries over, but stays unfilled here</div>
+        <div class="d">Two ways to show progress across a welcome screen: add a 5th segment for it, or reuse the same 4-segment bar from the question steps with nothing filled in yet. Went with the latter — a 5th segment would contradict the "four quick questions" framing in the copy above and force every step's "Step X of 4" label to be rewritten. An empty bar reads clearly as "the four questions haven't started," and the first segment fills the moment you land on question one.</div></div>
       </div>
 
       <div class="cat-label">Tone & framing</div>
       <div class="note">
-        <div class="num">15</div>
+        <div class="num">18</div>
         <div class="note-text"><div class="t">"Skip for now" is on every step, and worded so it's clearly reversible</div>
         <div class="d">Personalization is additive, never a gate — "you can set this up later" removes the fear that skipping forfeits it permanently.</div></div>
       </div>
       <div class="note">
-        <div class="num">16</div>
+        <div class="num">19</div>
         <div class="note-text"><div class="t">No right-answer framing on planning style</div>
         <div class="d">The subhead states directly that there's no correct option — pre-empts the instinct to answer how Kindred "wants" rather than how someone actually behaves.</div></div>
       </div>
       <div class="note">
-        <div class="num">17</div>
+        <div class="num">20</div>
         <div class="note-text"><div class="t">Frequency stays a slider; tone became sample-cards</div>
         <div class="d">"How much" and "how it sounds" are still two separate settings — someone may want light-touch + cheerful, or frequent + quiet. But tone no longer asks someone to place themselves on an abstract Quiet↔Cheerful scale: it shows the same nudge written three ways and asks which one sounds like them. Selecting a card sets the same underlying value the slider used to; frequency keeps its draggable track with keyboard arrow-key support.</div></div>
       </div>
       <div class="note">
-        <div class="num">18</div>
+        <div class="num">21</div>
         <div class="note-text"><div class="t">"Nudges are suggestions, not alerts," with a stated daily ceiling</div>
         <div class="d">Sets expectations before a single nudge has been sent, and points to a concrete limit in settings so "light touch" isn't just a vibe.</div></div>
       </div>
 
       <div class="cat-label">Trust through the flow</div>
       <div class="note">
-        <div class="num">19</div>
-        <div class="note-text"><div class="t">Time estimate per step, plus an autosave note at the end</div>
-        <div class="d">"~1 MIN" sets a realistic bar so people don't bail assuming it's longer; "your answers save automatically" removes the anxiety of losing progress mid-flow.</div></div>
+        <div class="num">22</div>
+        <div class="note-text"><div class="t">An autosave note at the end removes the "did I lose this?" worry</div>
+        <div class="d">"Your answers save automatically" removes the anxiety of losing progress mid-flow. Per-step time estimates were cut — they read as filler once the welcome screen already sets expectations for the whole flow.</div></div>
       </div>
       <div class="note">
-        <div class="num">20</div>
+        <div class="num">23</div>
         <div class="note-text"><div class="t">A real "Learn more" panel, and an editable, live summary before commit</div>
         <div class="d">"Learn more about how this data is used" expands inline with the longer explanation. The confirm screen reads back your actual choices from every prior step — not placeholder text — and each item links straight back to where it came from.</div></div>
       </div>
       <div class="note">
-        <div class="num">21</div>
+        <div class="num">24</div>
         <div class="note-text"><div class="t">Deselecting every focus time has an explicit fallback</div>
         <div class="d">"No pattern yet — we'll use your activity instead" replaces a silent, unexplained zero-selection state.</div></div>
       </div>
 
       <div class="cat-label">Open</div>
       <div class="note">
-        <div class="num">22</div>
+        <div class="num">25</div>
         <div class="note-text"><div class="t">No calendar-conflict awareness in nudge timing<span class="tag open">OPEN</span></div>
         <div class="d">Onboarding asks when someone's sharpest, but a later nudge ("Move to 8:40am?") could land on a meeting. Worth checking calendar availability, not just historical pattern.</div></div>
       </div>
@@ -256,69 +273,69 @@
 
       <div class="cat-label">Trust in your personalization</div>
       <div class="note">
-        <div class="num">23</div>
+        <div class="num">26</div>
         <div class="note-text"><div class="t">"From you" vs. "Inferred" tags, and corrections always win</div>
         <div class="d">Distinguishes what the user explicitly stated from what personalization observed — and states plainly that a correction overrides what's inferred, so fixing it feels like correcting a guess, not arguing with the system.</div></div>
       </div>
       <div class="note">
-        <div class="num">24</div>
+        <div class="num">27</div>
         <div class="note-text"><div class="t">"See exactly what data this uses" is a real, working link</div>
         <div class="d">Opens an explanation of what's self-reported vs. inferred and confirms nothing leaves the account unless the person taps Export.</div></div>
       </div>
 
       <div class="cat-label">Fatigue & scoring</div>
       <div class="note">
-        <div class="num">25</div>
+        <div class="num">28</div>
         <div class="note-text"><div class="t">"Auto-reduce when ignored" is a visible, working toggle</div>
         <div class="d">The fatigue-protection guardrail isn't just backend behavior — it's something the user can see is on, building confidence it won't nag.</div></div>
       </div>
       <div class="note">
-        <div class="num">26</div>
+        <div class="num">29</div>
         <div class="note-text"><div class="t">Score display is off by default</div>
         <div class="d">Trend view is the default experience; the single productivity number is opt-in, reversing the typical "score-first" pattern of habit apps.</div></div>
       </div>
 
       <div class="cat-label">Reversibility & commitment levels</div>
       <div class="note">
-        <div class="num">27</div>
+        <div class="num">30</div>
         <div class="note-text"><div class="t">Four distinct levels: Need a break, Pause personalization, Turn off, Delete</div>
         <div class="d">"Need a break" pauses nudges only — briefings and reports keep going. "Pause personalization" (new, sits above "Turn off") stops everything for a chosen duration and resumes automatically. "Turn off" is indefinite until manually resumed. "Delete" is the only one that's permanent. Each is a meaningfully different commitment, not variations of one button.</div></div>
       </div>
       <div class="note">
-        <div class="num">28</div>
+        <div class="num">31</div>
         <div class="note-text"><div class="t">Destructive or paused states always confirm and show their effect</div>
         <div class="d">Confirming a pause, turn-off, or delete opens a sheet stating exactly what's kept and lost, then shows a banner reflecting what actually happened — pause and turn-off offer Resume / Turn back on and dim the sections that stop updating; delete shows its own message ("patterns and history are gone, starting fresh") since resuming isn't really what happened there, and personalization stays active rather than appearing off.</div></div>
       </div>
 
       <div class="cat-label">Accessibility & control</div>
       <div class="note">
-        <div class="num">29</div>
+        <div class="num">32</div>
         <div class="note-text"><div class="t">Toggle state never relies on color alone</div>
         <div class="d">The knob's position and the background fill both change, so state reads correctly even for users who can't distinguish the on/off color difference.</div></div>
       </div>
       <div class="note">
-        <div class="num">30</div>
+        <div class="num">33</div>
         <div class="note-text"><div class="t">Light / Dark / Auto is a real, working theme swap</div>
         <div class="d">Relevant for migraine, light sensitivity, and plain preference — selecting Dark actually re-themes the screen rather than just marking a button as selected.</div></div>
       </div>
       <div class="note">
-        <div class="num">31</div>
+        <div class="num">34</div>
         <div class="note-text"><div class="t">Friend sharing defaults to off, kudos suggestions default to on</div>
         <div class="d">Low-stakes social (suggesting kudos) and higher-stakes social (sharing your own progress/scores) are split into separate toggles with different defaults.</div></div>
       </div>
 
       <div class="cat-label">Data rights</div>
       <div class="note">
-        <div class="num">32</div>
+        <div class="num">35</div>
         <div class="note-text"><div class="t">Export sits above the destructive options</div>
         <div class="d">Someone shouldn't have to choose between keeping a copy of their data and deleting it — exporting is always available first.</div></div>
       </div>
 
       <div class="cat-label">Open</div>
       <div class="note">
-        <div class="num">33</div>
-        <div class="note-text"><div class="t">"Your personalization" still has no audit trail<span class="tag open">OPEN</span></div>
-        <div class="d">"See exactly what data this uses" explains the categories but not a full screen showing the specific signals (which days, which tasks) feeding each inferred trait.</div></div>
+        <div class="num">36</div>
+        <div class="note-text"><div class="t">"Your personalization" still has no audit trail</div>
+        <div class="d"><b>Resolved, partially:</b> added a "See what's changed" sheet next to "See exactly what data this uses," listing each change to planning style, tone, and focus times with a timestamp — and it's wired to real interactions, not static copy: cycling a value or toggling a focus-time chip in this same screen adds a live "Just now" entry you can see immediately. What this doesn't cover: the specific signals behind an inferred trait (which days, which tasks) — that's a deeper explainability feature, not a change log, and is still worth its own ticket.</div></div>
       </div>
     </div>
   </div>
