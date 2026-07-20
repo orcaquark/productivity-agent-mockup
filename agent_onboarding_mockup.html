@@ -52,14 +52,6 @@
   .progress{ flex:1; display:flex; gap:5px; }
   .progress .seg{ flex:1; height:3px; border-radius:2px; background:#e3ddf0; }
   .progress .seg.filled{ background: var(--violet); }
-  .time-est{
-    font-family:'JetBrains Mono', monospace; font-size:10px; color:var(--text-faint);
-    white-space:nowrap; flex-shrink:0;
-  }
-  .intro-label{
-    flex:1; font-family:'JetBrains Mono', monospace; font-size:10.5px; letter-spacing:0.12em;
-    text-transform:uppercase; color:var(--text-faint);
-  }
 
   .screen{ flex:1; overflow-y:auto; padding:6px 24px 24px; scrollbar-width:none; }
   .screen::-webkit-scrollbar{ display:none; }
@@ -157,8 +149,7 @@
   <div class="step-page active" data-step="0">
     <div class="topbar">
       <button class="back" aria-label="Go back" disabled></button>
-      <div class="intro-label">Getting started</div>
-      <div class="time-est">~30 SEC</div>
+      <div class="progress"><div class="seg"></div><div class="seg"></div><div class="seg"></div><div class="seg"></div></div>
     </div>
     <div class="screen">
       <div class="step-tag">Before you start</div>
@@ -181,7 +172,7 @@
     </div>
     <div class="footer">
       <div class="cta" tabindex="0" onclick="goToStep(1)">Let's get started</div>
-      <button class="skip" onclick="skipToDefaults()">Skip setup — use smart defaults</button>
+      <button class="skip" onclick="skipToDefaults()">Skip setup — use defaults</button>
     </div>
   </div>
 
@@ -190,7 +181,6 @@
     <div class="topbar">
       <button class="back" aria-label="Go back" onclick="goToStep(0)">←</button>
       <div class="progress"><div class="seg filled"></div><div class="seg"></div><div class="seg"></div><div class="seg"></div></div>
-      <div class="time-est">~1 MIN</div>
     </div>
     <div class="screen">
       <div class="step-tag">Step 1 of 4</div>
@@ -229,7 +219,6 @@
     <div class="topbar">
       <button class="back" aria-label="Go back" onclick="goToStep(1)">←</button>
       <div class="progress"><div class="seg filled"></div><div class="seg filled"></div><div class="seg"></div><div class="seg"></div></div>
-      <div class="time-est">~1 MIN</div>
     </div>
     <div class="screen">
       <div class="step-tag">Step 2 of 4</div>
@@ -250,7 +239,7 @@
       <div class="tone-sub">Same nudge, three ways to say it — pick the one that sounds like you.</div>
 
       <div class="option" tabindex="0" data-group="tone" data-summary="Quiet" onclick="selectOption(this)">
-        <div class="opt-icon">🤍</div>
+        <div class="opt-icon">🌙</div>
         <div class="opt-text"><div class="t">Quiet</div><div class="d quoted">"Reading task's still open — 8:40am tends to work better for you."</div></div>
         <div class="opt-check"></div>
       </div>
@@ -281,7 +270,6 @@
     <div class="topbar">
       <button class="back" aria-label="Go back" onclick="goToStep(2)">←</button>
       <div class="progress"><div class="seg filled"></div><div class="seg filled"></div><div class="seg filled"></div><div class="seg"></div></div>
-      <div class="time-est">~1 MIN</div>
     </div>
     <div class="screen">
       <div class="step-tag">Step 3 of 4</div>
@@ -313,7 +301,6 @@
     <div class="topbar">
       <button class="back" aria-label="Go back" onclick="goToStep(3)">←</button>
       <div class="progress"><div class="seg filled"></div><div class="seg filled"></div><div class="seg filled"></div><div class="seg filled"></div></div>
-      <div class="time-est">DONE</div>
     </div>
     <div class="screen">
       <div class="step-tag">Step 4 of 4</div>
