@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Kindred — Personalization · Chat</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root{
+    --bg: #faf9fc;
+    --card: #ffffff;
+    --card-raised: #f1eef8;
+    --violet: #854dff;
+    --violet-dim: #854dff2a;
+    --violet-soft: #854dff14;
+    --sage: #4f8a4b;
+    --sage-dim: #93c08f22;
+    --text: #221d33;
+    --text-muted: #5b5570;   /* darkened from #948f9e for AA contrast */
+    --text-faint: #84809a;   /* darkened from #5e596b-on-dark equivalent */
+  }
+
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html,body{
+    background:#eae6f2;
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:'Inter',sans-serif;
+  }
+
+  /* Accessibility: visible focus ring on every interactive element */
+  button, a, [tabindex], .chip, .state-pill{
+    cursor:pointer;
+  }
+  :focus-visible{
+    outline: 2px solid var(--violet);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+
+  .truncate{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+  .phone{
+    width:392px;
+    height:820px;
+    background: var(--bg);
+    border-radius:44px;
+    border: 1px solid #e3ddf0;
+    box-shadow: 0 30px 80px -20px rgba(80,60,140,0.25);
+    overflow:hidden;
+    position:relative;
+    display:flex;
+    flex-direction:column;
+  }
+
+  .notch{
+    position:absolute; top:14px; left:50%; transform:translateX(-50%);
+    width:110px; height:24px; background:#2a2632; border-radius:20px; z-index:10;
+  }
+
+  /* ===== Chat header — fixed, unlike the old scrolling eyebrow/greeting ===== */
+  .chat-header{
+    flex-shrink:0;
+    padding:40px 20px 12px;
+    border-bottom:1px solid #e3ddf0;
+    background:var(--bg);
+    position:relative; z-index:5;
+  }
+  .chat-id-row{ display:flex; align-items:center; gap:10px; margin-bottom:12px; }
+  .chat-avatar{
+    width:32px; height:32px; border-radius:50%; background:var(--violet); color:#fff;
+    display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0;
+    font-family:'Fraunces', serif;
+  }
+  .chat-name{ font-family:'Fraunces', serif; font-weight:500; font-size:15px; color:var(--text); line-height:1.2; }
+  .chat-sub{ font-size:10.5px; color:var(--text-muted); line-height:1.3; margin-top:1px; }
+
+  .state-switch{
+    display:flex; gap:6px;
+    background: var(--card-raised);
+    border-radius:11px;
+    padding:3px;
+    width:fit-content;
+  }
+  .state-pill{
+    font-family:'JetBrains Mono', monospace;
+    font-size:10px;
+    padding:6px 11px;
+    min-height:30px;
+    display:flex; align-items:center;
+    border-radius:8px;
+    color:var(--text-muted);
+    font-weight:500;
+    border:none;
+    background:transparent;
+  }
+  .state-pill.active{ background:#fff; color:var(--violet); box-shadow:0 1px 4px rgba(80,60,140,0.18); }
+
+  /* ===== Message log ===== */
+  .scroll{
+    flex:1;
+    overflow-y:auto;
+    padding:18px 20px 20px;
+    scrollbar-width:none;
+    scroll-behavior:smooth;
+  }
+  .scroll::-webkit-scrollbar{ display:none; }
+
+  .log{ display:flex; flex-direction:column; }
+
+  .date-divider{
+    display:flex; align-items:center; gap:10px; margin:2px 0 18px;
+    font-family:'JetBrains Mono', monospace; font-size:9.5px; letter-spacing:0.1em; text-transform:uppercase;
+    color:var(--text-faint);
+  }
+  .date-divider::before, .date-divider::after{ content:""; flex:1; height:1px; background:#e3ddf0; }
+
+  .msg-group{ display:flex; flex-direction:column; align-items:flex-start; margin-bottom:18px; max-width:100%; }
+  .msg-group.mine{ align-items:flex-end; }
+
+  /* Two bubble types: system (left, card-colored, tail bottom-left) and echo (right, violet, smaller, tail bottom-right) */
+  .bubble{
+    max-width:87%;
+    background:var(--card); border:1px solid #e3ddf0;
+    border-radius:18px 18px 18px 4px;
+    padding:14px 15px 13px;
+  }
+  .bubble.mine{
+    max-width:74%;
+    background:var(--violet); color:#fff; border:none;
+    border-radius:18px 18px 4px 18px;
+    padding:9px 14px;
+    font-size:12.5px; font-weight:500;
+  }
+  .bubble.confirm{ background:var(--card-raised); padding:11px 14px; }
+
+  .msg-time{ font-size:9.5px; color:var(--text-faint); font-family:'JetBrains Mono', monospace; margin:5px 3px 0; }
+  .msg-group.mine .msg-time{ text-align:right; }
+
+  .bubble-badge-row{ display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+  .bubble-badge{
+    display:flex; align-items:center; gap:6px;
+    font-family:'JetBrains Mono', monospace; font-size:10px; letter-spacing:0.09em; text-transform:uppercase;
+    color:var(--text-faint);
+  }
+  /* Shape + glyph, not just color, distinguishes message type for colorblind users — carried over from the thread version's node-dots */
+  .badge-dot{
+    width:15px; height:15px; border-radius:50%; border:2px solid var(--violet); color:var(--violet);
+    background:var(--card);
+    display:flex; align-items:center; justify-content:center; font-size:8px; flex-shrink:0;
+  }
+  .badge-dot.sage{ border-color:var(--sage); color:var(--sage); }
+  .badge-dot.muted{ border-color:var(--text-faint); color:var(--text-faint); border-style:dashed; }
+  .cap-note{ font-family:'JetBrains Mono', monospace; font-size:9.5px; color:var(--text-faint); font-weight:500; }
+
+  .briefing-title{ font-family:'Fraunces', serif; font-weight:500; font-size:16.5px; color:var(--text); margin-bottom:7px; }
+  .briefing-text{ font-size:13.5px; line-height:1.55; color:#4a4458; margin-bottom:12px; }
+  .briefing-text b{ color:var(--text); font-weight:600; }
+  .empty-text{ font-size:13px; line-height:1.6; color:var(--text-muted); }
+
+  /* Informational chips — live INSIDE a bubble, never echo anything when tapped */
+  .chip-row{ display:flex; gap:8px; flex-wrap:wrap; }
+  .chip{
+    font-size:11.5px; padding:8px 12px; min-height:32px; display:flex; align-items:center; gap:5px;
+    border-radius:20px; background: var(--card-raised); color:var(--text-muted); border:1px solid #e3ddf0;
+  }
+  .chip.active{ background: var(--violet-soft); color: var(--violet); border-color: transparent; }
+  .chip.task{ background:#fff; color:var(--text); border:1px solid var(--sage); cursor:pointer; }
+  .chip.task .dot{ width:7px; height:7px; border-radius:50%; background:var(--sage); flex-shrink:0; }
+  .chip.task .go{ color:var(--sage); font-weight:700; margin-left:2px; }
+  .chip-caption{ font-size:10px; color:var(--text-faint); margin-top:8px; line-height:1.4; }
+
+  /* Quick-reply chips — live BELOW a bubble, tapping always produces an echo + confirmation */
+  .quick-replies{ display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; }
+  .chip.reply{ background:#fff; border:1px solid var(--violet); color:var(--violet); font-weight:600; }
+  .chip.reply.ghost{ border-color:#d8d2e8; color:var(--text-muted); font-weight:600; }
+  .chip.reply.sage-fill{ background:var(--sage); border-color:var(--sage); color:#fff; }
+  .chip.reply.small{ padding:6px 11px; min-height:26px; font-size:10.5px; margin-top:8px; display:inline-flex; }
+
+  .nudge-copy .title{ font-size:14.5px; font-weight:600; color:var(--text); margin-bottom:4px; max-width:280px; }
+  .nudge-copy .desc{ font-size:12.5px; color:var(--text-muted); line-height:1.5; }
+
+  .why-link{
+    font-size:11.5px; color:var(--violet); margin-top:10px; display:inline-flex; align-items:center;
+    min-height:32px; background:none; border:none; padding:0; border-bottom:1px solid var(--violet-dim); font-family:inherit; cursor:pointer;
+  }
+  .why-panel{
+    display:none; margin-top:8px; padding:11px 12px; background:var(--violet-soft); border-radius:12px;
+    font-size:11.5px; color:#4a4458; line-height:1.55;
+  }
+  .why-panel.open{ display:block; }
+  .why-panel b{ color:var(--text); }
+
+  .trend-head{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:12px; }
+  .trend-head .big{ font-family:'Fraunces', serif; font-size:27px; color:var(--text); }
+  .trend-head .big small{ font-size:13px; color:var(--text-muted); font-family:'Inter'; }
+  .trend-head .delta{ font-size:11.5px; color:var(--sage); font-family:'JetBrains Mono', monospace; }
+  .bars{ display:flex; align-items:flex-end; gap:6px; height:48px; margin-bottom:6px; }
+  .bar{ flex:1; background: var(--card-raised); border-radius:5px 5px 2px 2px; }
+  .bar.today{ background: var(--violet); }
+  .bar-labels{ display:flex; gap:6px; }
+  .bar-labels span{ flex:1; text-align:center; font-size:9px; color:var(--text-faint); font-family:'JetBrains Mono', monospace; }
+  .trend-note{ margin-top:11px; font-size:11.5px; color:var(--text-muted); line-height:1.5; border-top:1px solid #ece7f6; padding-top:11px; }
+  .trend-toggle{
+    font-size:11.5px; color:var(--violet); margin-top:11px; display:inline-flex; align-items:center;
+    min-height:32px; background:none; border:none; padding:0; border-bottom:1px solid var(--violet-dim); font-family:inherit; cursor:pointer;
+  }
+
+  .miss-item{ padding:9px 0; border-bottom:1px solid #ece7f6; }
+  .miss-item:last-child{ border-bottom:none; padding-bottom:0; }
+  .miss-item-row{ display:flex; justify-content:space-between; align-items:flex-start; gap:10px; }
+  .miss-name{ font-size:13px; color:var(--text); font-weight:500; margin-bottom:3px; max-width:200px; }
+  .miss-why{ font-size:11.5px; color:var(--text-muted); }
+  .miss-tag{ font-size:9.5px; font-family:'JetBrains Mono', monospace; color:var(--text-faint); white-space:nowrap; padding-top:2px; }
+
+  .kudos-row{ display:flex; align-items:center; gap:11px; }
+  .avatar{
+    width:36px; height:36px; border-radius:50%; background: var(--sage-dim); border:1px solid var(--sage);
+    display:flex; align-items:center; justify-content:center; font-family:'Fraunces', serif; font-size:14px;
+    color:var(--sage); flex-shrink:0;
+  }
+  .kudos-text{ font-size:13px; color:#4a4458; line-height:1.5; }
+  .kudos-text b{ color:var(--text); }
+
+  .confirm-text{ font-size:12.5px; font-weight:600; display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .confirm-text.positive{ color:var(--sage); }
+  .confirm-text.muted{ color:var(--text-muted); }
+  .confirm-text.info{ color:var(--text-muted); font-weight:500; line-height:1.5; }
+  .confirm-text .undo{
+    color:var(--violet); font-weight:600; font-size:11.5px; background:none; border:none; font-family:inherit;
+    min-height:24px; padding:0; cursor:pointer;
+  }
+
+  .typing-bubble{ display:inline-flex; gap:4px; padding:13px 15px; }
+  .typing-bubble span{ width:6px; height:6px; border-radius:50%; background:var(--text-faint); animation: blink 1.2s infinite ease-in-out; }
+  .typing-bubble span:nth-child(2){ animation-delay:0.2s; }
+  .typing-bubble span:nth-child(3){ animation-delay:0.4s; }
+  @keyframes blink{ 0%,80%,100%{ opacity:0.25; } 40%{ opacity:1; } }
+
+  /* ===== Static input bar — decorative, sells the "conversation" framing ===== */
+  .input-bar{
+    flex-shrink:0; display:flex; align-items:center; gap:10px;
+    padding:10px 16px; background:#fff; border-top:1px solid #e3ddf0;
+  }
+  .input-pill{
+    flex:1; background:var(--card-raised); border-radius:20px; padding:10px 15px;
+    font-size:12.5px; color:var(--text-faint);
+  }
+  .send-btn{
+    width:34px; height:34px; border-radius:50%; background:#e3ddf0; color:#fff;
+    display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0;
+  }
+
+  .modal-overlay{
+    position:absolute; inset:0; background:rgba(20,16,32,0.45); display:none;
+    align-items:center; justify-content:center; z-index:50; padding:28px; border-radius:44px;
+  }
+  .modal-overlay.open{ display:flex; }
+  .modal-box{
+    background:var(--card); border-radius:20px; padding:22px 20px; max-width:280px;
+    box-shadow:0 20px 50px -12px rgba(40,20,80,0.35);
+  }
+  .modal-icon{ font-size:20px; margin-bottom:10px; }
+  .modal-title{ font-family:'Fraunces', serif; font-size:17px; color:var(--text); margin-bottom:8px; line-height:1.3; }
+  .modal-body{ font-size:12.5px; color:var(--text-muted); line-height:1.55; margin-bottom:18px; }
+  .modal-btn{
+    width:100%; padding:11px 0; min-height:42px; border-radius:12px; background:var(--violet); color:#fff;
+    font-size:13px; font-weight:600; border:none; font-family:inherit; cursor:pointer;
+  }
+
+  .navbar{ display:flex; justify-content:space-around; padding:12px 10px 20px; background: #ffffff; border-top:1px solid #e3ddf0; flex-shrink:0; }
+  .nav-item{ display:flex; flex-direction:column; align-items:center; gap:4px; font-size:9.5px; color:var(--text-faint); font-family:'JetBrains Mono', monospace; min-height:36px; justify-content:center; }
+  .nav-item.active{ color:var(--violet); font-weight:600; }
+  .nav-dot{ width:18px; height:18px; border-radius:6px; background:#e3ddf0; }
+  /* active state shown via shape change (square->filled) + label weight, not color alone */
+  .nav-item.active .nav-dot{ background:var(--violet); border-radius:50%; }
+
+  .wrap-outer{ display:flex; flex-direction:column; align-items:center; }
+</style>
+</head>
+<body>
+
+<div class="wrap-outer">
+<div class="phone">
+  <div class="notch"></div>
+
+  <div class="chat-header">
+    <div class="chat-id-row">
+      <div class="chat-avatar">✦</div>
+      <div>
+        <div class="chat-name">Kindred</div>
+        <div class="chat-sub" id="chat-sub">Sends a new thread most evenings</div>
+      </div>
+    </div>
+    <div class="state-switch" role="group" aria-label="Preview state">
+      <button class="state-pill active" id="pill-active" tabindex="0" onclick="setState('active')">Active user</button>
+      <button class="state-pill" id="pill-new" tabindex="0" onclick="setState('new')">New user</button>
+    </div>
+  </div>
+
+  <div class="scroll">
+
+    <!-- ===== ACTIVE / POPULATED LOG ===== -->
+    <div class="log" id="log-active" aria-live="polite" aria-relevant="additions">
+      <div class="date-divider">Thursday</div>
+
+      <!-- Briefing -->
+      <div class="msg-group">
+        <div class="bubble">
+          <div class="bubble-badge-row">
+            <div class="bubble-badge"><span class="badge-dot">✦</span>Today's briefing</div>
+          </div>
+          <div class="briefing-title">A lighter day, mostly mornings</div>
+          <div class="briefing-text">You closed <b>4 of 6</b> rings today. Your focus held strongest before noon — that's the third day this week your completions cluster before 1pm.</div>
+          <div class="chip-row">
+            <div class="chip active" tabindex="0">✦ Mornings work for you</div>
+            <div class="chip task" id="gym-chip" tabindex="0" onclick="openRing('Gym')" role="button">
+              <span class="dot"></span>Gym ring open<span class="go">→</span>
+            </div>
+          </div>
+          <div class="chip-caption">Purple = a pattern we noticed about you · Green = an open ring you can still close today</div>
+        </div>
+        <div class="msg-time">8:02 PM</div>
+      </div>
+
+      <!-- Nudge -->
+      <div class="msg-group">
+        <div class="bubble">
+          <div class="bubble-badge-row">
+            <div class="bubble-badge"><span class="badge-dot">!</span>Suggested nudge</div>
+            <span class="cap-note">1 of 2 today</span>
+          </div>
+          <div class="nudge-copy">
+            <div class="title truncate">Move "Read 20 min" to 8:40am?</div>
+            <div class="desc">You complete reading tasks 3x more often when they're scheduled before your commute.</div>
+          </div>
+          <button class="why-link" onclick="toggleWhy()" aria-expanded="false" id="why-btn">Why am I seeing this</button>
+          <div class="why-panel" id="why-panel">
+            Based on <b>14 days</b> of task timing: reading tasks completed before 9am finished 3x more often than the same task scheduled later. This nudge will stop appearing if you dismiss it twice in a row.
+          </div>
+        </div>
+        <div class="msg-time">8:03 PM</div>
+        <div class="quick-replies" id="nudge-chips">
+          <div class="chip reply" tabindex="0" onclick="nudgeReply('moved')">Move it</div>
+          <div class="chip reply ghost" tabindex="0" onclick="nudgeReply('dismissed')">Not now</div>
+        </div>
+      </div>
+
+      <!-- Trend -->
+      <div class="msg-group">
+        <div class="bubble">
+          <div class="bubble-badge-row">
+            <div class="bubble-badge"><span class="badge-dot sage">~</span>This week's pattern</div>
+          </div>
+          <div class="trend-head">
+            <div class="big" id="trend-big">82<small>%</small></div>
+            <div class="delta" id="trend-delta">↑ steadier than last week</div>
+          </div>
+          <div id="trend-week-view">
+            <div class="bars">
+              <div class="bar" style="height:40%"></div>
+              <div class="bar" style="height:65%"></div>
+              <div class="bar" style="height:50%"></div>
+              <div class="bar" style="height:80%"></div>
+              <div class="bar" style="height:70%"></div>
+              <div class="bar" style="height:90%"></div>
+              <div class="bar today" style="height:67%"></div>
+            </div>
+            <div class="bar-labels"><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span></div>
+          </div>
+          <div id="trend-month-view" style="display:none;">
+            <div class="bars">
+              <div class="bar" style="height:52%"></div>
+              <div class="bar" style="height:61%"></div>
+              <div class="bar" style="height:74%"></div>
+              <div class="bar today" style="height:82%"></div>
+            </div>
+            <div class="bar-labels"><span>Wk 1</span><span>Wk 2</span><span>Wk 3</span><span>Wk 4</span></div>
+          </div>
+          <div class="trend-note" id="trend-note">No single score here — just the shape of your week. Tuesday's dip lines up with the team offsite, not a slip.</div>
+          <button class="trend-toggle" tabindex="0" id="trend-toggle-btn" onclick="toggleTrendView()">See full month →</button>
+        </div>
+        <div class="msg-time">8:04 PM</div>
+      </div>
+
+      <!-- Missed -->
+      <div class="msg-group">
+        <div class="bubble">
+          <div class="bubble-badge-row">
+            <div class="bubble-badge"><span class="badge-dot muted">·</span>What got missed</div>
+          </div>
+          <div class="miss-item" id="miss-expense">
+            <div class="miss-item-row">
+              <div>
+                <div class="miss-name truncate">Submit expense report</div>
+                <div class="miss-why">Pushed 3 times — usually means it's not actually urgent</div>
+              </div>
+              <div class="miss-tag">2D AGO</div>
+            </div>
+            <div class="chip reply small" id="miss-chip-expense" tabindex="0" onclick="missReply('expense')">Move to today</div>
+          </div>
+          <div class="miss-item" id="miss-dentist">
+            <div class="miss-item-row">
+              <div>
+                <div class="miss-name truncate">Call dentist</div>
+                <div class="miss-why">Created during a busy stretch, no time block set</div>
+              </div>
+              <div class="miss-tag">TODAY</div>
+            </div>
+            <div class="chip reply small" id="miss-chip-dentist" tabindex="0" onclick="missReply('dentist')">Add a time block</div>
+          </div>
+        </div>
+        <div class="msg-time">8:05 PM</div>
+      </div>
+
+      <!-- Kudos -->
+      <div class="msg-group">
+        <div class="bubble">
+          <div class="bubble-badge-row">
+            <div class="bubble-badge"><span class="badge-dot sage">♥</span>Worth celebrating</div>
+          </div>
+          <div class="kudos-row">
+            <div class="avatar">J</div>
+            <div class="kudos-text"><b>Jordan's</b> on a 5-day streak with Morning Run — send kudos?</div>
+          </div>
+        </div>
+        <div class="msg-time">8:06 PM</div>
+        <div class="quick-replies" id="kudos-chips">
+          <div class="chip reply sage-fill" tabindex="0" onclick="kudosReply('sent')">Send kudos</div>
+          <div class="chip reply ghost" tabindex="0" onclick="kudosReply('skipped')">Skip</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ===== NEW / COLD-START LOG — one welcome bubble instead of five empty cards ===== -->
+    <div class="log" id="log-new" style="display:none;" aria-live="polite" aria-relevant="additions">
+      <div class="date-divider">Thursday</div>
+
+      <div class="msg-group">
+        <div class="bubble">
+          <div class="bubble-badge-row">
+            <div class="bubble-badge"><span class="badge-dot">✦</span>Welcome</div>
+          </div>
+          <div class="briefing-title">Nothing to show yet</div>
+          <div class="empty-text">I build your briefing from a few days of tasks and rings — add a couple today and I'll check back in this evening. Nudges start once I notice a real pattern, usually within a week of regular use.</div>
+        </div>
+        <div class="msg-time">8:00 PM</div>
+        <div class="quick-replies" id="newstate-chips">
+          <div class="chip reply" id="newstate-chip" tabindex="0" onclick="addFriendsReply()">Add friends</div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <div class="input-bar">
+    <div class="input-pill">Message Kindred…</div>
+    <div class="send-btn" aria-hidden="true">↑</div>
+  </div>
+
+  <div class="navbar">
+    <div class="nav-item"><div class="nav-dot"></div>Tasks</div>
+    <div class="nav-item"><div class="nav-dot"></div>Rings</div>
+    <div class="nav-item active" aria-current="page"><div class="nav-dot"></div>For You</div>
+    <div class="nav-item"><div class="nav-dot"></div>Friends</div>
+    <div class="nav-item"><div class="nav-dot"></div>Profile</div>
+  </div>
+
+  <div class="modal-overlay" id="ring-modal-overlay" onclick="if(event.target===this) closeRingModal()">
+    <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="ring-modal-title">
+      <div class="modal-icon">🔗</div>
+      <div class="modal-title" id="ring-modal-title">This would open Rings</div>
+      <div class="modal-body">In the real app, this deep-links to the Rings tab scoped to <b id="ring-modal-name">Gym</b> — it doesn't close the ring from here. Closing a ring likely involves more than one tap (duration, reps, streak), so this mockup shows the intended destination instead of faking that interaction.</div>
+      <button class="modal-btn" tabindex="0" onclick="closeRingModal()">Got it</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+  var currentState = 'active';
+
+  function activeLogEl(){
+    return document.getElementById(currentState === 'new' ? 'log-new' : 'log-active');
+  }
+  function scrollLogBottom(){
+    var scrollEl = document.querySelector('.scroll');
+    scrollEl.scrollTop = scrollEl.scrollHeight;
+  }
+
+  function setState(s){
+    currentState = s;
+    document.getElementById('log-active').style.display = (s==='active') ? 'flex' : 'none';
+    document.getElementById('log-new').style.display = (s==='new') ? 'flex' : 'none';
+    document.getElementById('pill-active').classList.toggle('active', s==='active');
+    document.getElementById('pill-new').classList.toggle('active', s==='new');
+    document.getElementById('chat-sub').textContent = (s==='new')
+      ? "Just getting started — nothing sent yet"
+      : "Sends a new thread most evenings";
+  }
+
+  function toggleWhy(){
+    var panel = document.getElementById('why-panel');
+    var btn = document.getElementById('why-btn');
+    var open = panel.classList.toggle('open');
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  }
+
+  var trendMonthOpen = false;
+  function toggleTrendView(){
+    trendMonthOpen = !trendMonthOpen;
+    document.getElementById('trend-week-view').style.display = trendMonthOpen ? 'none' : 'block';
+    document.getElementById('trend-month-view').style.display = trendMonthOpen ? 'block' : 'none';
+    document.getElementById('trend-big').innerHTML = trendMonthOpen ? '69<small>%</small>' : '82<small>%</small>';
+    document.getElementById('trend-delta').textContent = trendMonthOpen ? 'trending up over 4 weeks' : '↑ steadier than last week';
+    document.getElementById('trend-note').textContent = trendMonthOpen
+      ? "Each bar averages a full week. The climb tracks with your focus-time nudges landing more consistently."
+      : "No single score here — just the shape of your week. Tuesday's dip lines up with the team offsite, not a slip.";
+    document.getElementById('trend-toggle-btn').textContent = trendMonthOpen ? '← Back to this week' : 'See full month →';
+  }
+
+  function openRing(name){
+    document.getElementById('ring-modal-name').textContent = name;
+    document.getElementById('ring-modal-overlay').classList.add('open');
+  }
+  function closeRingModal(){
+    document.getElementById('ring-modal-overlay').classList.remove('open');
+  }
+
+  /* ===== Conversational reply mechanic =====
+     Tap a chip -> it hides -> a right-aligned echo bubble appends -> a brief typing
+     indicator -> a left-aligned confirmation bubble appends. Reversible actions get
+     their own Undo, which removes both new bubbles and restores the chip. */
+
+  function buildEcho(text){
+    var row = document.createElement('div');
+    row.className = 'msg-group mine';
+    var b = document.createElement('div');
+    b.className = 'bubble mine';
+    b.textContent = text;
+    var t = document.createElement('div');
+    t.className = 'msg-time';
+    t.textContent = 'Just now';
+    row.appendChild(b);
+    row.appendChild(t);
+    return row;
+  }
+  function buildTyping(){
+    var row = document.createElement('div');
+    row.className = 'msg-group';
+    var b = document.createElement('div');
+    b.className = 'bubble';
+    b.innerHTML = '<div class="typing-bubble"><span></span><span></span><span></span></div>';
+    row.appendChild(b);
+    return row;
+  }
+  function buildConfirm(text, tone, onUndo){
+    var row = document.createElement('div');
+    row.className = 'msg-group';
+    var b = document.createElement('div');
+    b.className = 'bubble confirm';
+    var ct = document.createElement('div');
+    ct.className = 'confirm-text ' + tone;
+    var span = document.createElement('span');
+    span.textContent = text;
+    ct.appendChild(span);
+    if(onUndo){
+      var undoBtn = document.createElement('button');
+      undoBtn.className = 'undo';
+      undoBtn.type = 'button';
+      undoBtn.textContent = 'Undo';
+      undoBtn.addEventListener('click', onUndo);
+      ct.appendChild(undoBtn);
+    }
+    b.appendChild(ct);
+    row.appendChild(b);
+    var t = document.createElement('div');
+    t.className = 'msg-time';
+    t.textContent = 'Just now';
+    row.appendChild(t);
+    return row;
+  }
+
+  function sendReply(chipEl, echoText, confirmText, tone, restoreDisplay){
+    chipEl.style.display = 'none';
+    var log = activeLogEl();
+
+    var echoRow = buildEcho(echoText);
+    log.appendChild(echoRow);
+    scrollLogBottom();
+
+    var typingRow = buildTyping();
+    log.appendChild(typingRow);
+    scrollLogBottom();
+
+    setTimeout(function(){
+      typingRow.remove();
+      var onUndo = restoreDisplay ? function(){
+        echoRow.remove();
+        confirmRow.remove();
+        chipEl.style.display = restoreDisplay;
+      } : null;
+      var confirmRow = buildConfirm(confirmText, tone, onUndo);
+      log.appendChild(confirmRow);
+      scrollLogBottom();
+    }, 550);
+  }
+
+  function nudgeReply(kind){
+    var chips = document.getElementById('nudge-chips');
+    if(kind === 'moved'){
+      sendReply(chips, 'Move it', '✓ Moved to 8:40am', 'positive', 'flex');
+    } else {
+      sendReply(chips, 'Not now', "Dismissed — won't ask again this week", 'muted', 'flex');
+    }
+  }
+
+  var missCopy = {
+    expense: { label:'Move to today', confirm:'✓ Moved "Submit expense report" to today' },
+    dentist: { label:'Add a time block', confirm:'✓ Added a time block for "Call dentist"' }
+  };
+  function missReply(id){
+    var chip = document.getElementById('miss-chip-' + id);
+    sendReply(chip, missCopy[id].label, missCopy[id].confirm, 'positive', 'inline-flex');
+  }
+
+  function kudosReply(kind){
+    var chips = document.getElementById('kudos-chips');
+    if(kind === 'sent'){
+      sendReply(chips, 'Send kudos', '✓ Kudos sent to Jordan', 'positive', 'flex');
+    } else {
+      sendReply(chips, 'Skip', "Skipped — we'll surface this less often", 'muted', 'flex');
+    }
+  }
+
+  function addFriendsReply(){
+    var chip = document.getElementById('newstate-chip');
+    sendReply(chip, 'Add friends', 'This would open the Friends tab in the real app — add someone there to start sending and receiving kudos here.', 'info', null);
+  }
+
+  // keyboard support for div-as-button interactive elements
+  document.querySelectorAll('[tabindex="0"]').forEach(function(el){
+    el.setAttribute('role','button');
+    el.addEventListener('keydown', function(e){
+      if(e.key === 'Enter' || e.key === ' '){
+        e.preventDefault();
+        el.click();
+      }
+    });
+  });
+</script>
+
+</body>
+</html>

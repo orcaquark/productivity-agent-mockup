@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Kindred — Personalization · Conversational Thread · Design Review</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root{
+    --bg: #eae6f2;
+    --ink: #221d33;
+    --muted: #5b5570;
+    --violet: #6b3ad1;
+    --violet-soft: #854dff14;
+    --card: #ffffff;
+    --line: #d8d2e8;
+    --coral: #c2532f;
+    --coral-soft: #d9714e16;
+  }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{
+    background: var(--bg);
+    font-family:'Inter', sans-serif;
+    color: var(--ink);
+    padding: 48px 24px 90px;
+  }
+  .header{ max-width:1180px; margin:0 auto 40px; }
+  .eyebrow{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px; letter-spacing:0.12em; text-transform:uppercase;
+    color: var(--violet); margin-bottom:10px;
+  }
+  h1{ font-family:'Fraunces', serif; font-weight:500; font-size:34px; margin-bottom:10px; }
+  .header p{ color:var(--muted); font-size:14px; max-width:720px; line-height:1.6; }
+  .header p + p{ margin-top:10px; }
+
+  .board{ max-width:1180px; margin:0 auto; display:flex; flex-direction:column; gap:64px; }
+  .section{ display:flex; gap:36px; align-items:flex-start; flex-wrap:wrap; }
+  .frame-col{ flex-shrink:0; position:relative; width:300px; }
+  .frame{
+    width:300px; height:628px; border-radius:34px; overflow:hidden;
+    border:1px solid var(--line); box-shadow: 0 24px 60px -16px rgba(80,60,140,0.25); background:#fff;
+  }
+  .frame iframe{ width:392px; height:820px; border:none; transform: scale(0.765); transform-origin: top left; }
+
+  .section-title{ font-family:'Fraunces', serif; font-weight:500; font-size:20px; margin-bottom:4px; }
+  .section-sub{ font-size:12.5px; color:var(--muted); margin-bottom:18px; }
+
+  .notes{ flex:1; min-width:300px; display:flex; flex-direction:column; gap:10px; }
+  .cat-label{
+    font-family:'JetBrains Mono', monospace; font-size:10px; letter-spacing:0.1em; text-transform:uppercase;
+    color:var(--muted); margin:14px 0 2px; padding-top:6px; border-top:1px solid var(--line);
+  }
+  .cat-label:first-child{ margin-top:0; padding-top:0; border-top:none; }
+  .note{ display:flex; gap:12px; background: var(--card); border:1px solid var(--line); border-radius:14px; padding:12px 14px; }
+  .num{
+    width:24px; height:24px; border-radius:7px; background: var(--violet-soft); color: var(--violet);
+    font-family:'JetBrains Mono', monospace; font-size:11px; font-weight:600;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .note-text .t{ font-size:12.5px; font-weight:600; margin-bottom:3px; }
+  .note-text .d{ font-size:11.5px; color:var(--muted); line-height:1.5; }
+  .tag{
+    display:inline-block; font-size:8.5px; font-family:'JetBrains Mono', monospace; text-transform:uppercase;
+    padding:1px 6px; border-radius:5px; margin-left:6px; vertical-align:1px; font-weight:600;
+  }
+  .tag.open{ background:var(--coral-soft); color:var(--coral); }
+
+  .legend{ max-width:1180px; margin:60px auto 0; border-top:1px solid var(--line); padding-top:28px; }
+  .legend h2{ font-family:'Fraunces', serif; font-weight:500; font-size:18px; margin-bottom:6px; }
+  .legend > p{ font-size:12.5px; color:var(--muted); margin-bottom:18px; max-width:720px; line-height:1.6; }
+  .legend-grid{ display:grid; grid-template-columns:1fr 1fr; gap:18px 32px; }
+  .legend-cat h3{ font-size:13px; margin-bottom:8px; }
+  .legend-cat ul{ list-style:none; }
+  .legend-cat li{ font-size:12px; color:var(--muted); line-height:1.6; margin-bottom:4px; }
+  .legend-cat li b{ color:var(--ink); }
+
+  .deferred{
+    max-width:1180px; margin:36px auto 0; background:var(--coral-soft); border:1px solid #e3c1ad;
+    border-radius:16px; padding:20px 22px;
+  }
+  .deferred h2{ font-family:'Fraunces', serif; font-weight:500; font-size:16px; margin-bottom:8px; color:#7a3a1f; }
+  .deferred p{ font-size:12px; color:#6b4530; margin-bottom:12px; line-height:1.6; }
+  .deferred ul{ list-style:none; columns:2; column-gap:32px; }
+  .deferred li{ font-size:12px; color:#6b4530; line-height:1.7; padding-left:14px; position:relative; }
+  .deferred li::before{ content:"○"; position:absolute; left:0; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="eyebrow">Personalization · Design Review · Alternative 1 of 3</div>
+  <h1>Conversational thread: why it works the way it does</h1>
+  <p>One of three explored alternatives to the personalization home screen — this one replaces the thread-line-and-cards layout with a literal message log from "Kindred," styled like iMessage. Built from the same token system as the original three screens (colors, type, spacing, copy voice), so it should read as a variant of that family, not a different product.</p>
+  <p>Scope is the home screen only — onboarding and settings are unchanged and still covered by the original design review. Items tagged <span class="tag open">OPEN</span> are known gaps worth a ticket; everything else reflects something already present in the screen next to it.</p>
+</div>
+
+<div class="board">
+
+  <div class="section">
+    <div class="frame-col">
+      <div class="section-title">Personalization home — conversational thread</div>
+      <div class="section-sub">Try the New user toggle, reply to the nudge, then tap Undo</div>
+      <div class="frame"><iframe src="productivity_agent_mockup_chat.html" scrolling="no"></iframe></div>
+    </div>
+    <div class="notes">
+
+      <div class="cat-label">Concept</div>
+      <div class="note">
+        <div class="num">1</div>
+        <div class="note-text"><div class="t">A message log replaces the thread line and cards</div>
+        <div class="d">Same "Kindred" sender, same violet accent and card-colored bubbles — but now a literal transcript: left system bubbles, right echo bubbles, oldest to newest, instead of dots connected by a vertical line.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">2</div>
+        <div class="note-text"><div class="t">Glyph+label badges replace node-dots</div>
+        <div class="d">With the thread line gone, each bubble carries a small badge at the top (✦ briefing, ! nudge, ~ pattern, · missed, ♥ kudos) — the same "never color alone" signal the node-dots gave, just moved inside the bubble.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">3</div>
+        <div class="note-text"><div class="t">Chronological, but not sequential-gated</div>
+        <div class="d">Briefing, nudge, trend, missed, kudos still arrive in the same order as the card version. Nothing is locked behind resolving the item above it — every bubble stays reachable at once, the way every card did.</div></div>
+      </div>
+
+      <div class="cat-label">Replies become part of the log</div>
+      <div class="note">
+        <div class="num">4</div>
+        <div class="note-text"><div class="t">One mechanic for every reply: echo → typing → confirm</div>
+        <div class="d">Tapping a quick-reply chip hides it, adds a right-aligned echo of what you tapped, a brief typing indicator, then a left-aligned confirmation — the same confirm-and-Undo logic the card version used inline, now rendered as visible history instead of a swap in place.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">5</div>
+        <div class="note-text"><div class="t">Undo removes the pair, not just the state</div>
+        <div class="d">Tapping Undo deletes both the echo and confirmation bubbles and restores the chip, so the log doesn't accumulate a stray "changed my mind" entry — it returns to looking like you never replied, matching how Undo behaved in the card version.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">6</div>
+        <div class="note-text"><div class="t">Missed tasks: one chip per line, inside the bubble<span class="tag open">DEVIATION</span></div>
+        <div class="d">The build steps put quick-reply chips below a bubble; with two open items in one "What got missed" bubble, a single shared row underneath would leave which chip resolves which item ambiguous. Each line keeps its own chip directly beneath it instead — the resulting echo and confirmation still land at the bottom of the thread like any other reply, just the trigger stayed local to the line it belongs to.</div></div>
+      </div>
+
+      <div class="cat-label">What stayed inline vs. what became a reply</div>
+      <div class="note">
+        <div class="num">7</div>
+        <div class="note-text"><div class="t">"Why am I seeing this" and "See full month" stay inline disclosures</div>
+        <div class="d">These are non-committal — someone looking, not deciding — so turning every expand into a logged exchange would flood the transcript with clicks that were never really replies to anyone. Only genuine accept/reject/send/skip actions get the echo-bubble treatment; looking things over doesn't.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">8</div>
+        <div class="note-text"><div class="t">The insight chip and the open-ring chip stay inside the briefing bubble</div>
+        <div class="d">"Mornings work for you" is a read-only observation; "Gym ring open →" opens the same explanatory Rings modal as before. Neither is a reply to Kindred, so neither belongs in the echo lane — same distinction the card version drew between an insight chip and an action chip.</div></div>
+      </div>
+
+      <div class="cat-label">Cold start</div>
+      <div class="note">
+        <div class="num">9</div>
+        <div class="note-text"><div class="t">Five empty cards collapse into one welcome message</div>
+        <div class="d">Rather than porting five near-identical "nothing yet" cards as five near-identical empty bubbles, the New user state is a single message explaining what's missing and roughly when it starts, with "Add friends" as its only reply.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">10</div>
+        <div class="note-text"><div class="t">"Add friends" now explains itself instead of doing nothing</div>
+        <div class="d">Tapping it echoes the request and returns a short explanation that it would open the Friends tab in the real app — still not a real destination (see Open, below), but it no longer looks broken. Same "explain rather than fake it" approach as the Rings modal.</div></div>
+      </div>
+
+      <div class="cat-label">The skim/scroll trade-off</div>
+      <div class="note">
+        <div class="num">11</div>
+        <div class="note-text"><div class="t">Badges and a date divider are the main mitigation, not a fix</div>
+        <div class="d">A chat log is inherently harder to scan at a glance than five stacked cards. The glyph+label badges and a single "Thursday" divider are what's left to orient a fast skim, and they don't fully close the gap — flagged here as the format's core trade-off, not something this build solves.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">12</div>
+        <div class="note-text"><div class="t">Opens scrolled to the top, not the bottom<span class="tag open">DEVIATION</span></div>
+        <div class="d">Real chat apps open on the newest message, but this is one finished evening digest, not an unread inbox — opening at the top lets someone read briefing → nudge → trend → missed → kudos in the intended order. Auto-scroll-to-bottom only kicks in once they actually reply to something.</div></div>
+      </div>
+
+      <div class="cat-label">Accessibility &amp; continuity</div>
+      <div class="note">
+        <div class="num">13</div>
+        <div class="note-text"><div class="t">Both logs are live regions</div>
+        <div class="d">New echoes and confirmations are announced as they're appended, not just visible to someone watching bubbles stack up — matters more here than in the card version, since content now arrives after the page has already loaded.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">14</div>
+        <div class="note-text"><div class="t">Undo is a real &lt;button&gt;, not a div with a click handler</div>
+        <div class="d">Everything created after load bypasses the page's one-time keyboard-enhancement pass, so dynamically-added Undo controls are native buttons instead — guaranteed keyboard and screen-reader support without relying on that script running twice.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">15</div>
+        <div class="note-text"><div class="t">The decorative input bar is excluded from the tab order</div>
+        <div class="d">No tabindex, no role — a keyboard or screen-reader user isn't led to a control that doesn't do anything yet, rather than landing on a dead stop.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">16</div>
+        <div class="note-text"><div class="t">Everything else carried over unchanged</div>
+        <div class="d">AA-contrast text colors, 32px+ touch targets on primary actions, visible focus rings, and the Rings modal's copy and behavior are identical to the thread version — this alternative only touches how content is delivered, not the underlying content or its guardrails.</div></div>
+      </div>
+
+      <div class="cat-label">Open</div>
+      <div class="note">
+        <div class="num">17</div>
+        <div class="note-text"><div class="t">History has no ceiling<span class="tag open">OPEN</span></div>
+        <div class="d">This preview only ever holds one evening. A real version needs an answer for day thirty: pagination, archiving, or a rolling window that trims old bubbles — the "built-in history for free" the format offers isn't free once it's genuinely multi-day.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">18</div>
+        <div class="note-text"><div class="t">Free-text input is decorative only<span class="tag open">OPEN</span></div>
+        <div class="d">The input bar sells the framing but doesn't send anything. Whether Kindred ever accepts a typed reply — and what it would do with one — is unscoped here.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">19</div>
+        <div class="note-text"><div class="t">"Add friends" still doesn't deep-link anywhere<span class="tag open">OPEN</span></div>
+        <div class="d">Same open item as the thread version's review; the difference is it now says so in the confirmation bubble instead of sitting inert.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">20</div>
+        <div class="note-text"><div class="t">Same exposure and consent gaps as the thread version<span class="tag open">OPEN</span></div>
+        <div class="d">The missed-task names and Jordan's streak are unchanged content with the same risk: still visible on a shared or unlocked screen, still surfaced without Jordan's consent. Not new to this format — see the original review for the detail.</div></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="deferred">
+  <h2>Considered, not yet designed</h2>
+  <p>Gaps specific to the conversational format, plus the still-open product-level items from the original review that apply here just as much — flagging so neither set gets lost between this doc and a spec.</p>
+  <ul>
+    <li>Multi-day history pagination or archiving strategy</li>
+    <li>A "jump to latest" affordance after scrolling back through history</li>
+    <li>Whether/how Kindred would respond to real free text</li>
+    <li>Read or delivered-style status on echo bubbles — or a deliberate decision to omit it</li>
+    <li>Loading and network-error states</li>
+    <li>Push notification permission flow before any nudge can fire</li>
+    <li>Priority/ordering logic when multiple nudges qualify the same day</li>
+    <li>Calendar-conflict checking before suggesting a specific time</li>
+    <li>Blurring sensitive task names on lock screen / screen-share</li>
+    <li>Friend-side consent for surfacing streaks in someone else's kudos card</li>
+    <li>Longer translated strings breaking chip layout (i18n)</li>
+    <li>RTL mirroring for bubble alignment (echoes would need to flip sides)</li>
+  </ul>
+</div>
+
+<div class="legend">
+  <h2>Guardrails these decisions map back to</h2>
+  <p>Most of these carry straight over from the thread version. "Log discipline" is the one genuinely new category this format introduces.</p>
+  <div class="legend-grid">
+    <div class="legend-cat">
+      <h3>Tone &amp; framing</h3>
+      <ul>
+        <li><b>Describe, don't judge</b> — inherited verbatim; no copy changed meaning in translation to bubbles</li>
+        <li><b>No single score by default</b> — the trend bubble still leads with shape, not a grade</li>
+      </ul>
+    </div>
+    <div class="legend-cat">
+      <h3>Reversibility</h3>
+      <ul>
+        <li><b>Undo where it's cheap</b> — now removes the echo/confirm pair, not just a state</li>
+        <li><b>Confirm where it's not</b> — the Rings deep-link still explains rather than fakes</li>
+      </ul>
+    </div>
+    <div class="legend-cat">
+      <h3>Log discipline <i>(new)</i></h3>
+      <ul>
+        <li><b>Only real decisions get echoed</b> — accept/reject/send/skip, never a glance</li>
+        <li><b>Explorations stay inline</b> — "why" and "full month" don't become history</li>
+      </ul>
+    </div>
+    <div class="legend-cat">
+      <h3>Accessibility</h3>
+      <ul>
+        <li><b>Never color-only</b> — badges keep the glyph+label pairing the node-dots had</li>
+        <li><b>Live regions for anything appended after load</b>, native buttons for dynamic controls</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
