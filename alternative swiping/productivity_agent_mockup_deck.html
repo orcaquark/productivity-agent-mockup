@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Kindred — Personalization · Deck</title>
+<!-- Alternative 2: Swipeable card stack. Same tokens, fonts, and card content as
+     productivity_agent_mockup.html (the thread model) — only the interaction shell changes. -->
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root{
+    --bg: #faf9fc;
+    --card: #ffffff;
+    --card-raised: #f1eef8;
+    --thread: #d8d2e8;
+    --violet: #854dff;
+    --violet-dim: #854dff2a;
+    --violet-soft: #854dff14;
+    --sage: #4f8a4b;
+    --sage-dim: #93c08f22;
+    --text: #221d33;
+    --text-muted: #5b5570;
+    --text-faint: #84809a;
+  }
+
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html,body{
+    background:#eae6f2;
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:'Inter',sans-serif;
+  }
+  button{ font-family:inherit; -webkit-appearance:none; appearance:none; background:none; border:none; padding:0; margin:0; color:inherit; font-size:inherit; cursor:pointer; }
+  :focus-visible{ outline:2px solid var(--violet); outline-offset:2px; border-radius:6px; }
+  .truncate{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+  @media (prefers-reduced-motion: reduce){
+    *{ transition-duration:0.001ms !important; animation-duration:0.001ms !important; }
+  }
+
+  .phone{
+    width:392px; height:820px; background:var(--bg); border-radius:44px;
+    border:1px solid #e3ddf0; box-shadow:0 30px 80px -20px rgba(80,60,140,0.25);
+    overflow:hidden; position:relative; display:flex; flex-direction:column;
+  }
+  .notch{ position:absolute; top:14px; left:50%; transform:translateX(-50%); width:110px; height:24px; background:#2a2632; border-radius:20px; z-index:20; }
+
+  /* ---------- top panel (fixed, not part of the deck) ---------- */
+  .top-panel{ padding:52px 20px 10px; flex-shrink:0; }
+  .eyebrow{ font-family:'JetBrains Mono',monospace; font-size:11px; letter-spacing:0.12em; text-transform:uppercase; color:var(--violet); margin-bottom:5px; }
+  .greeting{ font-family:'Fraunces',serif; font-weight:500; font-size:22px; color:var(--text); line-height:1.2; margin-bottom:12px; }
+
+  .state-switch{ display:flex; gap:6px; background:var(--card-raised); border-radius:12px; padding:4px; margin-bottom:14px; width:fit-content; }
+  .state-pill{ font-family:'JetBrains Mono',monospace; font-size:10.5px; padding:7px 12px; min-height:28px; display:flex; align-items:center; border-radius:9px; color:var(--text-muted); font-weight:500; }
+  .state-pill.active{ background:#fff; color:var(--violet); box-shadow:0 1px 4px rgba(80,60,140,0.18); }
+
+  .progress-row{ display:flex; align-items:center; justify-content:space-between; gap:8px; min-height:26px; }
+  .progress-dots{ display:flex; gap:5px; align-items:center; }
+  .pdot{ width:6px; height:6px; border-radius:50%; background:#d8d2e8; transition:background .2s, transform .2s; }
+  .pdot.done{ background:var(--violet); }
+  .pdot.current{ background:var(--violet); transform:scale(1.6); }
+  .progress-count{ font-family:'JetBrains Mono',monospace; font-size:10.5px; color:var(--text-faint); white-space:nowrap; }
+  .skipped-pill{ display:none; align-items:center; gap:4px; font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--violet); background:var(--violet-soft); border-radius:20px; padding:5px 10px; min-height:24px; font-weight:600; }
+  .skipped-pill.show{ display:inline-flex; }
+
+  /* ---------- stack ---------- */
+  .stack-area{ position:relative; flex:1; margin:2px 18px 0; }
+  .stack-card{
+    position:absolute; inset:0; border-radius:22px; background:var(--card);
+    border:1px solid #e3ddf0; box-shadow:0 14px 34px -14px rgba(80,60,140,0.28);
+    display:flex; flex-direction:column; overflow:hidden;
+    transition:transform .38s cubic-bezier(.2,.8,.2,1), opacity .38s;
+    will-change:transform; touch-action:pan-y; cursor:grab;
+  }
+  .stack-card.dragging{ transition:none; cursor:grabbing; }
+
+  .stamp{ position:absolute; top:20px; padding:6px 13px; border:3px solid; border-radius:10px; font-family:'JetBrains Mono',monospace; font-weight:700; font-size:12.5px; letter-spacing:0.05em; text-transform:uppercase; opacity:0; pointer-events:none; background:rgba(255,255,255,0.9); }
+  .stamp.right{ right:16px; border-color:var(--violet); color:var(--violet); transform:rotate(9deg); }
+  .stamp.left{ left:16px; border-color:var(--text-faint); color:var(--text-muted); transform:rotate(-9deg); }
+  .stamp.right.sage{ border-color:var(--sage); color:var(--sage); }
+
+  .card-inner{ flex:1; min-height:0; overflow-y:auto; padding:22px 20px 18px; scrollbar-width:none; }
+  .card-inner::-webkit-scrollbar{ display:none; }
+
+  .card-label{ font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-faint); margin-bottom:11px; display:flex; align-items:center; justify-content:space-between; }
+  .card-label .lbl{ display:flex; align-items:center; gap:8px; }
+  .glyph{ width:18px; height:18px; border-radius:50%; border:2px solid var(--violet); color:var(--violet); display:inline-flex; align-items:center; justify-content:center; font-size:9px; flex-shrink:0; }
+  .glyph.sage{ border-color:var(--sage); color:var(--sage); }
+  .glyph.muted{ border-color:var(--text-faint); color:var(--text-faint); border-style:dashed; }
+  .cap-note{ color:var(--text-faint); font-weight:500; }
+
+  .briefing-title, .miss-name, .empty-title{ font-family:'Fraunces',serif; font-weight:500; font-size:19px; color:var(--text); margin-bottom:10px; line-height:1.28; }
+  .briefing-text, .empty-text{ font-size:13.5px; line-height:1.6; color:#4a4458; margin-bottom:14px; }
+  .briefing-text b{ color:var(--text); font-weight:600; }
+
+  .chip-row{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px; }
+  .chip{ font-size:11.5px; padding:8px 12px; min-height:32px; display:flex; align-items:center; gap:5px; border-radius:20px; background:var(--card-raised); color:var(--text-muted); border:1px solid #e3ddf0; }
+  .chip.active{ background:var(--violet-soft); color:var(--violet); border-color:transparent; }
+  .chip.task{ background:#fff; color:var(--text); border:1px solid var(--sage); }
+  .chip.task .dot{ width:7px; height:7px; border-radius:50%; background:var(--sage); flex-shrink:0; }
+  .chip.task .go{ color:var(--sage); font-weight:700; margin-left:2px; }
+  .chip-caption{ font-size:10px; color:var(--text-faint); line-height:1.4; margin-top:4px; }
+
+  .nudge-title{ font-size:15.5px; font-weight:600; color:var(--text); margin-bottom:6px; line-height:1.3; }
+  .nudge-desc{ font-size:13px; color:var(--text-muted); line-height:1.55; margin-bottom:10px; }
+  .why-link{ font-size:11.5px; color:var(--violet); display:inline-flex; align-items:center; min-height:30px; border-bottom:1px solid var(--violet-dim); }
+  .why-panel{ display:none; margin-top:10px; padding:11px 12px; background:var(--violet-soft); border-radius:12px; font-size:11.5px; color:#4a4458; line-height:1.55; }
+  .why-panel.open{ display:block; }
+  .why-panel b{ color:var(--text); }
+
+  .trend-head{ display:flex; justify-content:space-between; align-items:baseline; margin-bottom:14px; }
+  .trend-head .big{ font-family:'Fraunces',serif; font-size:30px; color:var(--text); }
+  .trend-head .big small{ font-size:14px; color:var(--text-muted); font-family:'Inter'; }
+  .trend-head .delta{ font-size:12px; color:var(--sage); font-family:'JetBrains Mono',monospace; }
+  .bars{ display:flex; align-items:flex-end; gap:7px; height:56px; margin-bottom:6px; }
+  .bar{ flex:1; background:var(--card-raised); border-radius:5px 5px 2px 2px; }
+  .bar.today{ background:var(--violet); }
+  .bar-labels{ display:flex; gap:7px; }
+  .bar-labels span{ flex:1; text-align:center; font-size:9.5px; color:var(--text-faint); font-family:'JetBrains Mono',monospace; }
+  .trend-note{ margin-top:12px; font-size:12px; color:var(--text-muted); line-height:1.5; border-top:1px solid #ece7f6; padding-top:12px; }
+  .trend-toggle{ font-size:11.5px; color:var(--violet); margin-top:12px; display:inline-flex; align-items:center; min-height:30px; border-bottom:1px solid var(--violet-dim); }
+
+  .miss-why{ font-size:13px; color:var(--text-muted); line-height:1.55; margin-bottom:10px; }
+  .miss-tag{ font-size:10px; font-family:'JetBrains Mono',monospace; color:var(--text-faint); }
+
+  .kudos-row{ display:flex; align-items:center; gap:12px; }
+  .avatar{ width:42px; height:42px; border-radius:50%; background:var(--sage-dim); border:1px solid var(--sage); display:flex; align-items:center; justify-content:center; font-family:'Fraunces',serif; font-size:16px; color:var(--sage); flex-shrink:0; }
+  .kudos-text{ font-size:13.5px; color:#4a4458; line-height:1.55; }
+  .kudos-text b{ color:var(--text); }
+
+  .end-card, .cold-card{ text-align:center; padding-top:26px; }
+  .end-icon, .cold-icon{ font-size:26px; margin-bottom:12px; }
+
+  /* ---------- fallback action row ---------- */
+  .action-row{ display:flex; gap:10px; padding:14px 20px 6px; flex-shrink:0; min-height:76px; align-items:flex-start; }
+  .action-btn{ flex:1; text-align:center; padding:12px 0; min-height:46px; border-radius:14px; font-size:13.5px; font-weight:600; display:flex; align-items:center; justify-content:center; }
+  .action-btn.primary{ background:var(--violet); color:#fff; }
+  .action-btn.primary.sage{ background:var(--sage); }
+  .action-btn.ghost{ background:transparent; border:1px solid #d8d2e8; color:var(--text-muted); }
+
+  /* ---------- toast ---------- */
+  .toast{ position:absolute; left:18px; right:18px; bottom:10px; background:var(--text); color:#fff; border-radius:14px; padding:12px 14px; font-size:12.5px; display:none; align-items:center; justify-content:space-between; gap:10px; box-shadow:0 12px 30px -10px rgba(20,16,32,0.4); z-index:30; }
+  .toast.show{ display:flex; }
+  .toast .undo{ color:#c9b6ff; font-weight:700; font-size:12.5px; min-height:28px; flex-shrink:0; }
+
+  .navbar{ display:flex; justify-content:space-around; padding:14px 10px 22px; background:#ffffff; border-top:1px solid #e3ddf0; flex-shrink:0; }
+  .nav-item{ display:flex; flex-direction:column; align-items:center; gap:4px; font-size:9.5px; color:var(--text-faint); font-family:'JetBrains Mono',monospace; min-height:40px; justify-content:center; }
+  .nav-item.active{ color:var(--violet); font-weight:600; }
+  .nav-dot{ width:18px; height:18px; border-radius:6px; background:#e3ddf0; }
+  .nav-item.active .nav-dot{ background:var(--violet); border-radius:50%; }
+
+  .modal-overlay{ position:absolute; inset:0; background:rgba(20,16,32,0.45); display:none; align-items:center; justify-content:center; z-index:50; padding:28px; border-radius:44px; }
+  .modal-overlay.open{ display:flex; }
+  .modal-box{ background:var(--card); border-radius:20px; padding:22px 20px; max-width:280px; max-height:85%; overflow-y:auto; box-shadow:0 20px 50px -12px rgba(40,20,80,0.35); }
+  .modal-icon{ font-size:20px; margin-bottom:10px; }
+  .modal-title{ font-family:'Fraunces',serif; font-size:17px; color:var(--text); margin-bottom:8px; line-height:1.3; }
+  .modal-body{ font-size:12.5px; color:var(--text-muted); line-height:1.55; margin-bottom:16px; }
+  .modal-btn{ width:100%; padding:11px 0; min-height:42px; border-radius:12px; background:var(--violet); color:#fff; font-size:13px; font-weight:600; margin-bottom:8px; }
+  .modal-btn.ghost{ background:transparent; border:1px solid #d8d2e8; color:var(--text-muted); margin-bottom:0; }
+
+  .sheet-list{ display:flex; flex-direction:column; gap:8px; margin-bottom:16px; }
+  .sheet-item{ display:flex; align-items:center; justify-content:space-between; gap:10px; background:var(--card-raised); border-radius:12px; padding:10px 12px; }
+  .sheet-item-text .t{ font-size:12.5px; font-weight:600; color:var(--text); }
+  .sheet-item-text .r{ font-size:11px; color:var(--text-muted); margin-top:2px; }
+  .sheet-reconsider{ font-size:11px; font-weight:700; color:var(--violet); min-height:30px; padding:0 4px; flex-shrink:0; }
+
+  .wrap-outer{ display:flex; flex-direction:column; align-items:center; }
+</style>
+</head>
+<body>
+
+<div class="wrap-outer">
+<div class="phone">
+  <div class="notch"></div>
+
+  <div class="top-panel">
+    <div class="eyebrow">Thursday · Personalization</div>
+    <div class="greeting" id="greet-name">Evening, Maya.</div>
+
+    <div class="state-switch" role="group" aria-label="Preview state">
+      <button class="state-pill active" id="pill-active" onclick="setState('active')">Active user</button>
+      <button class="state-pill" id="pill-new" onclick="setState('new')">New user</button>
+    </div>
+
+    <div class="progress-row" id="progress-row">
+      <div class="progress-dots" id="progress-dots"></div>
+      <button class="skipped-pill" id="skipped-pill" onclick="openSheet()">⟲ <span id="skipped-count">0</span> to revisit</button>
+      <div class="progress-count" id="progress-count">1 of 6 today</div>
+    </div>
+  </div>
+
+  <div class="stack-area" id="stack-area" tabindex="0" aria-label="Today's cards. Swipe, or use the buttons below and the arrow keys, to resolve each one.">
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </div>
+
+  <div class="action-row" id="action-row"></div>
+
+  <div class="navbar">
+    <div class="nav-item"><div class="nav-dot"></div>Tasks</div>
+    <div class="nav-item"><div class="nav-dot"></div>Rings</div>
+    <div class="nav-item active" aria-current="page"><div class="nav-dot"></div>For You</div>
+    <div class="nav-item"><div class="nav-dot"></div>Friends</div>
+    <div class="nav-item"><div class="nav-dot"></div>Profile</div>
+  </div>
+
+  <div class="modal-overlay" id="nav-modal-overlay" onclick="if(event.target===this) closeModal('nav-modal-overlay')">
+    <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="nav-modal-title">
+      <div class="modal-icon" id="nav-modal-icon">🔗</div>
+      <div class="modal-title" id="nav-modal-title">This would open Rings</div>
+      <div class="modal-body" id="nav-modal-body"></div>
+      <button class="modal-btn" onclick="closeModal('nav-modal-overlay')">Got it</button>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="sheet-overlay" onclick="if(event.target===this) closeSheet()">
+    <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="sheet-title" style="max-width:300px;">
+      <div class="modal-title" id="sheet-title">To revisit</div>
+      <div class="modal-body">Cards you left for now, still here if you change your mind. They won't reappear in today's deck on their own.</div>
+      <div class="sheet-list" id="sheet-list"></div>
+      <button class="modal-btn ghost" onclick="closeSheet()">Done</button>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<script>
+  // ---------------- card data ----------------
+  var cardDefs = {
+    briefing:{ label:"Today's briefing", glyph:"✦", glyphTone:"", kind:"info" },
+    nudge:{ label:"Suggested nudge", glyph:"!", glyphTone:"", kind:"decision",
+      rightLabel:"Move it", leftLabel:"Not now", rightTone:"violet",
+      toastRight:"✓ Moved to 8:40am", toastLeft:"Dismissed — won't ask again this week",
+      skipReason:"Move \"Read 20 min\" to 8:40am?" },
+    trend:{ label:"This week's pattern", glyph:"~", glyphTone:"sage", kind:"info" },
+    missExpense:{ label:"What got missed", glyph:"·", glyphTone:"muted", kind:"decision",
+      rightLabel:"Move to today", leftLabel:"Leave for now", rightTone:"violet",
+      toastRight:"✓ Moved to today", toastLeft:"Left for now — we'll surface it again tomorrow",
+      skipReason:"Submit expense report" },
+    missDentist:{ label:"What got missed", glyph:"·", glyphTone:"muted", kind:"decision",
+      rightLabel:"Add a time block", leftLabel:"Leave for now", rightTone:"violet",
+      toastRight:"✓ Time block added", toastLeft:"Left for now — we'll surface it again tomorrow",
+      skipReason:"Call dentist" },
+    kudos:{ label:"Worth celebrating", glyph:"♥", glyphTone:"sage", kind:"decision",
+      rightLabel:"Send kudos", leftLabel:"Skip", rightTone:"sage",
+      toastRight:"✓ Kudos sent to Jordan", toastLeft:"Skipped — we'll surface this less often",
+      skipReason:"Kudos for Jordan" }
+  };
+  var ORDER_ACTIVE = ["briefing","nudge","trend","missExpense","missDentist","kudos"];
+  var TOTAL = ORDER_ACTIVE.length;
+
+  var mode = "active";
+  var queue = [];
+  var resolvedIds = new Set();
+  var skipped = [];       // {id, reason}
+  var lastAction = null;  // {id, dir}
+
+  // ---------------- content templates ----------------
+  function contentTemplate(id){
+    switch(id){
+      case "briefing": return (
+        '<div class="card-label"><span class="lbl"><span class="glyph">✦</span>Today\'s briefing</span></div>' +
+        '<div class="briefing-title">A lighter day, mostly mornings</div>' +
+        '<div class="briefing-text">You closed <b>4 of 6</b> rings today. Your focus held strongest before noon — that\'s the third day this week your completions cluster before 1pm.</div>' +
+        '<div class="chip-row">' +
+          '<div class="chip active">✦ Mornings work for you</div>' +
+          '<button class="chip task" onclick="openRingModal()"><span class="dot"></span>Gym ring open<span class="go">→</span></button>' +
+        '</div>' +
+        '<div class="chip-caption">Purple = a pattern we noticed about you · Green = an open ring you can still close today</div>'
+      );
+      case "nudge": return (
+        '<div class="card-label"><span class="lbl"><span class="glyph">!</span>Suggested nudge</span><span class="cap-note">1 of 2 today</span></div>' +
+        '<div class="nudge-title">Move "Read 20 min" to 8:40am?</div>' +
+        '<div class="nudge-desc">You complete reading tasks 3x more often when they\'re scheduled before your commute.</div>' +
+        '<button class="why-link" id="nudge-why-btn" aria-expanded="false" onclick="toggleWhy()">Why am I seeing this</button>' +
+        '<div class="why-panel" id="nudge-why-panel">Based on <b>14 days</b> of task timing: reading tasks completed before 9am finished 3x more often than the same task scheduled later. This nudge will stop appearing if you dismiss it twice in a row.</div>'
+      );
+      case "trend": return (
+        '<div class="card-label"><span class="lbl"><span class="glyph sage">~</span>This week\'s pattern</span></div>' +
+        '<div class="trend-head"><div class="big" id="trend-big">82<small>%</small></div><div class="delta" id="trend-delta">↑ steadier than last week</div></div>' +
+        '<div id="trend-week-view">' +
+          '<div class="bars"><div class="bar" style="height:40%"></div><div class="bar" style="height:65%"></div><div class="bar" style="height:50%"></div><div class="bar" style="height:80%"></div><div class="bar" style="height:70%"></div><div class="bar" style="height:90%"></div><div class="bar today" style="height:67%"></div></div>' +
+          '<div class="bar-labels"><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span></div>' +
+        '</div>' +
+        '<div id="trend-month-view" style="display:none;">' +
+          '<div class="bars"><div class="bar" style="height:52%"></div><div class="bar" style="height:61%"></div><div class="bar" style="height:74%"></div><div class="bar today" style="height:82%"></div></div>' +
+          '<div class="bar-labels"><span>Wk 1</span><span>Wk 2</span><span>Wk 3</span><span>Wk 4</span></div>' +
+        '</div>' +
+        '<div class="trend-note" id="trend-note">No single score here — just the shape of your week. Tuesday\'s dip lines up with the team offsite, not a slip.</div>' +
+        '<button class="trend-toggle" id="trend-toggle-btn" onclick="toggleTrend()">See full month →</button>'
+      );
+      case "missExpense": return (
+        '<div class="card-label"><span class="lbl"><span class="glyph muted">·</span>What got missed</span><span class="cap-note">1 of 2</span></div>' +
+        '<div class="miss-name">Submit expense report</div>' +
+        '<div class="miss-why">Pushed 3 times — usually means it\'s not actually urgent</div>' +
+        '<div class="miss-tag">2D AGO</div>'
+      );
+      case "missDentist": return (
+        '<div class="card-label"><span class="lbl"><span class="glyph muted">·</span>What got missed</span><span class="cap-note">2 of 2</span></div>' +
+        '<div class="miss-name">Call dentist</div>' +
+        '<div class="miss-why">Created during a busy stretch, no time block set</div>' +
+        '<div class="miss-tag">TODAY</div>'
+      );
+      case "kudos": return (
+        '<div class="card-label"><span class="lbl"><span class="glyph sage">♥</span>Worth celebrating</span></div>' +
+        '<div class="kudos-row"><div class="avatar">J</div><div class="kudos-text"><b>Jordan</b> completed Morning Run every day this week.</div></div>'
+      );
+      default: return "";
+    }
+  }
+  function peekTemplate(id){
+    var d = cardDefs[id];
+    var toneClass = d.glyphTone ? ("glyph " + d.glyphTone) : "glyph";
+    return (
+      '<div class="lbl" style="padding-top:2px;">' +
+        '<span class="' + toneClass + '">' + d.glyph + '</span>' +
+        '<span style="font-family:\'JetBrains Mono\',monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:var(--text-faint);">' + d.label + '</span>' +
+      '</div>'
+    );
+  }
+  function stampText(id, dir){
+    var d = cardDefs[id];
+    if(d.kind === "decision") return dir === "right" ? d.rightLabel : d.leftLabel;
+    return "Next";
+  }
+
+  // ---------------- stack rendering ----------------
+  var SLOT_STYLE = {
+    top:   { transform:"translate(0,0) scale(1)",          opacity:"1",   z:5, pe:"auto" },
+    mid:   { transform:"translateY(14px) scale(0.95)",     opacity:"0.9", z:4, pe:"none" },
+    back:  { transform:"translateY(26px) scale(0.90)",     opacity:"0.6", z:3, pe:"none" },
+    hidden:{ transform:"translateY(36px) scale(0.86)",     opacity:"0",   z:2, pe:"none" }
+  };
+  function applySlot(el, role){
+    var s = SLOT_STYLE[role];
+    el.style.transform = s.transform;
+    el.style.opacity = s.opacity;
+    el.style.zIndex = s.z;
+    el.style.pointerEvents = s.pe;
+  }
+  function buildCardEl(id, role){
+    var el = document.createElement("div");
+    el.className = "stack-card";
+    var inner = document.createElement("div");
+    inner.className = "card-inner";
+    inner.innerHTML = role === "top" ? contentTemplate(id) : peekTemplate(id);
+    el.appendChild(inner);
+    if(role === "top"){
+      var rs = document.createElement("div");
+      rs.className = "stamp right" + (cardDefs[id].rightTone === "sage" ? " sage" : "");
+      rs.id = "stamp-right"; rs.textContent = stampText(id, "right");
+      var ls = document.createElement("div");
+      ls.className = "stamp left"; ls.id = "stamp-left"; ls.textContent = stampText(id, "left");
+      el.appendChild(rs); el.appendChild(ls);
+    }
+    return el;
+  }
+
+  function renderStack(){
+    var stackArea = document.getElementById("stack-area");
+    var stale = stackArea.querySelectorAll(".stack-card:not([data-exit])");
+    stale.forEach(function(e){ e.remove(); });
+
+    var roles = ["top","mid","back"];
+    queue.slice(0,3).forEach(function(id, i){
+      var role = roles[i];
+      var el = buildCardEl(id, role);
+      el.dataset.cardId = id;
+      el.dataset.role = role;
+      var fromRole = roles[i+1] || "hidden";
+      applySlot(el, fromRole);
+      stackArea.appendChild(el);
+      if(role === "top") attachDrag(el, id);
+      requestAnimationFrame(function(){
+        requestAnimationFrame(function(){ applySlot(el, role); });
+      });
+    });
+
+    if(queue.length === 0 && mode === "active") showEndCard();
+    updateProgress();
+    updateActionRow();
+  }
+
+  function showEndCard(){
+    var stackArea = document.getElementById("stack-area");
+    var el = document.createElement("div");
+    el.className = "stack-card";
+    el.style.transform = "translate(0,0) scale(1)";
+    el.style.opacity = "1"; el.style.zIndex = 5; el.style.pointerEvents = "auto";
+    var revisitNote = skipped.length
+      ? (" " + skipped.length + (skipped.length > 1 ? " items are" : " item is") + " still waiting in your review list.")
+      : "";
+    el.innerHTML =
+      '<div class="card-inner"><div class="end-card">' +
+        '<div class="end-icon">✓</div>' +
+        '<div class="briefing-title">You\'re all caught up</div>' +
+        '<div class="empty-text">Nothing left in today\'s deck. New cards land tomorrow evening.' + revisitNote + '</div>' +
+      '</div></div>';
+    stackArea.appendChild(el);
+  }
+
+  function renderColdStart(){
+    var stackArea = document.getElementById("stack-area");
+    stackArea.querySelectorAll(".stack-card:not([data-exit])").forEach(function(e){ e.remove(); });
+    var el = document.createElement("div");
+    el.className = "stack-card";
+    el.style.transform = "translate(0,0) scale(1)";
+    el.style.opacity = "1"; el.style.zIndex = 5;
+    el.innerHTML =
+      '<div class="card-inner"><div class="cold-card">' +
+        '<div class="cold-icon">✦</div>' +
+        '<div class="briefing-title">Nothing to show yet</div>' +
+        '<div class="empty-text">We build your first card from a few days of tasks and rings — check back tomorrow evening. In the meantime, add friends so kudos has somewhere to go.</div>' +
+      '</div></div>';
+    stackArea.appendChild(el);
+    updateProgress();
+    updateActionRow();
+  }
+
+  // ---------------- progress + actions ----------------
+  function updateProgress(){
+    var row = document.getElementById("progress-row");
+    if(mode === "new"){ row.style.visibility = "hidden"; return; }
+    row.style.visibility = "visible";
+    var dotsWrap = document.getElementById("progress-dots");
+    dotsWrap.innerHTML = "";
+    ORDER_ACTIVE.forEach(function(id){
+      var dot = document.createElement("div");
+      var cls = "pdot";
+      if(resolvedIds.has(id)) cls += " done";
+      else if(queue[0] === id) cls += " current";
+      dot.className = cls;
+      dotsWrap.appendChild(dot);
+    });
+    var done = resolvedIds.size;
+    document.getElementById("progress-count").textContent = queue.length ? (Math.min(done+1,TOTAL) + " of " + TOTAL + " today") : (TOTAL + " of " + TOTAL + " today");
+    var sp = document.getElementById("skipped-pill");
+    if(skipped.length){ sp.classList.add("show"); document.getElementById("skipped-count").textContent = skipped.length; }
+    else sp.classList.remove("show");
+  }
+
+  function updateActionRow(){
+    var row = document.getElementById("action-row");
+    if(mode === "new"){
+      row.innerHTML = '<button class="action-btn primary" style="flex:1" onclick="openNavModal(\'🤝\',\'This would open Friends\',\'Deep-links to the Friends tab so you can find people to follow. Nothing about your tasks or rings is shared until you choose to send kudos.\')">Add friends</button>';
+      return;
+    }
+    if(queue.length === 0){
+      row.innerHTML =
+        '<button class="action-btn ghost" onclick="openNavModal(\'✅\',\'This would open Tasks\',\'Deep-links to your Tasks list — this mockup shows the destination rather than a full Tasks screen.\')">Back to Tasks</button>' +
+        '<button class="action-btn primary" onclick="openNavModal(\'🔗\',\'This would open Rings\',\'Deep-links to your Rings tab — this mockup shows the destination rather than a full Rings screen.\')">Back to Rings</button>';
+      return;
+    }
+    var id = queue[0], d = cardDefs[id];
+    if(d.kind === "info"){
+      row.innerHTML = '<button class="action-btn primary" style="flex:1" onclick="resolveTop(\'right\')">Continue →</button>';
+    } else {
+      var toneClass = d.rightTone === "sage" ? "primary sage" : "primary";
+      row.innerHTML =
+        '<button class="action-btn ghost" onclick="resolveTop(\'left\')">' + d.leftLabel + '</button>' +
+        '<button class="action-btn ' + toneClass + '" onclick="resolveTop(\'right\')">' + d.rightLabel + '</button>';
+    }
+  }
+
+  // ---------------- resolution + undo ----------------
+  function applyResolution(id, dir){
+    var d = cardDefs[id];
+    queue.shift();
+    resolvedIds.add(id);
+    lastAction = { id: id, dir: dir };
+    if(d.kind === "decision"){
+      if(dir === "left"){ skipped.push({ id:id, reason:d.skipReason }); showToast(d.toastLeft, true); }
+      else { showToast(d.toastRight, true); }
+    } else {
+      hideToast();
+    }
+    renderStack();
+  }
+  function undoLast(){
+    if(!lastAction) return;
+    var id = lastAction.id, dir = lastAction.dir;
+    queue.unshift(id);
+    resolvedIds.delete(id);
+    if(dir === "left"){ skipped = skipped.filter(function(s){ return s.id !== id; }); }
+    lastAction = null;
+    hideToast();
+    renderStack();
+  }
+  function showToast(text, withUndo){
+    var t = document.getElementById("toast");
+    t.innerHTML = withUndo
+      ? ('<span>' + text + '</span><button class="undo" onclick="undoLast()">Undo</button>')
+      : ('<span>' + text + '</span>');
+    t.classList.add("show");
+  }
+  function hideToast(){
+    var t = document.getElementById("toast");
+    t.classList.remove("show"); t.innerHTML = "";
+  }
+
+  function resolveTop(dir){
+    if(mode !== "active" || !queue.length) return;
+    var id = queue[0];
+    var el = document.querySelector('.stack-card[data-role="top"]');
+    if(el) commitSwipe(el, id, dir, 0);
+    else applyResolution(id, dir);
+  }
+  function commitSwipe(el, id, dir, yOffset){
+    yOffset = yOffset || 0;
+    el.classList.add("dragging");
+    el.dataset.exit = "true";
+    el.removeAttribute("data-role");
+    el.style.zIndex = "6";
+    el.style.pointerEvents = "none";
+    var stampEl = document.getElementById(dir === "right" ? "stamp-right" : "stamp-left");
+    if(stampEl) stampEl.style.opacity = "1";
+    var outX = dir === "right" ? 560 : -560;
+    requestAnimationFrame(function(){
+      el.style.transition = "transform .36s ease, opacity .36s ease";
+      el.style.transform = "translate(" + outX + "px, " + yOffset + "px) rotate(" + (dir === "right" ? 26 : -26) + "deg)";
+      el.style.opacity = "0";
+    });
+    setTimeout(function(){ if(el.parentNode) el.remove(); }, 380);
+    applyResolution(id, dir);
+  }
+
+  // ---------------- drag handling ----------------
+  var dragEl = null, dragId = null, startX = 0, startY = 0, dragMoved = false, activePointerId = null;
+  function attachDrag(el, id){
+    el.addEventListener("pointerdown", function(e){
+      if(e.pointerType === "mouse" && e.button !== 0) return;
+      dragEl = el; dragId = id; startX = e.clientX; startY = e.clientY; dragMoved = false; activePointerId = e.pointerId;
+      // Pointer capture is intentionally NOT taken here. Capturing on every pointerdown
+      // (even a plain tap) makes the browser retarget the resulting click event to this
+      // card instead of whatever was actually tapped -- breaking the why-link, the trend
+      // toggle, and the ring chip. Capture is only taken once we've confirmed a real drag,
+      // in onPointerMove below.
+      el.addEventListener("pointermove", onPointerMove);
+      el.addEventListener("pointerup", onPointerUp);
+      el.addEventListener("pointercancel", onPointerUp);
+      var clickGuard = function(ce){
+        if(dragMoved){ ce.stopPropagation(); ce.preventDefault(); }
+        el.removeEventListener("click", clickGuard, true);
+      };
+      el.addEventListener("click", clickGuard, true);
+    });
+  }
+  function onPointerMove(e){
+    if(!dragEl) return;
+    var dx = e.clientX - startX, dy = e.clientY - startY;
+    if(!dragMoved && Math.hypot(dx,dy) > 6){
+      dragMoved = true;
+      dragEl.classList.add("dragging");
+      try{ dragEl.setPointerCapture(activePointerId); }catch(err){}
+    }
+    if(!dragMoved) return;
+    dragEl.style.transform = "translate(" + dx + "px, " + (dy*0.35) + "px) rotate(" + (dx/16) + "deg)";
+    var threshold = 110;
+    var rightOp = Math.max(0, Math.min(1, dx/threshold));
+    var leftOp = Math.max(0, Math.min(1, -dx/threshold));
+    var sr = document.getElementById("stamp-right"), sl = document.getElementById("stamp-left");
+    if(sr) sr.style.opacity = rightOp;
+    if(sl) sl.style.opacity = leftOp;
+    dragEl.dataset.dx = dx; dragEl.dataset.dy = dy;
+  }
+  function onPointerUp(e){
+    if(!dragEl) return;
+    var el = dragEl, id = dragId;
+    try{ el.releasePointerCapture(activePointerId); }catch(err){}
+    el.removeEventListener("pointermove", onPointerMove);
+    el.removeEventListener("pointerup", onPointerUp);
+    el.removeEventListener("pointercancel", onPointerUp);
+    var dx = parseFloat(el.dataset.dx || 0), dy = parseFloat(el.dataset.dy || 0);
+    var threshold = 110;
+    if(dragMoved && Math.abs(dx) > threshold){
+      commitSwipe(el, id, dx > 0 ? "right" : "left", dy*0.35);
+    } else if(dragMoved){
+      el.classList.remove("dragging");
+      el.style.transform = "translate(0,0) rotate(0deg)";
+      var sr = document.getElementById("stamp-right"), sl = document.getElementById("stamp-left");
+      if(sr) sr.style.opacity = 0; if(sl) sl.style.opacity = 0;
+    }
+    dragEl = null; dragId = null; dragMoved = false; activePointerId = null;
+  }
+
+  // keyboard equivalent of a swipe
+  document.getElementById("stack-area").addEventListener("keydown", function(e){
+    if(mode !== "active" || !queue.length) return;
+    if(e.key === "ArrowRight"){ e.preventDefault(); resolveTop("right"); }
+    else if(e.key === "ArrowLeft"){ e.preventDefault(); resolveTop("left"); }
+  });
+
+  // ---------------- inline card interactions ----------------
+  function toggleWhy(){
+    var panel = document.getElementById("nudge-why-panel");
+    var btn = document.getElementById("nudge-why-btn");
+    if(!panel) return;
+    var open = panel.classList.toggle("open");
+    btn.setAttribute("aria-expanded", open ? "true" : "false");
+  }
+  var trendMonthOpen = false;
+  function toggleTrend(){
+    trendMonthOpen = !trendMonthOpen;
+    document.getElementById("trend-week-view").style.display = trendMonthOpen ? "none" : "block";
+    document.getElementById("trend-month-view").style.display = trendMonthOpen ? "block" : "none";
+    document.getElementById("trend-big").innerHTML = trendMonthOpen ? "69<small>%</small>" : "82<small>%</small>";
+    document.getElementById("trend-delta").textContent = trendMonthOpen ? "trending up over 4 weeks" : "↑ steadier than last week";
+    document.getElementById("trend-note").textContent = trendMonthOpen
+      ? "Each bar averages a full week. The climb tracks with your focus-time nudges landing more consistently."
+      : "No single score here — just the shape of your week. Tuesday's dip lines up with the team offsite, not a slip.";
+    document.getElementById("trend-toggle-btn").textContent = trendMonthOpen ? "← Back to this week" : "See full month →";
+  }
+
+  // ---------------- modals ----------------
+  function openNavModal(icon, title, body){
+    document.getElementById("nav-modal-icon").textContent = icon;
+    document.getElementById("nav-modal-title").textContent = title;
+    document.getElementById("nav-modal-body").textContent = body;
+    document.getElementById("nav-modal-overlay").classList.add("open");
+  }
+  function closeModal(id){ document.getElementById(id).classList.remove("open"); }
+  function openRingModal(){
+    openNavModal("🔗", "This would open Rings", "In the real app, this deep-links to the Rings tab scoped to Gym — it doesn't close the ring from here. Closing a ring likely involves more than one tap (duration, reps, streak), so this mockup shows the intended destination instead of faking that interaction.");
+  }
+
+  // ---------------- skipped / revisit sheet ----------------
+  function openSheet(){
+    var list = document.getElementById("sheet-list");
+    if(!skipped.length){
+      list.innerHTML = "";
+      document.getElementById("sheet-title").textContent = "Nothing to revisit";
+    } else {
+      document.getElementById("sheet-title").textContent = "To revisit";
+      list.innerHTML = skipped.map(function(s){
+        return (
+          '<div class="sheet-item">' +
+            '<div class="sheet-item-text"><div class="t">' + s.reason + '</div><div class="r">' + cardDefs[s.id].label + '</div></div>' +
+            '<button class="sheet-reconsider" onclick="reconsider(\'' + s.id + '\')">Reconsider</button>' +
+          '</div>'
+        );
+      }).join("");
+    }
+    document.getElementById("sheet-overlay").classList.add("open");
+  }
+  function closeSheet(){ document.getElementById("sheet-overlay").classList.remove("open"); }
+  function reconsider(id){
+    skipped = skipped.filter(function(s){ return s.id !== id; });
+    resolvedIds.delete(id);
+    queue = queue.filter(function(q){ return q !== id; });
+    queue.unshift(id);
+    closeSheet();
+    renderStack();
+  }
+
+  // ---------------- state switch ----------------
+  function setState(s){
+    mode = s;
+    document.getElementById("pill-active").classList.toggle("active", s === "active");
+    document.getElementById("pill-new").classList.toggle("active", s === "new");
+    document.getElementById("greet-name").textContent = s === "new" ? "Welcome, Maya." : "Evening, Maya.";
+    hideToast();
+    closeSheet();
+    queue = s === "new" ? [] : ORDER_ACTIVE.slice();
+    resolvedIds = new Set();
+    skipped = [];
+    lastAction = null;
+    if(s === "new") renderColdStart(); else renderStack();
+  }
+
+  setState("active");
+</script>
+
+</body>
+</html>
