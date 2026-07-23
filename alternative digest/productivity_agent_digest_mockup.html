@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Kindred — Personalization · Digest</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root{
+    --bg: #faf9fc;
+    --card: #ffffff;
+    --card-raised: #f1eef8;
+    --violet: #854dff;
+    --violet-dim: #854dff2a;
+    --violet-soft: #854dff14;
+    --sage: #4f8a4b;
+    --sage-dim: #4f8a4b59;
+    --text: #221d33;
+    --text-muted: #5b5570;
+    --text-faint: #84809a;
+    --divider: #ece7f6;
+  }
+
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html,body{
+    background:#eae6f2;
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:'Inter',sans-serif;
+  }
+
+  button{ font-family:inherit; appearance:none; -webkit-appearance:none; background:none; border:none; color:inherit; cursor:pointer; }
+  :focus-visible{
+    outline: 2px solid var(--violet);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  .phone{
+    width:392px;
+    height:820px;
+    background: var(--bg);
+    border-radius:44px;
+    border: 1px solid #e3ddf0;
+    box-shadow: 0 30px 80px -20px rgba(80,60,140,0.25);
+    overflow:hidden;
+    position:relative;
+    display:flex;
+    flex-direction:column;
+  }
+
+  .notch{
+    position:absolute; top:14px; left:50%; transform:translateX(-50%);
+    width:110px; height:24px; background:#2a2632; border-radius:20px; z-index:10;
+  }
+
+  .scroll{
+    flex:1;
+    overflow-y:auto;
+    padding:64px 22px 28px;
+    scrollbar-width:none;
+  }
+  .scroll::-webkit-scrollbar{ display:none; }
+
+  .eyebrow{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    color:var(--violet);
+    margin-bottom:6px;
+  }
+
+  /* State switcher — same demo affordance as the card version, previews cold-start handling */
+  .state-switch{
+    display:flex; gap:6px;
+    background: var(--card-raised);
+    border-radius:12px;
+    padding:4px;
+    margin-bottom:28px;
+    width:fit-content;
+  }
+  .state-pill{
+    font-family:'JetBrains Mono', monospace;
+    font-size:10.5px;
+    padding:8px 13px;
+    min-height:32px;
+    display:flex; align-items:center;
+    border-radius:9px;
+    color:var(--text-muted);
+    font-weight:500;
+  }
+  .state-pill.active{ background:#fff; color:var(--violet); box-shadow:0 1px 4px rgba(80,60,140,0.18); }
+
+  /* ===== The digest itself — no cards, no node-dots. Typography and spacing do the separating. ===== */
+
+  .salutation{
+    font-family:'Fraunces', serif;
+    font-weight:500;
+    font-size:27px;
+    color:var(--text);
+    line-height:1.2;
+    margin-bottom:16px;
+  }
+  .salutation .name{ color:var(--violet); }
+  .salutation .mark{ color:var(--violet); font-size:20px; margin-right:3px; }
+
+  .lede, .flow, .closing, .cold-p{
+    font-size:14px;
+    line-height:1.75;
+    color:#4a4458;
+    margin-bottom:22px;
+  }
+  .lede b, .flow b, .closing b{ color:var(--text); font-weight:600; }
+  /* an "insight" reads as observation, not instruction — italic stands in for the old violet chip */
+  .insight{ color:var(--text); font-style:italic; }
+
+  /* Two link treatments, used consistently everywhere below:
+     underlined Inter = commits an action · mono caret = reveals more text and commits nothing */
+  .action-link{
+    font-size:14px; font-weight:600; color:var(--violet);
+    padding:0 0 1px; border-bottom:1px solid var(--violet-dim); vertical-align:baseline;
+  }
+  .action-link:hover{ opacity:.82; }
+  .action-link.sage{ color:var(--sage); border-bottom-color:var(--sage-dim); }
+  .sep{ color:var(--text-faint); margin:0 8px; font-size:13px; }
+
+  .disclosure{
+    display:inline-flex; align-items:center; gap:5px; margin:4px 0 6px;
+    font-family:'JetBrains Mono', monospace; font-size:10.5px; letter-spacing:.03em;
+    color:var(--violet); padding:5px 0;
+  }
+  .disclosure .car{ display:inline-block; font-size:9px; transition:transform .15s ease; }
+  .disclosure.open .car{ transform:rotate(90deg); }
+  .disclosure-panel{
+    display:none; margin:0 0 4px; padding:12px 13px;
+    background:var(--violet-soft); border-radius:12px;
+    font-size:12px; line-height:1.6; color:#4a4458;
+  }
+  .disclosure-panel.open{ display:block; margin:8px 0 22px; }
+  .disclosure-panel b{ color:var(--text); }
+
+  /* Trend graph — the original card's bar chart, unboxed: no card background/border,
+     just the bars and day labels dropped straight into the reading flow. No score number
+     is shown here on purpose (see the digest review's note on the old "no single score" contradiction). */
+  .flow-lead{ font-size:14px; line-height:1.75; color:#4a4458; margin-bottom:10px; }
+  .flow-lead b{ color:var(--text); font-weight:600; }
+  .trend-graph{ margin:0 0 14px; }
+  .trend-graph .bars{ display:flex; align-items:flex-end; gap:6px; height:48px; margin-bottom:7px; }
+  .trend-graph .bar{ flex:1; background:#e4dcf7; border-radius:4px 4px 2px 2px; }
+  .trend-graph .bar.today{ background:var(--violet); }
+  .trend-graph .bar-labels{ display:flex; gap:6px; }
+  .trend-graph .bar-labels span{ flex:1; text-align:center; font-size:9.5px; color:var(--text-faint); font-family:'JetBrains Mono', monospace; }
+  /* the month chart sits inside the tinted disclosure panel, where the light bar fill
+     would otherwise nearly disappear — a small white backing keeps it legible */
+  .trend-graph.month{ background:#fff; border-radius:12px; padding:12px 11px 9px; margin-bottom:12px; }
+
+  /* Nudge — the one place the flow deliberately breaks its own rhythm, so a decision doesn't slide by unread */
+  .nudge-quote{
+    border-left:3px solid var(--violet);
+    padding:1px 0 2px 16px;
+    margin:0 0 26px;
+  }
+  .nudge-line{ font-size:15.5px; font-weight:600; color:var(--text); margin-bottom:5px; line-height:1.4; }
+  .nudge-sub{ font-size:13px; color:var(--text-muted); line-height:1.6; margin-bottom:2px; }
+  .nudge-actions{ margin-top:11px; font-size:13.5px; }
+  .nudge-resolved{ display:none; align-items:center; gap:10px; margin-top:11px; font-size:13px; font-weight:600; color:var(--sage); }
+  .nudge-resolved.show{ display:flex; }
+  .nudge-resolved .undo{ font-size:12px; font-weight:600; color:var(--violet); }
+  .nudge-cap{ font-family:'JetBrains Mono', monospace; font-size:10px; color:var(--text-faint); margin-top:12px; }
+
+  .subhead{
+    font-family:'Fraunces', serif; font-weight:500; font-style:italic; font-size:15px;
+    color:var(--text); border-top:1px solid var(--divider); padding-top:18px; margin:0 0 12px;
+  }
+  .missed-list{ list-style:none; margin-bottom:24px; }
+  .missed-list li{ padding:11px 0; border-bottom:1px solid var(--divider); }
+  .missed-list li:last-child{ border-bottom:none; padding-bottom:0; }
+  .miss-head{ display:flex; justify-content:space-between; align-items:baseline; gap:10px; margin-bottom:3px; }
+  .miss-name{ font-size:13.5px; font-weight:600; color:var(--text); }
+  .miss-tag{ font-family:'JetBrains Mono', monospace; font-size:9.5px; color:var(--text-faint); white-space:nowrap; }
+  .miss-why{ font-size:12.5px; color:var(--text-muted); line-height:1.6; }
+  .miss-why .action-link{ font-size:12.5px; }
+
+  .inline-resolved{ font-size:12.5px; font-weight:600; color:var(--sage); }
+  .inline-resolved .undo{ font-size:11.5px; font-weight:600; color:var(--violet); margin-left:9px; }
+
+  .closing{ border-top:1px solid var(--divider); padding-top:18px; }
+
+  .signoff{ font-family:'Fraunces', serif; font-style:italic; font-size:12.5px; color:var(--text-faint); margin-top:-8px; }
+
+  .cold-p{ margin-bottom:0; }
+
+  /* ===== Ring modal — unchanged from the card version; still just a placeholder for a deep link ===== */
+  .modal-overlay{
+    position:absolute; inset:0; background:rgba(20,16,32,0.45); display:none;
+    align-items:center; justify-content:center; z-index:50; padding:28px; border-radius:44px;
+  }
+  .modal-overlay.open{ display:flex; }
+  .modal-box{
+    background:var(--card); border-radius:20px; padding:22px 20px; max-width:280px;
+    box-shadow:0 20px 50px -12px rgba(40,20,80,0.35);
+  }
+  .modal-icon{ font-size:20px; margin-bottom:10px; }
+  .modal-title{ font-family:'Fraunces', serif; font-size:17px; color:var(--text); margin-bottom:8px; line-height:1.3; }
+  .modal-body{ font-size:12.5px; color:var(--text-muted); line-height:1.55; margin-bottom:18px; }
+  .modal-btn{
+    width:100%; padding:11px 0; min-height:42px; border-radius:12px; background:var(--violet); color:#fff;
+    font-size:13px; font-weight:600;
+  }
+
+  .navbar{ display:flex; justify-content:space-around; padding:14px 10px 22px; background: #ffffff; border-top:1px solid #e3ddf0; }
+  .nav-item{ display:flex; flex-direction:column; align-items:center; gap:4px; font-size:9.5px; color:var(--text-faint); font-family:'JetBrains Mono', monospace; min-height:40px; justify-content:center; }
+  .nav-item.active{ color:var(--violet); font-weight:600; }
+  .nav-dot{ width:18px; height:18px; border-radius:6px; background:#e3ddf0; }
+  .nav-item.active .nav-dot{ background:var(--violet); border-radius:50%; }
+
+  .wrap-outer{ display:flex; flex-direction:column; align-items:center; }
+</style>
+</head>
+<body>
+
+<div class="wrap-outer">
+<div class="phone">
+  <div class="notch"></div>
+  <div class="scroll">
+
+    <div class="eyebrow">Thursday · Personalization</div>
+
+    <div class="state-switch" role="group" aria-label="Preview state">
+      <button class="state-pill active" id="pill-active" onclick="setState('active')">Active user</button>
+      <button class="state-pill" id="pill-new" onclick="setState('new')">New user</button>
+    </div>
+
+    <!-- ===== ACTIVE / POPULATED STATE ===== -->
+    <div id="state-active">
+
+      <div class="salutation"><span class="mark">✦</span>Evening, <span class="name">Maya</span>.</div>
+
+      <p class="lede">
+        You closed <b>four of six</b> rings today, with focus holding strongest before noon — the third day this week your completions have clustered before 1pm. <span class="insight">Mornings clearly work for you.</span> One ring's still open: your <button class="action-link sage" onclick="openNavModal('ring')">Gym ring →</button>
+      </p>
+
+      <blockquote class="nudge-quote">
+        <div class="nudge-line">Move "Read 20 min" to 8:40am?</div>
+        <div class="nudge-sub">You complete reading tasks 3x more often when they're scheduled before your commute.</div>
+        <button class="disclosure" id="why-btn" onclick="toggleDisclosure('why')" aria-expanded="false"><span class="car">▸</span>Why am I seeing this</button>
+        <div class="disclosure-panel" id="why-panel">Based on <b>14 days</b> of task timing: reading tasks completed before 9am finished 3x more often than the same task scheduled later. This nudge stops appearing if you dismiss it twice in a row.</div>
+        <div class="nudge-actions" id="nudge-actions">
+          <button class="action-link" onclick="resolveNudge('moved')">Move it</button><span class="sep">·</span><button class="action-link" onclick="resolveNudge('dismissed')">Not now</button>
+        </div>
+        <div class="nudge-resolved" id="nudge-resolved"></div>
+        <div class="nudge-cap">1 of 2 nudges today</div>
+      </blockquote>
+
+      <p class="flow-lead">This week held <b>steadier</b> than last.</p>
+      <div class="trend-graph">
+        <div class="bars">
+          <div class="bar" style="height:40%"></div>
+          <div class="bar" style="height:65%"></div>
+          <div class="bar" style="height:50%"></div>
+          <div class="bar" style="height:80%"></div>
+          <div class="bar" style="height:70%"></div>
+          <div class="bar" style="height:90%"></div>
+          <div class="bar today" style="height:67%"></div>
+        </div>
+        <div class="bar-labels"><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span></div>
+      </div>
+      <p class="flow">Tuesday's dip lines up with the team offsite, not a slip.</p>
+      <button class="disclosure" id="trend-btn" onclick="toggleDisclosure('trend')" aria-expanded="false"><span class="car">▸</span>See full month</button>
+      <div class="disclosure-panel" id="trend-panel">
+        <div class="trend-graph month">
+          <div class="bars">
+            <div class="bar" style="height:52%"></div>
+            <div class="bar" style="height:61%"></div>
+            <div class="bar" style="height:74%"></div>
+            <div class="bar today" style="height:82%"></div>
+          </div>
+          <div class="bar-labels"><span>Wk 1</span><span>Wk 2</span><span>Wk 3</span><span>Wk 4</span></div>
+        </div>
+        Zoomed out, the shape keeps climbing — four weekly averages, each a little higher than the last. The climb tracks with your focus-time nudges landing more consistently.
+      </div>
+
+      <div class="subhead">What got missed</div>
+      <ul class="missed-list">
+        <li>
+          <div class="miss-head"><span class="miss-name">Submit expense report</span><span class="miss-tag">2D AGO</span></div>
+          <div class="miss-why">Pushed three times — usually means it's not actually urgent. <button class="action-link" id="miss-cta-expense" onclick="resolveMissed('expense')">Move to today</button><span class="inline-resolved" id="miss-resolved-expense"></span></div>
+        </li>
+        <li>
+          <div class="miss-head"><span class="miss-name">Call dentist</span><span class="miss-tag">TODAY</span></div>
+          <div class="miss-why">Created during a busy stretch, no time block set. <button class="action-link" id="miss-cta-dentist" onclick="resolveMissed('dentist')">Add a time block</button><span class="inline-resolved" id="miss-resolved-dentist"></span></div>
+        </li>
+      </ul>
+
+      <p class="closing">
+        One more thing — <b>Jordan</b> completed Morning Run every day this week.
+        <span id="kudos-actions"><button class="action-link" onclick="resolveKudos('sent')">Send kudos</button><span class="sep">·</span><button class="action-link" onclick="resolveKudos('skipped')">Skip</button></span>
+        <span class="inline-resolved" id="kudos-resolved"></span>
+      </p>
+
+      <div class="signoff">— sent by your thread, every evening.</div>
+
+    </div>
+
+    <!-- ===== NEW / COLD-START STATE ===== -->
+    <div id="state-new" style="display:none;">
+      <div class="salutation"><span class="mark">✦</span>Welcome, <span class="name">Maya</span>.</div>
+      <p class="cold-p">Your personalization hasn't kicked in yet — the first digest lands here once we've seen a few days of tasks and rings. Add a couple of tasks today, and check back tomorrow evening. Kudos worth sending will start showing up here too, once you've <button class="action-link sage" onclick="openNavModal('friends')">added a few friends →</button></p>
+    </div>
+
+  </div>
+
+  <div class="navbar">
+    <div class="nav-item"><div class="nav-dot"></div>Tasks</div>
+    <div class="nav-item"><div class="nav-dot"></div>Rings</div>
+    <div class="nav-item active" aria-current="page"><div class="nav-dot"></div>For You</div>
+    <div class="nav-item"><div class="nav-dot"></div>Friends</div>
+    <div class="nav-item"><div class="nav-dot"></div>Profile</div>
+  </div>
+
+  <div class="modal-overlay" id="nav-modal-overlay" onclick="if(event.target===this) closeNavModal()">
+    <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="nav-modal-title">
+      <div class="modal-icon" id="nav-modal-icon">🔗</div>
+      <div class="modal-title" id="nav-modal-title">This would open Rings</div>
+      <div class="modal-body" id="nav-modal-body">In the real app, this deep-links to the Rings tab scoped to <b>Gym</b> — it doesn't close the ring from here. Closing a ring likely involves more than one tap (duration, reps, streak), so this mockup shows the intended destination instead of faking that interaction.</div>
+      <button class="modal-btn" onclick="closeNavModal()">Got it</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+  function setState(s){
+    document.getElementById('state-active').style.display = (s==='active') ? 'block' : 'none';
+    document.getElementById('state-new').style.display = (s==='new') ? 'block' : 'none';
+    document.getElementById('pill-active').classList.toggle('active', s==='active');
+    document.getElementById('pill-new').classList.toggle('active', s==='new');
+  }
+
+  function toggleDisclosure(id){
+    var panel = document.getElementById(id + '-panel');
+    var btn = document.getElementById(id + '-btn');
+    var open = panel.classList.toggle('open');
+    btn.classList.toggle('open', open);
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  }
+
+  function resolveNudge(kind){
+    document.getElementById('nudge-actions').style.display = 'none';
+    var r = document.getElementById('nudge-resolved');
+    r.classList.add('show');
+    if(kind === 'moved'){
+      r.innerHTML = '<span>Moved to 8:40am ✓</span><button class="undo" onclick="undoNudge()">Undo</button>';
+    } else {
+      r.innerHTML = '<span style="color:var(--text-muted)">Dismissed — won\'t ask again this week</span><button class="undo" onclick="undoNudge()">Undo</button>';
+    }
+  }
+  function undoNudge(){
+    document.getElementById('nudge-actions').style.display = 'block';
+    var r = document.getElementById('nudge-resolved');
+    r.classList.remove('show');
+    r.innerHTML = '';
+  }
+
+  var missedCopy = {
+    expense: 'Moved to today ✓',
+    dentist: 'Time block added ✓'
+  };
+  function resolveMissed(id){
+    document.getElementById('miss-cta-' + id).style.display = 'none';
+    document.getElementById('miss-resolved-' + id).innerHTML =
+      '<span>' + missedCopy[id] + '</span><button class="undo" onclick="undoMissed(\'' + id + '\')">Undo</button>';
+  }
+  function undoMissed(id){
+    document.getElementById('miss-cta-' + id).style.display = 'inline';
+    document.getElementById('miss-resolved-' + id).innerHTML = '';
+  }
+
+  function resolveKudos(kind){
+    document.getElementById('kudos-actions').style.display = 'none';
+    var r = document.getElementById('kudos-resolved');
+    if(kind === 'sent'){
+      r.innerHTML = '<span>Kudos sent to Jordan ✓</span><button class="undo" onclick="undoKudos()">Undo</button>';
+    } else {
+      r.innerHTML = '<span style="color:var(--text-muted)">Skipped — we\'ll surface this less often</span><button class="undo" onclick="undoKudos()">Undo</button>';
+    }
+  }
+  function undoKudos(){
+    document.getElementById('kudos-actions').style.display = 'inline';
+    document.getElementById('kudos-resolved').innerHTML = '';
+  }
+
+  var navModalContent = {
+    ring: {
+      icon: '🔗',
+      title: 'This would open Rings',
+      body: 'In the real app, this deep-links to the Rings tab scoped to <b>Gym</b> — it doesn\'t close the ring from here. Closing a ring likely involves more than one tap (duration, reps, streak), so this mockup shows the intended destination instead of faking that interaction.'
+    },
+    friends: {
+      icon: '👥',
+      title: 'This would open Friends',
+      body: 'In the real app, this deep-links to the Friends tab to search for and add someone. Adding a friend involves sending a request and waiting on their acceptance — more than a single tap — so this mockup shows the intended destination instead of faking that flow.'
+    }
+  };
+  function openNavModal(kind){
+    var c = navModalContent[kind];
+    document.getElementById('nav-modal-icon').textContent = c.icon;
+    document.getElementById('nav-modal-title').textContent = c.title;
+    document.getElementById('nav-modal-body').innerHTML = c.body;
+    document.getElementById('nav-modal-overlay').classList.add('open');
+  }
+  function closeNavModal(){
+    document.getElementById('nav-modal-overlay').classList.remove('open');
+  }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Kindred — Personalization · Digest Alternative · Design Review</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root{
+    --bg: #eae6f2;
+    --ink: #221d33;
+    --muted: #5b5570;
+    --violet: #6b3ad1;
+    --violet-soft: #854dff14;
+    --card: #ffffff;
+    --line: #d8d2e8;
+    --coral: #c2532f;
+    --coral-soft: #d9714e16;
+    --sage: #3f7a3b;
+    --sage-soft: #4f8a4b16;
+  }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{
+    background: var(--bg);
+    font-family:'Inter', sans-serif;
+    color: var(--ink);
+    padding: 48px 24px 90px;
+  }
+  .header{ max-width:1180px; margin:0 auto 34px; }
+  .eyebrow{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px; letter-spacing:0.12em; text-transform:uppercase;
+    color: var(--violet); margin-bottom:10px;
+  }
+  h1{ font-family:'Fraunces', serif; font-weight:500; font-size:34px; margin-bottom:10px; }
+  .header p{ color:var(--muted); font-size:14px; max-width:720px; line-height:1.6; }
+  .header p.scope{ margin-top:10px; font-size:12.5px; }
+  .header p.scope b{ color:var(--ink); }
+
+  /* At-a-glance trade-off summary */
+  .glance{ max-width:1180px; margin:0 auto 44px; display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  .glance-col{ background:var(--card); border:1px solid var(--line); border-radius:16px; padding:18px 20px; }
+  .glance-col h3{ font-family:'Fraunces', serif; font-weight:500; font-size:15px; margin-bottom:10px; display:flex; align-items:center; gap:7px; }
+  .glance-col.gained h3{ color:var(--sage); }
+  .glance-col.traded h3{ color:var(--coral); }
+  .glance-col ul{ list-style:none; }
+  .glance-col li{ font-size:12.5px; color:var(--muted); line-height:1.65; padding-left:15px; position:relative; margin-bottom:5px; }
+  .glance-col.gained li::before{ content:"+"; position:absolute; left:0; color:var(--sage); font-weight:700; }
+  .glance-col.traded li::before{ content:"–"; position:absolute; left:0; color:var(--coral); font-weight:700; }
+
+  .board{ max-width:1180px; margin:0 auto; display:flex; flex-direction:column; gap:64px; }
+  .section{ display:flex; gap:36px; align-items:flex-start; flex-wrap:wrap; }
+  .frame-col{ flex-shrink:0; position:relative; width:300px; position:sticky; top:24px; }
+  .frame{
+    width:300px; height:628px; border-radius:34px; overflow:hidden;
+    border:1px solid var(--line); box-shadow: 0 24px 60px -16px rgba(80,60,140,0.25); background:#fff;
+  }
+  .frame iframe{ width:392px; height:820px; border:none; transform: scale(0.765); transform-origin: top left; }
+
+  .section-title{ font-family:'Fraunces', serif; font-weight:500; font-size:20px; margin-bottom:4px; }
+  .section-sub{ font-size:12.5px; color:var(--muted); margin-bottom:18px; }
+
+  .notes{ flex:1; min-width:300px; display:flex; flex-direction:column; gap:10px; }
+  .cat-label{
+    font-family:'JetBrains Mono', monospace; font-size:10px; letter-spacing:0.1em; text-transform:uppercase;
+    color:var(--muted); margin:14px 0 2px; padding-top:6px; border-top:1px solid var(--line);
+  }
+  .cat-label:first-child{ margin-top:0; padding-top:0; border-top:none; }
+  .note{ display:flex; gap:12px; background: var(--card); border:1px solid var(--line); border-radius:14px; padding:12px 14px; }
+  .num{
+    width:24px; height:24px; border-radius:7px; background: var(--violet-soft); color: var(--violet);
+    font-family:'JetBrains Mono', monospace; font-size:11px; font-weight:600;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .note-text .t{ font-size:12.5px; font-weight:600; margin-bottom:3px; }
+  .note-text .d{ font-size:11.5px; color:var(--muted); line-height:1.5; }
+  .tag{
+    display:inline-block; font-size:8.5px; font-family:'JetBrains Mono', monospace; text-transform:uppercase;
+    padding:1px 6px; border-radius:5px; margin-left:6px; vertical-align:1px; font-weight:600;
+  }
+  .tag.open{ background:var(--coral-soft); color:var(--coral); }
+  .tag.same{ background:#eee; color:var(--muted); }
+
+  .legend{ max-width:1180px; margin:60px auto 0; border-top:1px solid var(--line); padding-top:28px; }
+  .legend h2{ font-family:'Fraunces', serif; font-weight:500; font-size:18px; margin-bottom:6px; }
+  .legend > p{ font-size:12.5px; color:var(--muted); margin-bottom:18px; max-width:720px; line-height:1.6; }
+  .legend-grid{ display:grid; grid-template-columns:1fr 1fr; gap:18px 32px; }
+  .legend-cat h3{ font-size:13px; margin-bottom:8px; }
+  .legend-cat ul{ list-style:none; }
+  .legend-cat li{ font-size:12px; color:var(--muted); line-height:1.6; margin-bottom:4px; }
+  .legend-cat li b{ color:var(--ink); }
+
+  .deferred{
+    max-width:1180px; margin:36px auto 0; background:var(--coral-soft); border:1px solid #e3c1ad;
+    border-radius:16px; padding:20px 22px;
+  }
+  .deferred h2{ font-family:'Fraunces', serif; font-weight:500; font-size:16px; margin-bottom:8px; color:#7a3a1f; }
+  .deferred p{ font-size:12px; color:#6b4530; margin-bottom:12px; line-height:1.6; }
+  .deferred ul{ list-style:none; columns:2; column-gap:32px; }
+  .deferred li{ font-size:12px; color:#6b4530; line-height:1.7; padding-left:14px; position:relative; }
+  .deferred li::before{ content:"○"; position:absolute; left:0; }
+
+  @media (max-width: 760px){
+    .glance{ grid-template-columns:1fr; }
+    .deferred ul{ columns:1; }
+    .frame-col{ position:static; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="eyebrow">Personalization · Design Review · Alternative 3 of 3</div>
+  <h1>The unified daily digest</h1>
+  <p>One of three directions explored for the "For You" home screen — alongside a conversational message log and a swipeable card deck. This one drops the card-and-thread layout entirely: the briefing, nudge, trend, missed tasks, and kudos become a single continuous read, styled closer to a personal note than a dashboard of widgets. Items tagged <span class="tag open">OPEN</span> are known gaps worth a ticket; items tagged <span class="tag same">UNCHANGED</span> are carried over from the card version as-is because nothing about this alternative required touching them.</p>
+  <p class="scope">Scope note: only the "For You" home screen changes here. The <b>personalization onboarding</b> and <b>settings</b> screens reviewed alongside the card version are unaffected and aren't re-annotated in this document.</p>
+</div>
+
+<div class="glance">
+  <div class="glance-col gained">
+    <h3>Gained</h3>
+    <ul>
+      <li>Reads like something written to you, not a panel of widgets scanned in any order</li>
+      <li>One link rule everywhere — mono caret reveals, underline commits — instead of three separate expand patterns</li>
+      <li>The card version's contradiction (a big 82% score sitting above a line that says "no single score") is gone</li>
+      <li>Full task names wrap instead of truncating inside a fixed-width chip</li>
+    </ul>
+  </div>
+  <div class="glance-col traded">
+    <h3>Traded away</h3>
+    <ul>
+      <li>Can't skim all five things at a glance anymore — it's a top-to-bottom read, not a scannable feed</li>
+      <li>Insight-vs-actionable text is a subtler visual cue than two distinct chip colors and icons</li>
+      <li>No progress marker if you're interrupted partway through</li>
+      <li>Inline text links are a smaller tap target than the old full-width buttons</li>
+    </ul>
+  </div>
+</div>
+
+<div class="board">
+
+  <div class="section">
+    <div class="frame-col">
+      <div class="section-title">Unified digest — "For You" home</div>
+      <div class="section-sub">Try the disclosure carets, resolve the nudge / missed items / kudos, and toggle New user</div>
+      <div class="frame"><iframe src="productivity_agent_digest_mockup.html" scrolling="no"></iframe></div>
+    </div>
+    <div class="notes">
+
+      <div class="cat-label">What changed, and why</div>
+      <div class="note">
+        <div class="num">1</div>
+        <div class="note-text"><div class="t">One read, not five things to skim</div>
+        <div class="d">The card-thread version let you scan everything at once and act in whatever order you liked. This trades that for a single top-to-bottom read — closer to something someone wrote you, at the direct cost of at-a-glance skimmability. That trade-off was named going in, not discovered after the fact.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">2</div>
+        <div class="note-text"><div class="t">No .card, no .node-dot — spacing and type do the separating</div>
+        <div class="d">Hairline dividers only show up where a heavier beat genuinely needs one (above "What got missed," above the closing kudos line), reusing the exact rule color and border-top pattern the card version's trend note already used internally, rather than inventing a new chrome language for this screen.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">3</div>
+        <div class="note-text"><div class="t">The "no single score" claim is now actually true</div>
+        <div class="d">The card version showed a large 82% figure directly above a line stating "no single score here" — a real contradiction between the copy and the UI it sat in. This version drops the number entirely, and the trend is now the original card's own bar chart — seven day-bars, then four week-bars behind "See full month" — unboxed and dropped straight into the reading flow instead of sitting in a card. An earlier pass of this alternative used a tiny decorative sparkline here instead; it's the real chart now, just without the score and the card frame around it. (The month view gets a small white backing inside the disclosure panel, since its light bar fill nearly disappeared against the panel's violet tint otherwise.)</div></div>
+      </div>
+      <div class="note">
+        <div class="num">4</div>
+        <div class="note-text"><div class="t">Full task names wrap instead of truncating</div>
+        <div class="d">The card version cut long task names off with an ellipsis inside a fixed-width row. Free-flowing paragraph text just wraps to a second line, so nothing about a task's name is ever hidden.</div></div>
+      </div>
+
+      <div class="cat-label">Two link treatments, one rule</div>
+      <div class="note">
+        <div class="num">5</div>
+        <div class="note-text"><div class="t">Mono + caret reveals, underline commits</div>
+        <div class="d">One consistent primitive runs through the whole screen: "Why am I seeing this" and "See full month" are JetBrains Mono with a rotating caret and change nothing when tapped. "Move it," "Not now," "Send kudos," "Skip," both missed-task actions, and the Gym ring link are Inter with an underline and actually do something. That's one visual rule standing in for three separate expand patterns (chip, why-link, trend-toggle) in the card version.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">6</div>
+        <div class="note-text"><div class="t">The insight/action distinction survives without chips</div>
+        <div class="d">"Mornings clearly work for you" is now italic body text — a read-only observation. The still-open Gym ring is a sage-colored underlined link — something to act on — and opens the same ring-deep-link explainer modal as the card version, unchanged. This is a real trade-off, not a clean win: it's more subtle than the old two-color, two-icon chip system, and there's no caption spelling out the difference the way "Purple = a pattern · Green = an open ring" did in the card version. Worth watching in testing for whether this reads as decorative rather than actionable.</div></div>
+      </div>
+
+      <div class="cat-label">Resolving in place</div>
+      <div class="note">
+        <div class="num">7</div>
+        <div class="note-text"><div class="t">Every action rewrites its own sentence, not a separate row</div>
+        <div class="d">The card version showed a full-width feedback row beneath its buttons after resolving. Here, "Move it" / "Not now" become "Moved to 8:40am ✓ — Undo" inline in the exact spot the original text sat. Same pattern for both missed items and for kudos. Undo is preserved everywhere it existed before — nothing lost reversibility in the rewrite.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">8</div>
+        <div class="note-text"><div class="t">The nudge quote is the one place that still looks like a "card"</div>
+        <div class="d">A violet rule down the left edge, not a bordered box — but it's deliberately the one element that interrupts the digest's reading rhythm, so a real decision (moving a task's time) doesn't slide past the way a passive sentence could. Everything else flows; this alone stands apart on purpose.</div></div>
+      </div>
+
+      <div class="cat-label">Cold start & honesty</div>
+      <div class="note">
+        <div class="num">9</div>
+        <div class="note-text"><div class="t">Cold start is one short, unstyled paragraph</div>
+        <div class="d">No leftover card frame around the empty state — just a sentence explaining what's missing and when it unlocks, matching the "short unstyled paragraph" instruction this alternative was built to.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">10</div>
+        <div class="note-text"><div class="t">"Add friends" is back — resolved, not just reworded</div>
+        <div class="d">The card version's review flagged "Add friends" in the New user state as a button not wired to anything. An earlier pass of this alternative dropped it rather than reproduce that dead affordance. It's back now with a real interaction: tapping it opens the same placeholder-modal pattern already used for the still-open Gym ring, generalized to cover more than one destination (icon, title, and body swap based on which link was tapped). The modal states plainly that adding a friend involves a request and their acceptance — more than a single tap — so it shows the intended destination (the Friends tab) instead of faking that flow.</div></div>
+      </div>
+
+      <div class="cat-label">Carried over unchanged</div>
+      <div class="note">
+        <div class="num">11</div>
+        <div class="note-text"><div class="t">State switcher and navbar<span class="tag same">UNCHANGED</span></div>
+        <div class="d">The preview-only Active/New user toggle and the five-tab navbar are identical to the card version, down to the accessibility handling. Neither was in scope for a home-screen layout or modal change, so neither was touched. (The ring modal itself doesn't get this tag anymore — see note 10; it's now a shared component covering two destinations instead of one.)</div></div>
+      </div>
+      <div class="note">
+        <div class="num">12</div>
+        <div class="note-text"><div class="t">Same underlying data, same copy voice<span class="tag same">UNCHANGED</span></div>
+        <div class="d">Every sentence in this digest traces back to the same five data points the card version used — rings closed, the nudge's reasoning, the week's shape, the two missed tasks, Jordan's streak. This is a different presentation of the same personalization, not a new feature or a new tone.</div></div>
+      </div>
+
+      <div class="cat-label">Open</div>
+      <div class="note">
+        <div class="num">13</div>
+        <div class="note-text"><div class="t">Task names are still fully readable on a shared or unlocked screen<span class="tag open">OPEN</span></div>
+        <div class="d">Carried over unresolved from the card review — and arguably sharper here, since "Submit expense report" now sits in plain paragraph text with no card boundary that a future "blur sensitive text" setting could target independently of the sentence around it.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">14</div>
+        <div class="note-text"><div class="t">Jordan's streak still surfaces without Jordan's consent<span class="tag open">OPEN</span></div>
+        <div class="d">Unchanged from the card version's open item. The closing line still names a friend's activity to someone else with no opt-in on the friend's side — this alternative's presentation doesn't touch the underlying consent gap.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">15</div>
+        <div class="note-text"><div class="t">Inline text links are a smaller, harder-to-aim target than full-width buttons<span class="tag open">OPEN</span></div>
+        <div class="d">"Move it" and "Not now" used to be 42px-tall buttons; as inline text they're only as tall as their line-height. Worth a real touch-target pass before this ships, especially "Skip" and "Undo," which land close together in the closing line.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">16</div>
+        <div class="note-text"><div class="t">No indication of how far into the digest you've read<span class="tag open">OPEN</span></div>
+        <div class="d">A feed lets you glance at all five items at once and see what's left. A single scroll gives no such cue — someone interrupted mid-read has nothing telling them where they left off tomorrow.</div></div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+<div class="deferred">
+  <h2>Considered, not yet designed</h2>
+  <p>Real problems worth a ticket, but solving them changes scope beyond this one alternative — flagging so they don't get lost between this review and a spec.</p>
+  <ul>
+    <li>A "read so far" marker or pagination for longer digests</li>
+    <li>How this scales past the fixed five beats — a day with two nudges or four missed tasks doesn't have a defined layout yet</li>
+    <li>A "blur sensitive text" setting, given note 13 above</li>
+    <li>Friend-side consent for surfacing streaks (same open item as the card version)</li>
+    <li>RTL mirroring of the nudge blockquote's left-side violet rule</li>
+    <li>Day/week labels (M T W T F S · Wk 1–4) may not abbreviate meaningfully in every locale</li>
+    <li>Loading and network-error states</li>
+    <li>A "sent" timestamp, to make the "digest, not a feed" framing literal</li>
+    <li>Formal touch-target audit for every inline action link (relates to note 15)</li>
+  </ul>
+</div>
+
+<div class="legend">
+  <h2>Guardrails these decisions map back to</h2>
+  <p>The recurring principles behind the choices above — the same ones the card version was checked against, with one addition specific to a chrome-free layout.</p>
+  <div class="legend-grid">
+    <div class="legend-cat">
+      <h3>Tone & framing</h3>
+      <ul>
+        <li><b>Describe, don't judge</b> — patterns and reasons stay in neutral prose, never a verdict on the person</li>
+        <li><b>No single score, for real this time</b> — the number is gone, not just downplayed next to text that says it isn't there</li>
+      </ul>
+    </div>
+    <div class="legend-cat">
+      <h3>Reversibility</h3>
+      <ul>
+        <li><b>Undo where it's cheap</b> — nudge, missed-task, and kudos actions, same as before</li>
+        <li><b>One beat still interrupts the flow on purpose</b> — the nudge is the single place a real decision doesn't just slide past as body copy</li>
+      </ul>
+    </div>
+    <div class="legend-cat">
+      <h3>Honesty about state</h3>
+      <ul>
+        <li><b>Cold start is explained, not blank</b> — a real sentence, no invented pattern</li>
+        <li><b>No dead links</b> — "Add friends" got a real interaction (the shared placeholder modal) instead of staying unwired</li>
+      </ul>
+    </div>
+    <div class="legend-cat">
+      <h3>One consistent primitive</h3>
+      <ul>
+        <li><b>Two link types, used everywhere</b> — mono caret to reveal, underline to commit — instead of a different expand pattern per card</li>
+        <li><b>Spend the one visual accent deliberately</b> — the violet rule on the nudge is the screen's single interruption; everything else stays quiet</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
