@@ -310,7 +310,7 @@
             </div>
             <div class="chip-row">
               <div class="chip active" tabindex="0">✦ Mornings work for you</div>
-              <div class="chip task" id="gym-chip" tabindex="0" onclick="openRing('Gym')" role="button">
+              <div class="chip task" id="gym-chip" tabindex="0" onclick="openNavModal('ring')" role="button">
                 <span class="dot"></span>Gym ring open<span class="go">→</span>
               </div>
             </div>
@@ -472,7 +472,7 @@
             <div class="card-label">Worth celebrating</div>
             <div class="empty-text">Add friends to send and receive kudos when something's worth celebrating.</div>
             <div class="actions">
-              <div class="btn primary" tabindex="0">Add friends</div>
+              <div class="btn primary" tabindex="0" onclick="openNavModal('friends')" role="button">Add friends</div>
             </div>
           </div>
         </div>
@@ -490,12 +490,12 @@
     <div class="nav-item"><div class="nav-dot"></div>Profile</div>
   </div>
 
-  <div class="modal-overlay" id="ring-modal-overlay" onclick="if(event.target===this) closeRingModal()">
-    <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="ring-modal-title">
-      <div class="modal-icon">🔗</div>
-      <div class="modal-title" id="ring-modal-title">This would open Rings</div>
-      <div class="modal-body">In the real app, this deep-links to the Rings tab scoped to <b id="ring-modal-name">Gym</b> — it doesn't close the ring from here. Closing a ring likely involves more than one tap (duration, reps, streak), so this mockup shows the intended destination instead of faking that interaction.</div>
-      <button class="modal-btn" tabindex="0" onclick="closeRingModal()">Got it</button>
+  <div class="modal-overlay" id="nav-modal-overlay" onclick="if(event.target===this) closeNavModal()">
+    <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="nav-modal-title">
+      <div class="modal-icon" id="nav-modal-icon">🔗</div>
+      <div class="modal-title" id="nav-modal-title">This would open Rings</div>
+      <div class="modal-body" id="nav-modal-body">In the real app, this deep-links to the Rings tab scoped to <b>Gym</b> — it doesn't close the ring from here. Closing a ring likely involves more than one tap (duration, reps, streak), so this mockup shows the intended destination instead of faking that interaction.</div>
+      <button class="modal-btn" tabindex="0" onclick="closeNavModal()">Got it</button>
     </div>
   </div>
 </div>
@@ -583,12 +583,27 @@
     fb.classList.remove('show');
     fb.innerHTML = '';
   }
-  function openRing(name){
-    document.getElementById('ring-modal-name').textContent = name;
-    document.getElementById('ring-modal-overlay').classList.add('open');
+  var navModalContent = {
+    ring: {
+      icon: '🔗',
+      title: 'This would open Rings',
+      body: 'In the real app, this deep-links to the Rings tab scoped to <b>Gym</b> — it doesn\'t close the ring from here. Closing a ring likely involves more than one tap (duration, reps, streak), so this mockup shows the intended destination instead of faking that interaction.'
+    },
+    friends: {
+      icon: '👥',
+      title: 'This would open Friends',
+      body: 'In the real app, this deep-links to the Friends tab to search for and add someone. Adding a friend involves sending a request and waiting on their acceptance — more than a single tap — so this mockup shows the intended destination instead of faking that flow.'
+    }
+  };
+  function openNavModal(kind){
+    var c = navModalContent[kind];
+    document.getElementById('nav-modal-icon').textContent = c.icon;
+    document.getElementById('nav-modal-title').textContent = c.title;
+    document.getElementById('nav-modal-body').innerHTML = c.body;
+    document.getElementById('nav-modal-overlay').classList.add('open');
   }
-  function closeRingModal(){
-    document.getElementById('ring-modal-overlay').classList.remove('open');
+  function closeNavModal(){
+    document.getElementById('nav-modal-overlay').classList.remove('open');
   }
   // keyboard support for div-as-button interactive elements
   document.querySelectorAll('[tabindex="0"]').forEach(function(el){
