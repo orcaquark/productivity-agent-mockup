@@ -164,7 +164,7 @@
       <div class="note">
         <div class="num">11</div>
         <div class="note-text"><div class="t">A modal for a design decision, not a real product surface</div>
-        <div class="d">This confirm-style dialog isn't meant to model UI that ships — it's a placeholder that documents an intentional deferral for whoever builds this next, in the same spirit as the "mockup shortcut" notes elsewhere in this doc. Dismissible by the "Got it" button or by tapping outside it.</div></div>
+        <div class="d">This confirm-style dialog isn't meant to model UI that ships — it's a placeholder that documents an intentional deferral for whoever builds this next, in the same spirit as the "mockup shortcut" notes elsewhere in this doc. It's now shared by two entry points: the Gym ring chip and "Add friends" in the New user state's kudos card both open the same modal shell, with icon, title, and body swapped in for which one was tapped. Adding a friend is a multi-step flow (search, request, their acceptance) that doesn't reduce to a single tap any more than closing a ring does, so it gets the same honest "here's where this would go" treatment instead of staying an unwired button. Dismissible by the "Got it" button or by tapping outside it.</div></div>
       </div>
       <div class="note">
         <div class="num">12</div>
@@ -358,7 +358,6 @@
     <li>RTL layout mirroring for the thread motif and card alignment</li>
     <li>Age-appropriate defaults if the product is ever opened to minors</li>
     <li>An actual screen behind "See exactly what data this uses," not just a sheet</li>
-    <li>"Add friends" in the New user state isn't wired to anything yet</li>
   </ul>
 </div>
 
