@@ -288,7 +288,7 @@
           '<div class="bars"><div class="bar" style="height:52%"></div><div class="bar" style="height:61%"></div><div class="bar" style="height:74%"></div><div class="bar today" style="height:82%"></div></div>' +
           '<div class="bar-labels"><span>Wk 1</span><span>Wk 2</span><span>Wk 3</span><span>Wk 4</span></div>' +
         '</div>' +
-        '<div class="trend-note" id="trend-note">No single score here — just the shape of your week. Tuesday\'s dip lines up with the team offsite, not a slip.</div>' +
+        '<div class="trend-note" id="trend-note">Tuesday\'s dip lines up with the team offsite, not a slip.</div>' +
         '<button class="trend-toggle" id="trend-toggle-btn" onclick="toggleTrend()">See full month →</button>'
       );
       case "missExpense": return (
@@ -609,7 +609,7 @@
     document.getElementById("trend-delta").textContent = trendMonthOpen ? "trending up over 4 weeks" : "↑ steadier than last week";
     document.getElementById("trend-note").textContent = trendMonthOpen
       ? "Each bar averages a full week. The climb tracks with your focus-time nudges landing more consistently."
-      : "No single score here — just the shape of your week. Tuesday's dip lines up with the team offsite, not a slip.";
+      : "Tuesday's dip lines up with the team offsite, not a slip.";
     document.getElementById("trend-toggle-btn").textContent = trendMonthOpen ? "← Back to this week" : "See full month →";
   }
 
