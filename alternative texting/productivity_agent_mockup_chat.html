@@ -379,7 +379,7 @@
             </div>
             <div class="bar-labels"><span>Wk 1</span><span>Wk 2</span><span>Wk 3</span><span>Wk 4</span></div>
           </div>
-          <div class="trend-note" id="trend-note">No single score here — just the shape of your week. Tuesday's dip lines up with the team offsite, not a slip.</div>
+          <div class="trend-note" id="trend-note">Tuesday's dip lines up with the team offsite, not a slip.</div>
           <button class="trend-toggle" tabindex="0" id="trend-toggle-btn" onclick="toggleTrendView()">See full month →</button>
         </div>
         <div class="msg-time">8:04 PM</div>
@@ -519,7 +519,7 @@
     document.getElementById('trend-delta').textContent = trendMonthOpen ? 'trending up over 4 weeks' : '↑ steadier than last week';
     document.getElementById('trend-note').textContent = trendMonthOpen
       ? "Each bar averages a full week. The climb tracks with your focus-time nudges landing more consistently."
-      : "No single score here — just the shape of your week. Tuesday's dip lines up with the team offsite, not a slip.";
+      : "Tuesday's dip lines up with the team offsite, not a slip.";
     document.getElementById('trend-toggle-btn').textContent = trendMonthOpen ? '← Back to this week' : 'See full month →';
   }
 
