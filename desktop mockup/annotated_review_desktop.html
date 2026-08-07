@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Kindred — Personalization · Desktop Design Review</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root{
+    --bg: #eae6f2;
+    --ink: #221d33;
+    --muted: #5b5570;
+    --violet: #6b3ad1;
+    --violet-soft: #854dff14;
+    --card: #ffffff;
+    --line: #d8d2e8;
+    --coral: #c2532f;
+    --coral-soft: #d9714e16;
+    --danger: #d43b3e;
+    --danger-soft: #ff5c5f14;
+  }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{
+    background: var(--bg);
+    font-family:'Inter', sans-serif;
+    color: var(--ink);
+    padding: 48px 24px 90px;
+  }
+  .header{ max-width:1180px; margin:0 auto 16px; }
+  .eyebrow{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px; letter-spacing:0.12em; text-transform:uppercase;
+    color: var(--violet); margin-bottom:10px;
+  }
+  h1{ font-family:'Fraunces', serif; font-weight:500; font-size:34px; margin-bottom:10px; }
+  .header p{ color:var(--muted); font-size:14px; max-width:740px; line-height:1.6; }
+
+  .intro-note{
+    max-width:1180px; margin:0 auto 40px; background:var(--card); border:1px solid var(--line);
+    border-radius:16px; padding:18px 22px; display:flex; gap:14px;
+  }
+  .intro-note .ic{ font-size:17px; flex-shrink:0; }
+  .intro-note p{ font-size:12.5px; color:var(--muted); line-height:1.65; }
+  .intro-note b{ color:var(--ink); }
+
+  .board{ max-width:1180px; margin:0 auto; display:flex; flex-direction:column; gap:64px; }
+  .section-title{ font-family:'Fraunces', serif; font-weight:500; font-size:20px; margin-bottom:4px; }
+  .section-sub{ font-size:12.5px; color:var(--muted); margin-bottom:18px; }
+
+  .frame-wrap{ max-width:760px; margin:0 auto 26px; }
+  .frame{
+    width:100%; aspect-ratio:1360/860; border-radius:14px; overflow:hidden;
+    border:1px solid var(--line); box-shadow: 0 24px 60px -16px rgba(80,60,140,0.25); background:#fff;
+  }
+  .frame iframe{ width:1360px; height:860px; border:none; transform: scale(0.559); transform-origin: top left; }
+  /* settings frame is a touch taller in practice due to its own internal scroll — same scale works since
+     the device-frame itself is the fixed 1360x860 viewport in every file, scroll happens inside it */
+
+  .notes{ max-width:1180px; margin:0 auto; display:grid; grid-template-columns:1fr 1fr; gap:10px 16px; }
+  .cat-label{
+    grid-column: 1 / -1;
+    font-family:'JetBrains Mono', monospace; font-size:10px; letter-spacing:0.1em; text-transform:uppercase;
+    color:var(--muted); margin:14px 0 2px; padding-top:6px; border-top:1px solid var(--line);
+  }
+  .cat-label:first-child{ margin-top:0; padding-top:0; border-top:none; }
+  .cat-label.new{ color:var(--violet); }
+  .note{ display:flex; gap:12px; background: var(--card); border:1px solid var(--line); border-radius:14px; padding:12px 14px; }
+  .num{
+    width:24px; height:24px; border-radius:7px; background: var(--violet-soft); color: var(--violet);
+    font-family:'JetBrains Mono', monospace; font-size:11px; font-weight:600;
+    display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  }
+  .num.new{ background:#854dff2a; }
+  .note-text .t{ font-size:12.5px; font-weight:600; margin-bottom:3px; }
+  .note-text .d{ font-size:11.5px; color:var(--muted); line-height:1.5; }
+  .tag{
+    display:inline-block; font-size:8.5px; font-family:'JetBrains Mono', monospace; text-transform:uppercase;
+    padding:1px 6px; border-radius:5px; margin-left:6px; vertical-align:1px; font-weight:600;
+  }
+  .tag.open{ background:var(--coral-soft); color:var(--coral); }
+  .tag.new{ background:#854dff1f; color:var(--violet); }
+
+  .legend{ max-width:1180px; margin:60px auto 0; border-top:1px solid var(--line); padding-top:28px; }
+  .legend h2{ font-family:'Fraunces', serif; font-weight:500; font-size:18px; margin-bottom:6px; }
+  .legend > p{ font-size:12.5px; color:var(--muted); margin-bottom:18px; max-width:680px; line-height:1.6; }
+  .legend-grid{ display:grid; grid-template-columns:1fr 1fr; gap:18px 32px; }
+  .legend-cat h3{ font-size:13px; margin-bottom:8px; }
+  .legend-cat ul{ list-style:none; }
+  .legend-cat li{ font-size:12px; color:var(--muted); line-height:1.6; margin-bottom:4px; }
+  .legend-cat li b{ color:var(--ink); }
+
+  .deferred{
+    max-width:1180px; margin:36px auto 0; background:var(--coral-soft); border:1px solid #e3c1ad;
+    border-radius:16px; padding:20px 22px;
+  }
+  .deferred h2{ font-family:'Fraunces', serif; font-weight:500; font-size:16px; margin-bottom:8px; color:#7a3a1f; }
+  .deferred p{ font-size:12px; color:#6b4530; margin-bottom:12px; line-height:1.6; }
+  .deferred ul{ list-style:none; columns:2; column-gap:32px; }
+  .deferred li{ font-size:12px; color:#6b4530; line-height:1.7; padding-left:14px; position:relative; }
+  .deferred li::before{ content:"○"; position:absolute; left:0; }
+
+  .tokens-note{
+    max-width:1180px; margin:36px auto 0; background:var(--card); border:1px solid var(--line);
+    border-radius:16px; padding:20px 22px;
+  }
+  .tokens-note h2{ font-family:'Fraunces', serif; font-weight:500; font-size:16px; margin-bottom:10px; }
+  .tokens-note p{ font-size:12px; color:var(--muted); line-height:1.7; margin-bottom:8px; }
+  .tokens-note b{ color:var(--ink); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="eyebrow">Personalization · Desktop Design Review</div>
+  <h1>Why each screen works the way it does</h1>
+  <p>The desktop pass of the three personalization screens, paired with the same reasoning-first review as the mobile set. Every original note carries forward unchanged — desktop doesn't resolve any open mobile items — with a new <span class="tag new">DESKTOP</span> category added to each section for what changed in the conversion itself. Items tagged <span class="tag open">OPEN</span> are still known gaps worth a ticket.</p>
+</div>
+
+<div class="intro-note">
+  <div class="ic">🖥️</div>
+  <p><b>About this pass:</b> tokens were reconciled against six dark-mode and three light-mode samples off the live desktop app rather than eyeballed — the accent violet (<b>#854dff</b>) turned out to already be production's own color, and the two themes are independently-specified value sets (dark carries a real violet tint in its darks; light is neutral gray) rather than one lightness-inverted formula. The shared shell — sidebar, top strip, card language, and the floating rings widget — is built once from the live screenshots and reused across all three files below, the desktop equivalent of the mobile files' repeated <code>.phone</code>/<code>.notch</code> chrome.</p>
+</div>
+
+<div class="board">
+
+  <!-- SECTION 1: Home / For You -->
+  <div class="section">
+    <div class="frame-wrap">
+      <div class="section-title">1. Personalization home — desktop "For You"</div>
+      <div class="section-sub">Try the New user toggle (top right), the nudge card, the kudos card, and the sidebar theme switch</div>
+      <div class="frame"><iframe src="productivity_agent_desktop_mockup.html" scrolling="no"></iframe></div>
+    </div>
+    <div class="notes">
+
+      <div class="cat-label">Tone &amp; framing</div>
+      <div class="note">
+        <div class="num">1</div>
+        <div class="note-text"><div class="t">Thread motif, not a feed</div>
+        <div class="d">Cards are connected by a visible line rather than stacked as a generic feed — signals these are one continuous read on the user's day, not unrelated notifications competing for attention.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">2</div>
+        <div class="note-text"><div class="t">Briefing leads with pattern, not score</div>
+        <div class="d">"4 of 6 rings" and "third day this week" describe behavior in context. No grade, no implied judgment.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">3</div>
+        <div class="note-text"><div class="t">Trend card shows the number, with context underneath</div>
+        <div class="d">The percentage is visible by default, and the note gives the Tuesday dip context (offsite) rather than leaving it to read as a failure. Anyone who'd rather not see a number at all can turn it off in settings — see #29.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">4</div>
+        <div class="note-text"><div class="t">Missed-task reasons are descriptive, not judgmental</div>
+        <div class="d">"Pushed 3 times," "no time block set" — observations about the task, never framed as something wrong with the person.</div></div>
+      </div>
+
+      <div class="cat-label">Transparency &amp; reversibility</div>
+      <div class="note">
+        <div class="num">5</div>
+        <div class="note-text"><div class="t">"Why am I seeing this" expands inline</div>
+        <div class="d">Tapping it shows the actual reasoning ("based on 14 days...") right there, rather than being a transparency gesture with nowhere to go.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">6</div>
+        <div class="note-text"><div class="t">"Not now" carries equal weight to "Move it," and both are undoable</div>
+        <div class="d">Dismissal is a first-class action, not a smaller afterthought — and a mis-tap on either button isn't permanent. Both confirm what happened and offer Undo for a few seconds.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">7</div>
+        <div class="note-text"><div class="t">Kudos works the same way: Send or Skip, either reversible</div>
+        <div class="d">One friend, one moment — a real "Skip," not a leaderboard, and Undo on both actions so a fast tap doesn't lock in a choice you didn't mean to make.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">8</div>
+        <div class="note-text"><div class="t">Nudge card shows its place in a queue ("1 of 2 today")</div>
+        <div class="d">Sets honest expectations that more exist, rather than the home screen silently picking one and hiding the rest.</div></div>
+      </div>
+
+      <div class="cat-label">Accessibility &amp; clarity</div>
+      <div class="note">
+        <div class="num">9</div>
+        <div class="note-text"><div class="t">Color is never the only signal</div>
+        <div class="d">Each node marker pairs its color with a distinct shape and glyph (✦ briefing, ! nudge, ~ trend, · missed, ♥ kudos), and text uses a darker violet that clears AA contrast against light backgrounds.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">10</div>
+        <div class="note-text"><div class="t">An "insight" chip and an "open task" chip used to look identical</div>
+        <div class="d">"Mornings work for you" (an observation) and "Gym ring open" (an action) have distinct styling — the ring chip has its own color, icon, and a real click target — plus a caption spelling out the difference. Clicking it opens a short explainer modal rather than faking a completion the mockup can't actually represent, stating plainly that the real interaction is a deep link into the Rings tab scoped to that ring.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">11</div>
+        <div class="note-text"><div class="t">A modal for a design decision, not a real product surface</div>
+        <div class="d">This confirm-style dialog isn't meant to model UI that ships — it's a placeholder documenting an intentional deferral. Shared by two entry points: the Gym ring chip and "Add friends" in the New user state's kudos card both open the same modal shell, icon/title/body swapped in for which one was clicked. Dismissible by "Got it" or by clicking outside it.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">12</div>
+        <div class="note-text"><div class="t">Day-one users get an explanation, not a blank or fabricated screen</div>
+        <div class="d">The New user state explains why each card is empty and what unlocks it, instead of inventing a pattern that doesn't exist yet.</div></div>
+      </div>
+
+      <div class="cat-label">Every card resolves to an action</div>
+      <div class="note">
+        <div class="num">13</div>
+        <div class="note-text"><div class="t">Trend and missed-task cards now do something, not just report something</div>
+        <div class="d">"This week's pattern" gets a "See full month" toggle that swaps in an actual second data view (4 weekly averages instead of 7 daily bars). "What got missed" gets a per-item action tied to the specific reason it lists — the repeatedly-pushed expense report gets "Move to today," the dentist call gets "Add a time block" — both resolving with the same confirm/undo pattern already used for nudges and kudos.</div></div>
+      </div>
+
+      <div class="cat-label">Open</div>
+      <div class="note">
+        <div class="num">14</div>
+        <div class="note-text"><div class="t">Missed task names are visible on a shared or unlocked screen<span class="tag open">OPEN</span></div>
+        <div class="d">"Submit expense report" sitting on a home screen is fine alone, less fine on a shared display or a screen-share. Worth a "blur sensitive task names" setting.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">15</div>
+        <div class="note-text"><div class="t">Jordan's streak is shown to someone else without Jordan's consent<span class="tag open">OPEN</span></div>
+        <div class="d">The kudos card surfaces another person's activity. That needs its own opt-in on Jordan's side, not just the viewer's settings. Harder to mock up meaningfully here — this view is Maya's alone, so there's no real surface in this file to grant or preview Jordan's consent from.</div></div>
+      </div>
+
+      <div class="cat-label new">Desktop conversion</div>
+      <div class="note">
+        <div class="num new">37</div>
+        <div class="note-text"><div class="t">"For You" is a dedicated top-level sidebar item<span class="tag new">NEW</span></div>
+        <div class="d">Sits between Home and Calendar, same tier as the rest of primary nav — not nested under Home or Feed. The bottom tab bar is gone entirely; the sidebar is the only nav surface on desktop.</div></div>
+      </div>
+      <div class="note">
+        <div class="num new">38</div>
+        <div class="note-text"><div class="t">The trend card moved to a static right rail<span class="tag new">NEW</span></div>
+        <div class="d">Freed-up horizontal space goes to a right rail for "This week's pattern," not a second thread column — keeps the thread reading as one continuous column (note #1) at a comfortable ~660px width. The rail card echoes the Profile page's productivity gauge (same label style, same violet stroke weight, a thin decorative arc behind the numeral) without becoming a literal instance of it — it's still the same bar-chart component underneath, just visually rhyming with the gauge so the two clearly belong to one design system.</div></div>
+      </div>
+      <div class="note">
+        <div class="num new">39</div>
+        <div class="note-text"><div class="t">The state switcher moved to the top strip</div>
+        <div class="d">Sits top-right of the content pane next to the settings gear, matching where the live app already places page-level controls (Calendar's Week/Month toggle occupies the same spot).</div></div>
+      </div>
+      <div class="note">
+        <div class="num new">40</div>
+        <div class="note-text"><div class="t">Deep-link modals recenter as true page-level overlays</div>
+        <div class="d">No more <code>inset:0</code> on an artificial phone bezel — the dim layer and centered card now cover the actual app frame, sidebar included, the way a real modal would block the whole app during a placeholder interaction.</div></div>
+      </div>
+      <div class="note">
+        <div class="num new">41</div>
+        <div class="note-text"><div class="t">Hover states added throughout</div>
+        <div class="d">The mobile CSS never defined <code>:hover</code> — no reason to, mobile has none. Every clickable row, chip, and button gets a subtle background lift or border shift for desktop. Existing <code>:focus-visible</code> outlines and keyboard handling were already solid and carried over unchanged.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 2: Onboarding -->
+  <div class="section">
+    <div class="frame-wrap">
+      <div class="section-title">2. Personalization onboarding — desktop</div>
+      <div class="section-sub">Opens on a short expectations screen, then a single-step wizard — Back / Continue / Skip move between steps, with state preserved</div>
+      <div class="frame"><iframe src="agent_onboarding_desktop_mockup.html" scrolling="no"></iframe></div>
+    </div>
+    <div class="notes">
+
+      <div class="cat-label">Before you start</div>
+      <div class="note">
+        <div class="num">16</div>
+        <div class="note-text"><div class="t">A welcome screen sets expectations before question one</div>
+        <div class="d">Shows a sample briefing and a sample nudge so "personalization" means something concrete, then a single privacy/timing line covers when to expect results and confirms it's visible only to you. A "Skip setup — use defaults" link jumps straight to confirm for anyone who'd rather not answer anything at all.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">17</div>
+        <div class="note-text"><div class="t">Progress bar carries over, but stays unfilled here</div>
+        <div class="d">Reuses the same 4-segment bar from the question steps with nothing filled in yet, rather than adding a 5th segment that would contradict the "four quick questions" framing. The first segment fills the moment you land on question one.</div></div>
+      </div>
+
+      <div class="cat-label">Tone &amp; framing</div>
+      <div class="note">
+        <div class="num">18</div>
+        <div class="note-text"><div class="t">"Skip for now" is on every step, and worded so it's clearly reversible</div>
+        <div class="d">Personalization is additive, never a gate — "you can set this up later" removes the fear that skipping forfeits it permanently.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">19</div>
+        <div class="note-text"><div class="t">No right-answer framing on planning style</div>
+        <div class="d">The subhead states directly that there's no correct option — pre-empts the instinct to answer how Kindred "wants" rather than how someone actually behaves.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">20</div>
+        <div class="note-text"><div class="t">Frequency stays a slider; tone became sample-cards</div>
+        <div class="d">"How much" and "how it sounds" are still two separate settings. Tone no longer asks someone to place themselves on an abstract scale: it shows the same nudge written three ways and asks which sounds like them. Frequency keeps its draggable track with keyboard arrow-key support.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">21</div>
+        <div class="note-text"><div class="t">"Nudges are suggestions, not alerts," with a stated daily ceiling</div>
+        <div class="d">Sets expectations before a single nudge has been sent, and points to a concrete limit in settings so "light touch" isn't just a vibe.</div></div>
+      </div>
+
+      <div class="cat-label">Trust through the flow</div>
+      <div class="note">
+        <div class="num">22</div>
+        <div class="note-text"><div class="t">An autosave note at the end removes the "did I lose this?" worry</div>
+        <div class="d">"Your answers save automatically" removes the anxiety of losing progress mid-flow.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">23</div>
+        <div class="note-text"><div class="t">A real "Learn more" panel, and an editable, live summary before commit</div>
+        <div class="d">The confirm screen reads back your actual choices from every prior step — not placeholder text — and each item links straight back to where it came from.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">24</div>
+        <div class="note-text"><div class="t">Deselecting every focus time has an explicit fallback</div>
+        <div class="d">"No pattern yet — we'll use your activity instead" replaces a silent, unexplained zero-selection state.</div></div>
+      </div>
+
+      <div class="cat-label">Open</div>
+      <div class="note">
+        <div class="num">25</div>
+        <div class="note-text"><div class="t">No calendar-conflict awareness in nudge timing<span class="tag open">OPEN</span></div>
+        <div class="d">Onboarding asks when someone's sharpest, but a later nudge ("Move to 8:40am?") could land on a meeting. Worth checking calendar availability, not just historical pattern.</div></div>
+      </div>
+
+      <div class="cat-label new">Desktop conversion</div>
+      <div class="note">
+        <div class="num new">42</div>
+        <div class="note-text"><div class="t">A centered modal replaces the full-screen mobile wizard<span class="tag new">NEW</span></div>
+        <div class="d">None of the screenshots showed an existing modal/wizard pattern to match, so this was genuinely greenfield. Stretching the mobile screen edge-to-edge would read as an unstyled mobile page — instead it's a 600px panel with the same card radius/border/shadow language as everything else, sitting on top of the dimmed sidebar+content shell rather than replacing it.</div></div>
+      </div>
+      <div class="note">
+        <div class="num new">43</div>
+        <div class="note-text"><div class="t">Step 0's two preview cards sit side by side<span class="tag new">NEW</span></div>
+        <div class="d">A genuine improvement the extra width unlocks — a 392px phone had to stack "Example · Evening briefing" and "Example · Suggested nudge"; a 600px modal has the room to show both at once.</div></div>
+      </div>
+      <div class="note">
+        <div class="num new">44</div>
+        <div class="note-text"><div class="t">The modal intentionally blocks the sidebar underneath</div>
+        <div class="d">The dimmed backdrop covers the full app shell, including the theme toggle — standard modal-trap behavior, matching how a real dialog holds focus until it's dismissed. Verified by testing: the sidebar simply isn't clickable while onboarding is open.</div></div>
+      </div>
+      <div class="note">
+        <div class="num new">45</div>
+        <div class="note-text"><div class="t">Slider drag needed no rework</div>
+        <div class="d"><code>setupSlider()</code> is built on <code>pointerdown</code>/<code>pointermove</code>/<code>pointerup</code> with a touch fallback — pointer events already cover mouse interaction natively, confirmed by drag-testing the frequency track with a real pointer sequence.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 3: Settings -->
+  <div class="section">
+    <div class="frame-wrap">
+      <div class="section-title">3. Personalization settings — desktop</div>
+      <div class="section-sub">Every row is interactive — try "Pause personalization," the Frequency pills, and the destructive block at the bottom</div>
+      <div class="frame"><iframe src="agent_settings_desktop_mockup.html" scrolling="no"></iframe></div>
+    </div>
+    <div class="notes">
+
+      <div class="cat-label">Trust in your personalization</div>
+      <div class="note">
+        <div class="num">26</div>
+        <div class="note-text"><div class="t">"From you" vs. "Inferred" tags, and corrections always win</div>
+        <div class="d">Distinguishes what the user explicitly stated from what personalization observed — and states plainly that a correction overrides what's inferred, so fixing it feels like correcting a guess, not arguing with the system.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">27</div>
+        <div class="note-text"><div class="t">"See exactly what data this uses" is a real, working link</div>
+        <div class="d">Opens an explanation of what's self-reported vs. inferred and confirms nothing leaves the account unless the person clicks Export.</div></div>
+      </div>
+
+      <div class="cat-label">Fatigue &amp; scoring</div>
+      <div class="note">
+        <div class="num">28</div>
+        <div class="note-text"><div class="t">"Auto-reduce when ignored" is a visible, working toggle</div>
+        <div class="d">The fatigue-protection guardrail isn't just backend behavior — it's something the user can see is on, building confidence it won't nag.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">29</div>
+        <div class="note-text"><div class="t">Score display can be turned off</div>
+        <div class="d">The percentage shows by default. Turning this off swaps the trend card to a "no single score" framing — just the shape of the week, with no number — for anyone who finds a percentage stressful rather than motivating.</div></div>
+      </div>
+
+      <div class="cat-label">Reversibility &amp; commitment levels</div>
+      <div class="note">
+        <div class="num">30</div>
+        <div class="note-text"><div class="t">Four distinct levels: Need a break, Pause personalization, Turn off, Delete</div>
+        <div class="d">"Need a break" pauses nudges only. "Pause personalization" stops everything for a chosen duration and resumes automatically. "Turn off" is indefinite until manually resumed. "Delete" is the only one that's permanent. Each is a meaningfully different commitment, not variations of one button.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">31</div>
+        <div class="note-text"><div class="t">Destructive or paused states always confirm and show their effect</div>
+        <div class="d">Confirming a pause, turn-off, or delete opens a dialog stating exactly what's kept and lost, then shows a banner reflecting what happened — pause and turn-off offer Resume / Turn back on and dim the sections that stop updating; delete shows its own message since resuming isn't really what happened there, and personalization stays active rather than appearing off.</div></div>
+      </div>
+
+      <div class="cat-label">Accessibility &amp; control</div>
+      <div class="note">
+        <div class="num">32</div>
+        <div class="note-text"><div class="t">Toggle state never relies on color alone</div>
+        <div class="d">The knob's position and the background fill both change, so state reads correctly even for users who can't distinguish the on/off color difference.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">33</div>
+        <div class="note-text"><div class="t">Light / Dark / System is a real, working theme swap</div>
+        <div class="d">Relevant for migraine, light sensitivity, and plain preference — selecting Dark actually re-themes the screen rather than just marking a button as selected.</div></div>
+      </div>
+      <div class="note">
+        <div class="num">34</div>
+        <div class="note-text"><div class="t">Friend sharing defaults to off, kudos suggestions default to on</div>
+        <div class="d">Low-stakes social (suggesting kudos) and higher-stakes social (sharing your own progress/scores) are split into separate toggles with different defaults.</div></div>
+      </div>
+
+      <div class="cat-label">Data rights</div>
+      <div class="note">
+        <div class="num">35</div>
+        <div class="note-text"><div class="t">Export sits above the destructive options</div>
+        <div class="d">Someone shouldn't have to choose between keeping a copy of their data and deleting it — exporting is always available first.</div></div>
+      </div>
+
+      <div class="cat-label">Open</div>
+      <div class="note">
+        <div class="num">36</div>
+        <div class="note-text"><div class="t">"Your personalization" still has no deep audit trail</div>
+        <div class="d"><b>Resolved, partially:</b> a "See what's changed" link lists each change to planning style, tone, and focus times with a timestamp, wired to real interactions — cycling a value or toggling a focus-time chip adds a live "Just now" entry immediately. What this doesn't cover: the specific signals behind an inferred trait (which days, which tasks) — that's a deeper explainability feature, not a change log, and still worth its own ticket.</div></div>
+      </div>
+
+      <div class="cat-label new">Desktop conversion</div>
+      <div class="note">
+        <div class="num new">46</div>
+        <div class="note-text"><div class="t">Restructured into APPEARANCE / NOTIFICATIONS / PERSONALIZATION / FRIENDS &amp; SHARING / PERSONALIZATION DATA<span class="tag new">NEW</span></div>
+        <div class="d">Production has no left-rail settings nav — categorization happens through named sections on one scrolling page. Appearance folds into production's real Theme control rather than duplicating the mockup's own light/dark/auto picker. "Your personalization" (learned traits) and "Reports &amp; briefings" combine under one new PERSONALIZATION eyebrow, since nothing in production covers either today.</div></div>
+      </div>
+      <div class="note">
+        <div class="num new">47</div>
+        <div class="note-text"><div class="t">Destructive rows split into their own red-styled block<span class="tag new">NEW</span></div>
+        <div class="d">Mirrors production's own pattern of separating safe, reversible controls from irreversible ones. Export, Reset, and Pause personalization keep ordinary row styling in PERSONALIZATION DATA; "Turn off personalization" and "Delete all personalization data" pull into a visually separated red-tinted block below — red label, red trailing chevron, no toggle — matching production's Delete Account / Log Out treatment (sampled at roughly #ff5c5f, a brighter, more saturated red than the mockup's own browner coral, which now reads as the non-destructive warning tone).</div></div>
+      </div>
+      <div class="note">
+        <div class="num new">48</div>
+        <div class="note-text"><div class="t">Frequency rebuilt as a segmented pill control<span class="tag new">NEW</span></div>
+        <div class="d">Matches production's Check-in Frequency pattern exactly: a full-width rounded track with a lighter neutral pill behind the selected label (not a violet fill — production's own segmented controls use a neutral highlight, confirmed by sampling the Theme row) and plain muted labels for the rest. Replaces the mobile file's click-to-cycle mini-track.</div></div>
+      </div>
+      <div class="note">
+        <div class="num new">49</div>
+        <div class="note-text"><div class="t">Bottom sheets convert to centered confirmation modals<span class="tag new">NEW</span></div>
+        <div class="d">Every sheet — pause / turn off / delete / reset confirmations, the audit log — keeps identical copy, actions, and danger styling, just swaps the container and entry animation from slide-up to a centered dialog. Bottom sheets are a mobile reachability pattern with no real desktop equivalent.</div></div>
+      </div>
+      <div class="note">
+        <div class="num new">50</div>
+        <div class="note-text"><div class="t">Theme control is wired to one source of truth</div>
+        <div class="d">The sidebar's sun/moon icon is a true bidirectional quick-toggle between light and dark; this settings page's System/Light/Dark control reads and writes the same underlying state, so switching one updates the other immediately rather than the two drifting out of sync.</div></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="deferred">
+  <h2>Considered, not yet designed</h2>
+  <p>Real problems worth a ticket, but solving them changes scope beyond a screen-level fix — carried forward unchanged from the mobile review, since desktop doesn't resolve any of them.</p>
+  <ul>
+    <li>Loading and network-error states for all three screens</li>
+    <li>Push notification permission flow (OS-level, before any nudge can fire)</li>
+    <li>Priority/ordering logic when multiple nudges qualify the same day</li>
+    <li>Calendar-conflict checking before suggesting a specific time</li>
+    <li>Blurring or hiding sensitive task names on a shared display or screen-share</li>
+    <li>Friend-side consent for surfacing their streaks in someone else's kudos card</li>
+    <li>Customizable kudos message instead of a single canned send</li>
+    <li>Cross-device sync messaging (is this account-level or per-device?)</li>
+    <li>Longer translated strings breaking chip/button layout (i18n)</li>
+    <li>RTL layout mirroring for the thread motif, card alignment, and the sidebar itself</li>
+    <li>Age-appropriate defaults if the product is ever opened to minors</li>
+    <li>An actual screen behind "See exactly what data this uses," not just a dialog</li>
+  </ul>
+</div>
+
+<div class="tokens-note">
+  <h2>Token reconciliation, in brief</h2>
+  <p>Full sampling and reasoning lives in the conversion guide this pass was built from; the short version: <b>violet (#854dff)</b> is unchanged everywhere — it's already production's shipped accent, not a new choice. <b>Dark and light are independently-specified</b> rather than one lightness-inverted formula, since dark's darks (<b>#0c0c1a</b> page, <b>#171626</b> sidebar/card) carry a real violet/blue tint while light's neutrals (<b>#ffffff</b> page, <b>#f5f5f5</b> sidebar, <b>#919090</b> muted text) are genuinely tint-free. <b>Sage</b> stayed the mockup's own calmer <b>#4f8a4b</b> rather than production's brighter status-dot green, matching the "describe, don't judge" tone the review argues for throughout. <b>Danger red</b> now follows production's brighter <b>#ff5c5f</b> for genuinely irreversible actions, while the mockup's original browner coral still covers softer, non-destructive warnings.</p>
+</div>
+
+<div class="legend">
+  <h2>Guardrails these decisions map back to</h2>
+  <p>The recurring principles behind the choices above, unchanged from the mobile review — the desktop pass follows the same guardrails, it just has a different shell to apply them in.</p>
+  <div class="legend-grid">
+    <div class="legend-cat">
+      <h3>Tone &amp; framing</h3>
+      <ul>
+        <li><b>Describe, don't judge</b> — patterns and reasons are stated neutrally, never as a verdict on the person</li>
+        <li><b>Score is optional, not mandatory</b> — shown by default, with a settings toggle to drop to trend shape only, no number</li>
+      </ul>
+    </div>
+    <div class="legend-cat">
+      <h3>Reversibility</h3>
+      <ul>
+        <li><b>Undo where it's cheap</b> — nudge and kudos actions, in particular</li>
+        <li><b>Confirm where it's not</b> — anything destructive gets a dialog, not a click</li>
+        <li><b>Graduated commitment</b> — pause, turn off, and delete are not the same decision</li>
+      </ul>
+    </div>
+    <div class="legend-cat">
+      <h3>Accessibility</h3>
+      <ul>
+        <li><b>Never color-only</b> — shape, glyph, or position always carries state too</li>
+        <li><b>AA contrast minimum</b>, real click targets, working theme control, and now hover states throughout</li>
+      </ul>
+    </div>
+    <div class="legend-cat">
+      <h3>Honesty about state</h3>
+      <ul>
+        <li><b>Cold start is designed, not blank</b> — day-one users get an explanation</li>
+        <li><b>Queues and effects are visible</b> — "1 of 2," a banner when paused, a real Export</li>
+        <li><b>Transparency links resolve</b> — no link that dead-ends</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Kindred — Personalization (Desktop)</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root{
+    /* ===== Light theme (default) — neutral grays, zero violet tint, per guide Section 1 ===== */
+    --bg: #ffffff;
+    --sidebar-bg: #f5f5f5;
+    --sidebar-active: #e5e5e5;
+    --card: #ffffff;
+    --card-raised: #f6f6f8;
+    --border: #e0e0e0;
+    --thread: #d8d2e8;
+    --violet: #854dff;
+    --violet-dim: #854dff2a;
+    --violet-soft: #854dff14;
+    --sage: #4f8a4b;
+    --sage-dim: #93c08f22;
+    --coral-warn: #d9714e;
+    --coral-warn-dim: #d9714e16;
+    --danger: #ff5c5f;
+    --danger-dim: #ff5c5f14;
+    --danger-soft: #ff5c5f0d;
+    --pending: #fe9a00;
+    --text: #221d33;
+    --text-muted: #919090;
+    --text-faint: #a8a4b0;
+    --text-secondary: #4a4458;
+    --divider: #ece7f6;
+    --seg-active: #ffffff;
+    --shadow: 0 20px 50px -20px rgba(30,20,60,0.16);
+  }
+
+  /* ===== Dark theme — carries a real violet/blue tint in its darks ===== */
+  .app-shell.dark-mode{
+    --bg: #0c0c1a;
+    --sidebar-bg: #171626;
+    --sidebar-active: #1f1d2e;
+    --card: #171626;
+    --card-raised: #1d1b2e;
+    --border: #242233;
+    --thread: #332d44;
+    --violet-dim: #854dff3a;
+    --violet-soft: #854dff22;
+    --sage-dim: #93c08f33;
+    --coral-warn-dim: #d9714e26;
+    --danger-dim: #ff5c5f26;
+    --danger-soft: #ff5c5f16;
+    --text: #f4f2f9;
+    --text-muted: #8b879a;
+    --text-faint: #656179;
+    --text-secondary: #cfc9dc;
+    --divider: #23212f;
+    --seg-active: #2b2740;
+    --shadow: 0 20px 50px -20px rgba(0,0,0,0.55);
+  }
+
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html,body{ height:100%; }
+  body{
+    background:#e8e6ec;
+    font-family:'Inter',sans-serif;
+    color:var(--text);
+  }
+  button, a{ font-family:inherit; color:inherit; }
+  .truncate{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+  :focus-visible{
+    outline: 2px solid var(--violet);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+
+  button, a, [tabindex], .clickable{ cursor:pointer; }
+
+  /* ===== App shell frame — a bezel standing in for the browser viewport,
+     the desktop equivalent of the mobile files' .phone/.notch chrome ===== */
+  .device-frame{
+    width:1360px; height:860px; margin:26px auto;
+    border-radius:14px; border:1px solid #cfcbd8; overflow:hidden;
+    box-shadow: 0 40px 90px -30px rgba(30,20,60,0.35);
+    background: var(--bg);
+  }
+
+  .app-shell{
+    width:100%; height:100%; display:flex; background:var(--bg); position:relative;
+    transition: background .2s;
+  }
+
+  /* ================= SIDEBAR ================= */
+  .sidebar{
+    width:325px; min-width:325px; height:100%; background:var(--sidebar-bg);
+    border-right:1px solid var(--border); display:flex; flex-direction:column;
+    padding:22px 16px 16px; transition: background .2s, border-color .2s, margin-left .18s, width .18s, min-width .18s, padding .18s;
+    overflow:hidden;
+  }
+  .sidebar.collapsed{ width:0; min-width:0; padding-left:0; padding-right:0; border-right:none; }
+  .sidebar.collapsed > *{ display:none; }
+
+  .sidebar-top{ display:flex; align-items:center; justify-content:space-between; padding:0 6px 20px; }
+  .wordmark{ font-family:'Fraunces', serif; font-weight:600; font-size:21px; color:var(--text); }
+  .icon-btn{
+    width:32px; height:32px; border-radius:9px; border:none; background:transparent;
+    display:flex; align-items:center; justify-content:center; color:var(--text-muted);
+  }
+  .icon-btn:hover{ background:var(--sidebar-active); }
+  .icon-btn svg{ width:17px; height:17px; }
+
+  .sb-primary{ display:flex; flex-direction:column; gap:8px; margin-bottom:18px; }
+  .sb-btn{
+    display:flex; align-items:center; gap:9px; padding:10px 13px; border-radius:11px; border:none;
+    font-size:13.5px; font-weight:600; min-height:40px;
+  }
+  .sb-btn .kbd{
+    margin-left:auto; font-family:'JetBrains Mono', monospace; font-size:10px; font-weight:500;
+    letter-spacing:0.02em; opacity:0.72;
+  }
+  .sb-btn.primary{ background:var(--violet); color:#fff; }
+  .sb-btn.primary:hover{ background:#7640ea; }
+  .sb-btn.ai{ background:transparent; color:var(--text); border:1px solid var(--border); }
+  .sb-btn.ai:hover{ background:var(--sidebar-active); }
+  .sb-btn svg{ width:15px; height:15px; flex-shrink:0; }
+
+  .nav-list{ display:flex; flex-direction:column; gap:2px; margin-bottom:18px; }
+  .nav-item{
+    display:flex; align-items:center; gap:11px; padding:9px 10px; border-radius:9px;
+    font-size:13.5px; color:var(--text-muted); text-decoration:none; min-height:38px;
+  }
+  .nav-item svg{ width:16px; height:16px; flex-shrink:0; }
+  .nav-item .kbd{
+    margin-left:auto; font-family:'JetBrains Mono', monospace; font-size:9.5px; color:var(--text-faint);
+  }
+  .nav-item:hover{ background:var(--sidebar-active); color:var(--text); }
+  .nav-item.active{ background:var(--sidebar-active); color:var(--text); font-weight:600; }
+  .nav-item.active svg{ color:var(--violet); }
+
+  .sb-section-label{
+    font-family:'JetBrains Mono', monospace; font-size:9.5px; letter-spacing:0.1em; text-transform:uppercase;
+    color:var(--text-faint); padding:0 10px; margin-bottom:8px;
+  }
+  .workspace-list{ flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:1px; scrollbar-width:none; margin-bottom:10px; }
+  .workspace-list::-webkit-scrollbar{ display:none; }
+  .ws-item{
+    display:flex; align-items:center; gap:10px; padding:8px 10px; border-radius:9px;
+    font-size:12.5px; color:var(--text); min-height:34px;
+  }
+  .ws-item:hover{ background:var(--sidebar-active); }
+  .ws-item svg{ width:14px; height:14px; flex-shrink:0; color:var(--text-muted); }
+  .ws-item span{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+  .sidebar-footer{ display:flex; flex-direction:column; gap:2px; border-top:1px solid var(--border); padding-top:10px; }
+  .footer-item{
+    display:flex; align-items:center; gap:11px; padding:9px 10px; border-radius:9px;
+    font-size:13px; color:var(--text-muted); text-decoration:none; min-height:36px;
+  }
+  .footer-item:hover{ background:var(--sidebar-active); color:var(--text); }
+  .footer-item.active{ background:var(--sidebar-active); color:var(--text); font-weight:600; }
+  .footer-item.active svg{ color:var(--violet); }
+  .footer-item svg{ width:15px; height:15px; flex-shrink:0; }
+  .theme-row{ display:flex; align-items:center; justify-content:space-between; padding:9px 10px; }
+  .theme-row .label{ font-size:13px; color:var(--text-muted); }
+  .theme-toggle-btn{
+    width:30px; height:30px; border-radius:9px; border:none; background:transparent;
+    display:flex; align-items:center; justify-content:center; color:var(--text-muted);
+  }
+  .theme-toggle-btn:hover{ background:var(--sidebar-active); color:var(--text); }
+  .theme-toggle-btn svg{ width:16px; height:16px; }
+
+  /* ================= MAIN PANE ================= */
+  .main-pane{ flex:1; min-width:0; display:flex; flex-direction:column; height:100%; background:var(--bg); }
+  .top-strip{
+    display:flex; align-items:center; justify-content:space-between; padding:16px 28px;
+    flex-shrink:0; min-height:56px;
+  }
+  .top-strip-left{ display:flex; align-items:center; gap:10px; }
+  .top-strip-right{ display:flex; align-items:center; gap:10px; }
+
+  .collapse-btn{
+    width:32px; height:32px; border-radius:9px; border:none; background:transparent;
+    display:flex; align-items:center; justify-content:center; color:var(--text-muted);
+  }
+  .collapse-btn:hover{ background:var(--card-raised); color:var(--text); }
+  .collapse-btn svg{ width:17px; height:17px; }
+
+  .gear-btn{
+    width:34px; height:34px; border-radius:10px; border:none; background:transparent;
+    display:flex; align-items:center; justify-content:center; color:var(--text-muted);
+  }
+  .gear-btn:hover{ background:var(--card-raised); color:var(--text); }
+  .gear-btn svg{ width:18px; height:18px; }
+
+  .content-scroll{ flex:1; overflow-y:auto; padding:8px 28px 48px; }
+
+  /* State-switcher pill, relocated to the top strip per Section 3a */
+  .state-switch{
+    display:flex; gap:4px; background:var(--card-raised); border:1px solid var(--border);
+    border-radius:11px; padding:3px;
+  }
+  .state-pill{
+    font-family:'JetBrains Mono', monospace; font-size:10.5px; padding:7px 12px; min-height:30px;
+    display:flex; align-items:center; border-radius:8px; color:var(--text-muted); font-weight:500;
+    border:none; background:transparent;
+  }
+  .state-pill.active{ background:var(--card); color:var(--violet); box-shadow:0 1px 4px rgba(80,60,140,0.16); }
+
+  /* ================= CARD LANGUAGE ================= */
+  .card{ background:var(--card); border:1px solid var(--border); border-radius:16px; }
+  .card-accent{ border-left:3px solid var(--violet); }
+
+  /* ================= FLOATING RINGS WIDGET — global chrome, every screen ================= */
+  .rings-widget{
+    position:absolute; right:26px; bottom:26px; background:var(--card); border:1px solid var(--border);
+    border-radius:18px; padding:16px 20px; box-shadow:var(--shadow); z-index:40;
+    display:flex; flex-direction:column; align-items:center; gap:12px;
+  }
+  .rings-widget .rw-label{
+    font-family:'JetBrains Mono', monospace; font-size:10px; letter-spacing:0.1em; text-transform:uppercase;
+    color:var(--text-faint);
+  }
+  .rings-widget .rw-rings{ display:flex; gap:14px; }
+  .rw-ring{ display:flex; flex-direction:column; align-items:center; gap:6px; }
+  .rw-circle{
+    width:46px; height:46px; border-radius:50%; border:3px solid var(--border);
+    display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:600; color:var(--text);
+  }
+  .rw-circle.plan{ border-color:#d9c9f8; }
+  .rw-circle.do{ border-color:#c9d9f8; }
+  .rw-circle.share{ border-color:#c9f0d9; }
+  .rw-ring .rw-tag{
+    font-family:'JetBrains Mono', monospace; font-size:8.5px; letter-spacing:0.08em; color:var(--text-faint);
+  }
+
+  .page-head{ padding:22px 0 26px; max-width:1040px; margin:0 auto; }
+  .eyebrow{
+    font-family:'JetBrains Mono', monospace; font-size:11px; letter-spacing:0.12em; text-transform:uppercase;
+    color:var(--violet); margin-bottom:8px;
+  }
+  .greeting{ font-family:'Fraunces', serif; font-weight:500; font-size:32px; color:var(--text); line-height:1.15; margin-bottom:6px; }
+  .greeting span{ color:var(--violet); }
+  .subline{ font-size:14px; color:var(--text-muted); line-height:1.5; }
+
+  .foryou-layout{ display:flex; gap:44px; align-items:flex-start; max-width:1040px; margin:0 auto; }
+  .thread-col{ width:660px; flex-shrink:0; }
+  .rail-col{ flex:1; min-width:280px; position:sticky; top:8px; }
+
+  .thread-wrap{ position:relative; }
+  .thread-line{
+    position:absolute; left:9px; top:16px; bottom:16px; width:1px;
+    background: linear-gradient(to bottom, var(--violet-dim), var(--thread) 12%, var(--thread) 88%, transparent);
+    z-index:0;
+  }
+  .node-card{ position:relative; margin-bottom:20px; padding-left:32px; }
+  .node-dot{
+    position:absolute; left:0; top:20px; width:19px; height:19px; border-radius:50%;
+    background: var(--bg); border:2px solid var(--violet); z-index:1;
+    display:flex; align-items:center; justify-content:center; font-size:9px; color:var(--violet);
+  }
+  .node-dot.sage{ border-color:var(--sage); color:var(--sage); }
+  .node-dot.muted{ border-color:var(--text-faint); color:var(--text-faint); border-style:dashed; }
+
+  .card{ padding:22px 24px 20px; }
+  .card-label{
+    font-family:'JetBrains Mono', monospace; font-size:10.5px; letter-spacing:0.1em; text-transform:uppercase;
+    color:var(--text-faint); margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;
+  }
+  .cap-note{ color:var(--text-faint); font-weight:500; }
+
+  .briefing-title{ font-family:'Fraunces', serif; font-weight:500; font-size:19px; color:var(--text); margin-bottom:9px; }
+  .briefing-text{ font-size:14px; line-height:1.6; color:var(--text-secondary); margin-bottom:16px; max-width:520px; }
+  .briefing-text b{ color:var(--text); font-weight:600; }
+  .empty-text{ font-size:13.5px; line-height:1.65; color:var(--text-muted); max-width:480px; }
+
+  .chip-row{ display:flex; gap:9px; flex-wrap:wrap; }
+  .chip{
+    font-size:12px; padding:8px 13px; min-height:34px; display:flex; align-items:center; gap:5px;
+    border-radius:20px; background: var(--card-raised); color:var(--text-muted); border:1px solid var(--border);
+  }
+  .chip.active{ background: var(--violet-soft); color: var(--violet); border-color: transparent; }
+  .chip.task{ background:var(--card); color:var(--text); border:1px solid var(--sage); }
+  .chip.task:hover{ background:var(--sage-dim); }
+  .chip.task .dot{ width:7px; height:7px; border-radius:50%; background:var(--sage); flex-shrink:0; }
+  .chip.task .go{ color:var(--sage); font-weight:700; margin-left:2px; }
+  .chip-caption{ font-size:10.5px; color:var(--text-faint); margin-top:10px; line-height:1.4; }
+
+  .kudos-feedback{ display:none; align-items:center; gap:8px; margin-top:14px; font-size:13px; color:var(--sage); font-weight:600; }
+  .kudos-feedback.show{ display:flex; }
+  .kudos-feedback .undo{ color:var(--violet); font-weight:600; font-size:12.5px; background:none; border:none; font-family:inherit; min-height:32px; }
+  .kudos-feedback .undo:hover{ text-decoration:underline; }
+  .kudos-card.resolved .kudos-row, .kudos-card.resolved .kudos-actions{ display:none; }
+
+  .nudge-copy .title{ font-size:15.5px; font-weight:600; color:var(--text); margin-bottom:5px; max-width:420px; }
+  .nudge-copy .desc{ font-size:13px; color:var(--text-muted); line-height:1.55; max-width:460px; }
+
+  .why-link{
+    font-size:12.5px; color:var(--violet); margin-top:12px; display:inline-flex; align-items:center;
+    min-height:32px; background:none; border:none; padding:0; border-bottom:1px solid var(--violet-dim); font-family:inherit;
+  }
+  .why-link:hover{ border-bottom-color:var(--violet); }
+  .why-panel{
+    display:none; margin-top:12px; padding:13px 15px; background:var(--violet-soft); border-radius:12px;
+    font-size:12.5px; color:var(--text-secondary); line-height:1.6; max-width:480px;
+  }
+  .why-panel.open{ display:block; }
+  .why-panel b{ color:var(--text); }
+
+  .actions{ display:flex; gap:10px; margin-top:16px; max-width:340px; }
+  .btn{
+    flex:1; text-align:center; padding:11px 0; min-height:42px; border-radius:12px; font-size:13.5px; font-weight:600;
+    display:flex; align-items:center; justify-content:center; border:none; font-family:inherit;
+  }
+  .btn.primary{ background:var(--violet); color:#fff; }
+  .btn.primary:hover{ background:#7640ea; }
+  .btn.ghost{ background:transparent; border:1px solid var(--border); color:var(--text-muted); }
+  .btn.ghost:hover{ background:var(--card-raised); }
+
+  .feedback-row{ display:none; align-items:center; justify-content:space-between; margin-top:16px; font-size:13px; color:var(--sage); font-weight:600; max-width:340px; }
+  .feedback-row.show{ display:flex; }
+  .feedback-row .undo{ color:var(--violet); font-weight:600; font-size:12.5px; background:none; border:none; font-family:inherit; min-height:32px; }
+  .feedback-row .undo:hover{ text-decoration:underline; }
+
+  .miss-item{ display:flex; justify-content:space-between; align-items:flex-start; padding:12px 0; border-bottom:1px solid var(--divider); gap:12px; }
+  .miss-item:last-child{ border-bottom:none; padding-bottom:0; }
+  .miss-body{ flex:1; min-width:0; }
+  .miss-name{ font-size:14px; color:var(--text); font-weight:500; margin-bottom:4px; max-width:340px; }
+  .miss-why{ font-size:12.5px; color:var(--text-muted); }
+  .miss-tag{ font-size:10.5px; font-family:'JetBrains Mono', monospace; color:var(--text-faint); white-space:nowrap; padding-top:2px; }
+  .miss-cta{
+    font-size:12.5px; font-weight:600; color:var(--violet); margin-top:8px; background:none; border:none;
+    padding:0; min-height:26px; font-family:inherit; display:inline-flex; align-items:center;
+  }
+  .miss-cta:hover{ text-decoration:underline; }
+  .miss-feedback{ display:none; align-items:center; gap:10px; margin-top:8px; font-size:12.5px; color:var(--sage); font-weight:600; }
+  .miss-feedback.show{ display:flex; }
+  .miss-feedback .undo{ color:var(--violet); font-weight:600; font-size:12.5px; background:none; border:none; font-family:inherit; min-height:24px; }
+  .miss-feedback .undo:hover{ text-decoration:underline; }
+
+  .kudos-row{ display:flex; align-items:center; gap:14px; }
+  .avatar{
+    width:42px; height:42px; border-radius:50%; background: var(--sage-dim); border:1px solid var(--sage);
+    display:flex; align-items:center; justify-content:center; font-family:'Fraunces', serif; font-size:16px;
+    color:var(--sage); flex-shrink:0;
+  }
+  .kudos-text{ font-size:14px; color:var(--text-secondary); line-height:1.5; max-width:400px; }
+  .kudos-text b{ color:var(--text); }
+  .kudos-actions{ display:flex; gap:9px; margin-top:14px; max-width:280px; }
+  .kudos-btn{
+    flex:1; text-align:center; padding:10px 0; min-height:40px; border-radius:11px; font-size:13px; font-weight:600;
+    display:flex; align-items:center; justify-content:center; border:none; font-family:inherit;
+  }
+  .kudos-btn.send{ background:var(--sage); color:#fff; }
+  .kudos-btn.send:hover{ background:#417a3d; }
+  .kudos-btn.skip{ background:transparent; border:1px solid var(--border); color:var(--text-muted); }
+  .kudos-btn.skip:hover{ background:var(--card-raised); }
+
+  /* ---- Right rail: trend module, echoes the Profile gauge without becoming it ---- */
+  .rail-card{ padding:24px; }
+  .rail-card .card-label{ margin-bottom:16px; }
+  .trend-head{ display:flex; justify-content:center; align-items:center; margin-bottom:16px; position:relative; height:118px; }
+  .gauge-ring{ position:absolute; top:0; left:50%; transform:translateX(-50%); }
+  .gauge-ring circle{ fill:none; }
+  .gauge-ring .track{ stroke:var(--border); stroke-width:6; }
+  .gauge-ring .fill{ stroke:var(--violet); stroke-width:6; stroke-linecap:round; transform:rotate(-90deg); transform-origin:59px 59px; transition:stroke-dashoffset .3s; }
+  .trend-num-wrap{ position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; }
+  .trend-head .big{ font-family:'Fraunces', serif; font-size:34px; color:var(--text); line-height:1; }
+  .trend-head .big small{ font-size:15px; color:var(--text-muted); font-family:'Inter'; }
+  .trend-head .delta{ font-size:11px; color:var(--sage); font-family:'JetBrains Mono', monospace; margin-top:6px; text-align:center; }
+  .bars{ display:flex; align-items:flex-end; gap:8px; height:64px; margin-bottom:8px; }
+  .bar{ flex:1; background: var(--card-raised); border-radius:5px 5px 2px 2px; position:relative; }
+  .bar.today{ background: var(--violet); }
+  .bar-labels{ display:flex; gap:8px; }
+  .bar-labels span{ flex:1; text-align:center; font-size:10px; color:var(--text-faint); font-family:'JetBrains Mono', monospace; }
+  .trend-note{ margin-top:14px; font-size:12.5px; color:var(--text-muted); line-height:1.55; border-top:1px solid var(--divider); padding-top:14px; }
+  .trend-toggle{
+    font-size:12px; color:var(--violet); margin-top:14px; display:inline-flex; align-items:center;
+    min-height:32px; background:none; border:none; padding:0; border-bottom:1px solid var(--violet-dim); font-family:inherit;
+  }
+  .trend-toggle:hover{ border-bottom-color:var(--violet); }
+  .rail-empty{ text-align:center; padding:20px 4px; }
+  .rail-empty .briefing-title{ font-size:16px; }
+
+  /* ---- Page-level modal overlay (deep-link placeholders), replaces the mobile bottom-inset sheet ---- */
+  .modal-overlay{
+    position:absolute; inset:0; background:rgba(15,12,26,0.5); display:none;
+    align-items:center; justify-content:center; z-index:60;
+  }
+  .modal-overlay.open{ display:flex; }
+  .modal-box{
+    background:var(--card); border:1px solid var(--border); border-radius:20px; padding:28px 26px; max-width:380px;
+    box-shadow:0 30px 70px -18px rgba(20,10,50,0.45);
+  }
+  .modal-icon{ font-size:22px; margin-bottom:12px; }
+  .modal-title{ font-family:'Fraunces', serif; font-size:19px; color:var(--text); margin-bottom:10px; line-height:1.3; }
+  .modal-body{ font-size:13.5px; color:var(--text-muted); line-height:1.6; margin-bottom:22px; }
+  .modal-btn{
+    width:100%; padding:12px 0; min-height:44px; border-radius:12px; background:var(--violet); color:#fff;
+    font-size:13.5px; font-weight:600; border:none; font-family:inherit;
+  }
+  .modal-btn:hover{ background:#7640ea; }
+
+</style>
+
+</head>
+<body>
+<!-- Reusable icon defs — simple 24x24 stroke icons, generic geometric shapes -->
+<svg width="0" height="0" style="position:absolute">
+<defs>
+<g id="ic-bell"><path d="M12 4a5 5 0 0 0-5 5v3.2c0 .6-.22 1.18-.62 1.63L5 15.5h14l-1.38-1.67A2.5 2.5 0 0 1 17 12.2V9a5 5 0 0 0-5-5Z" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linejoin="round"/><path d="M10 18.5a2 2 0 0 0 4 0" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linecap="round"/></g>
+<g id="ic-plus"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></g>
+<g id="ic-sparkle"><path d="M12 3.5 13.4 9l5.6 1.4-5.6 1.4L12 17.3 10.6 11.8 5 10.4l5.6-1.4L12 3.5Z" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linejoin="round"/></g>
+<g id="ic-home"><path d="M4 11.5 12 5l8 6.5" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 10v8.5a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V10" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linejoin="round"/></g>
+<g id="ic-star"><path d="M12 4.5 13.7 10 19.5 12 13.7 14 12 19.5 10.3 14 4.5 12 10.3 10 12 4.5Z" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linejoin="round"/></g>
+<g id="ic-calendar"><rect x="4.5" y="6" width="15" height="14" rx="2.2" stroke="currentColor" stroke-width="1.7" fill="none"/><path d="M4.5 10.5h15M8.3 4v3.5M15.7 4v3.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></g>
+<g id="ic-feed"><rect x="4.5" y="5" width="15" height="14" rx="2.2" stroke="currentColor" stroke-width="1.7" fill="none"/><path d="M7.5 9.5h9M7.5 13h9M7.5 16.2h5.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></g>
+<g id="ic-search"><circle cx="10.8" cy="10.8" r="6" stroke="currentColor" stroke-width="1.7" fill="none"/><path d="m19 19-3.6-3.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></g>
+<g id="ic-profile"><circle cx="12" cy="8.5" r="3.5" stroke="currentColor" stroke-width="1.7" fill="none"/><path d="M5 19c1.3-3.5 4-5 7-5s5.7 1.5 7 5" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linecap="round"/></g>
+<g id="ic-gear"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.6" fill="none"/><path d="M12 3.5v2.3M12 18.2v2.3M20.5 12h-2.3M5.8 12H3.5M17.8 6.2l-1.6 1.6M7.8 16.2l-1.6 1.6M17.8 17.8l-1.6-1.6M7.8 7.8 6.2 6.2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></g>
+<g id="ic-logout"><path d="M9 4H6a1.5 1.5 0 0 0-1.5 1.5v13A1.5 1.5 0 0 0 6 20h3" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M13.5 8 17.5 12 13.5 16M17.5 12H9.5" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>
+<g id="ic-sun"><circle cx="12" cy="12" r="3.6" stroke="currentColor" stroke-width="1.7" fill="none"/><path d="M12 3v2M12 19v2M21 12h-2M5 12H3M18.4 5.6l-1.4 1.4M7 16l-1.4 1.4M18.4 18.4 17 17M7 8 5.6 5.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></g>
+<g id="ic-moon"><path d="M19.5 14.2A8 8 0 0 1 9.8 4.5a8 8 0 1 0 9.7 9.7Z" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linejoin="round"/></g>
+<g id="ic-collapse"><rect x="4" y="5" width="16" height="14" rx="2.3" stroke="currentColor" stroke-width="1.6" fill="none"/><path d="M9.5 5v14" stroke="currentColor" stroke-width="1.6"/></g>
+<g id="ic-ws-cal"><rect x="4.5" y="6" width="15" height="14" rx="2.2" stroke="currentColor" stroke-width="1.7" fill="none"/><path d="M4.5 10.5h15" stroke="currentColor" stroke-width="1.7"/></g>
+<g id="ic-ws-wave"><path d="M4 9c1.6-1.6 3.2-1.6 4.8 0s3.2 1.6 4.8 0 3.2-1.6 4.8 0 3.2 1.6 4.8 0M4 15c1.6-1.6 3.2-1.6 4.8 0s3.2 1.6 4.8 0 3.2-1.6 4.8 0 3.2 1.6 4.8 0" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linecap="round"/></g>
+<g id="ic-ws-kite"><path d="M12 3.5 19 9l-2.2 9.5L12 21l-4.8-2.5L5 9l7-5.5Z" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linejoin="round"/></g>
+<g id="ic-chevron"><path d="m9 6 6 6-6 6" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>
+<g id="ic-back"><path d="m15 6-6 6 6 6" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>
+<g id="ic-lock"><rect x="5.5" y="10.5" width="13" height="9" rx="2" stroke="currentColor" stroke-width="1.6" fill="none"/><path d="M8.2 10.5V7.8a3.8 3.8 0 1 1 7.6 0v2.7" stroke="currentColor" stroke-width="1.6" fill="none"/></g>
+<g id="ic-edit"><path d="m15.5 5.5 3 3L8 19H5v-3L15.5 5.5Z" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linejoin="round"/></g>
+<g id="ic-warn"><path d="M12 4 21 19H3L12 4Z" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linejoin="round"/><path d="M12 10v4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="12" cy="16.6" r="0.9" fill="currentColor"/></g>
+<g id="ic-pause"><rect x="7" y="5.5" width="3.4" height="13" rx="1" stroke="currentColor" stroke-width="1.4" fill="none"/><rect x="13.6" y="5.5" width="3.4" height="13" rx="1" stroke="currentColor" stroke-width="1.4" fill="none"/></g>
+<g id="ic-download"><path d="M12 4v11" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="m7.5 11 4.5 4.5L16.5 11" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 18.5h14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></g>
+<g id="ic-reset"><path d="M4.5 12a7.5 7.5 0 1 1 2.4 5.5" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linecap="round"/><path d="M4.5 17v-4.5H9" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>
+</defs>
+</svg>
+
+<div class="device-frame">
+<div class="app-shell" id="app-shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-top">
+      <div class="wordmark">Kindred</div>
+      <button class="icon-btn" aria-label="Notifications"><svg viewBox="0 0 24 24"><use href="#ic-bell"/></svg></button>
+    </div>
+    <div class="sb-primary">
+      <button class="sb-btn primary" tabindex="0"><svg viewBox="0 0 24 24"><use href="#ic-plus"/></svg>New task<span class="kbd">&#8679;T</span></button>
+      <button class="sb-btn ai" tabindex="0"><svg viewBox="0 0 24 24"><use href="#ic-sparkle"/></svg>Create with AI<span class="kbd">&#8679;A</span></button>
+    </div>
+    <nav class="nav-list" aria-label="Primary">
+      <a class="nav-item" tabindex="0"><svg viewBox="0 0 24 24"><use href="#ic-home"/></svg>Home<span class="kbd">&#8679;H</span></a>
+      <a class="nav-item active" tabindex="0" aria-current="page"><svg viewBox="0 0 24 24"><use href="#ic-star"/></svg>For You<span class="kbd">&#8679;F</span></a>
+      <a class="nav-item" tabindex="0"><svg viewBox="0 0 24 24"><use href="#ic-calendar"/></svg>Calendar<span class="kbd">&#8679;C</span></a>
+      <a class="nav-item" tabindex="0"><svg viewBox="0 0 24 24"><use href="#ic-feed"/></svg>Feed</a>
+      <a class="nav-item" tabindex="0"><svg viewBox="0 0 24 24"><use href="#ic-search"/></svg>Search</a>
+      <a class="nav-item" tabindex="0"><svg viewBox="0 0 24 24"><use href="#ic-profile"/></svg>Profile</a>
+    </nav>
+    <div class="sb-section-label">Workspaces</div>
+    <div class="workspace-list">
+      <div class="ws-item" tabindex="0"><svg viewBox="0 0 24 24"><use href="#ic-ws-cal"/></svg><span>abhikaboy@gmail.com</span></div>
+      <div class="ws-item" tabindex="0"><svg viewBox="0 0 24 24"><use href="#ic-ws-wave"/></svg><span>lol</span></div>
+      <div class="ws-item" tabindex="0"><svg viewBox="0 0 24 24"><use href="#ic-ws-kite"/></svg><span>lol Kokomo</span></div>
+    </div>
+    <div class="sidebar-footer">
+      <a class="footer-item" tabindex="0"><svg viewBox="0 0 24 24"><use href="#ic-gear"/></svg>Settings</a>
+      <a class="footer-item" tabindex="0"><svg viewBox="0 0 24 24"><use href="#ic-logout"/></svg>Log out</a>
+      <div class="theme-row">
+        <span class="label">Theme</span>
+        <button class="theme-toggle-btn" tabindex="0" onclick="quickToggleTheme()" aria-label="Toggle light and dark theme">
+          <svg viewBox="0 0 24 24"><use id="theme-toggle-icon" href="#ic-moon"/></svg>
+        </button>
+      </div>
+    </div>
+  </aside>
+  <main class="main-pane">
+    <div class="top-strip">
+      <div class="top-strip-left">
+        <button class="collapse-btn" tabindex="0" onclick="toggleSidebar()" aria-label="Collapse sidebar"><svg viewBox="0 0 24 24"><use href="#ic-collapse"/></svg></button>
+      </div>
+      <div class="top-strip-right">
+        <div class="state-switch" role="group" aria-label="Preview state">
+          <button class="state-pill active" id="pill-active" tabindex="0" onclick="setState('active')">Active user</button>
+          <button class="state-pill" id="pill-new" tabindex="0" onclick="setState('new')">New user</button>
+        </div> <button class="gear-btn" tabindex="0" aria-label="Settings"><svg viewBox="0 0 24 24"><use href="#ic-gear"/></svg></button>
+      </div>
+    </div>
+    <div class="content-scroll">
+      <div class="page-head">
+        <div class="eyebrow">Thursday &middot; Personalization</div>
+        <div class="greeting"><span id="greet-name">Evening, Maya.</span></div>
+        <div class="subline" id="subline">Here's where your thread picked up today.</div>
+      </div>
+
+      <!-- ===== ACTIVE / POPULATED STATE ===== -->
+      <div id="state-active">
+        <div class="foryou-layout">
+          <div class="thread-col">
+            <div class="thread-wrap">
+              <div class="thread-line"></div>
+
+              <div class="node-card">
+                <div class="node-dot">&#10022;</div>
+                <div class="card">
+                  <div class="card-label">Today's briefing</div>
+                  <div class="briefing-title">A lighter day, mostly mornings</div>
+                  <div class="briefing-text">
+                    You closed <b>4 of 6</b> rings today. Your focus held strongest before noon &mdash; that's the third day this week your completions cluster before 1pm.
+                  </div>
+                  <div class="chip-row">
+                    <div class="chip active" tabindex="0">&#10022; Mornings work for you</div>
+                    <div class="chip task" id="gym-chip" tabindex="0" onclick="openNavModal('ring')" role="button">
+                      <span class="dot"></span>Gym ring open<span class="go">&rarr;</span>
+                    </div>
+                  </div>
+                  <div class="chip-caption">Purple = a pattern we noticed about you &middot; Green = an open ring you can still close today</div>
+                </div>
+              </div>
+
+              <div class="node-card">
+                <div class="node-dot">!</div>
+                <div class="card">
+                  <div class="card-label"><span>Suggested nudge</span><span class="cap-note">1 of 2 today</span></div>
+                  <div class="nudge-copy">
+                    <div class="title truncate">Move "Read 20 min" to 8:40am?</div>
+                    <div class="desc">You complete reading tasks 3x more often when they're scheduled before your commute.</div>
+                  </div>
+                  <button class="why-link" onclick="toggleWhy()" aria-expanded="false" id="why-btn">Why am I seeing this</button>
+                  <div class="why-panel" id="why-panel">
+                    Based on <b>14 days</b> of task timing: reading tasks completed before 9am finished 3x more often than the same task scheduled later. This nudge will stop appearing if you dismiss it twice in a row.
+                  </div>
+                  <div class="actions" id="nudge-actions">
+                    <div class="btn primary" tabindex="0" onclick="resolveNudge('moved')">Move it</div>
+                    <div class="btn ghost" tabindex="0" onclick="resolveNudge('dismissed')">Not now</div>
+                  </div>
+                  <div class="feedback-row" id="nudge-feedback"></div>
+                </div>
+              </div>
+
+              <div class="node-card">
+                <div class="node-dot muted">&middot;</div>
+                <div class="card">
+                  <div class="card-label">What got missed</div>
+                  <div class="miss-item" id="miss-expense">
+                    <div class="miss-body">
+                      <div class="miss-name truncate">Submit expense report</div>
+                      <div class="miss-why">Pushed 3 times &mdash; usually means it's not actually urgent</div>
+                      <button class="miss-cta" tabindex="0" id="miss-cta-expense" onclick="resolveMissed('expense')">Move to today</button>
+                      <div class="miss-feedback" id="miss-feedback-expense"></div>
+                    </div>
+                    <div class="miss-tag">2D AGO</div>
+                  </div>
+                  <div class="miss-item" id="miss-dentist">
+                    <div class="miss-body">
+                      <div class="miss-name truncate">Call dentist</div>
+                      <div class="miss-why">Created during a busy stretch, no time block set</div>
+                      <button class="miss-cta" tabindex="0" id="miss-cta-dentist" onclick="resolveMissed('dentist')">Add a time block</button>
+                      <div class="miss-feedback" id="miss-feedback-dentist"></div>
+                    </div>
+                    <div class="miss-tag">TODAY</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="node-card">
+                <div class="node-dot sage">&hearts;</div>
+                <div class="card kudos-card" id="kudos-card">
+                  <div class="card-label">Worth celebrating</div>
+                  <div class="kudos-row">
+                    <div class="avatar">J</div>
+                    <div class="kudos-text"><b>Jordan</b> completed Morning Run every day this week.</div>
+                  </div>
+                  <div class="kudos-actions" id="kudos-actions">
+                    <div class="kudos-btn send" tabindex="0" onclick="resolveKudos('sent')">Send kudos</div>
+                    <div class="kudos-btn skip" tabindex="0" onclick="resolveKudos('skipped')">Skip</div>
+                  </div>
+                  <div class="kudos-feedback" id="kudos-feedback"></div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <div class="rail-col">
+            <div class="card rail-card" id="rail-active">
+              <div class="card-label">This week's pattern</div>
+              <div class="trend-head">
+                <svg class="gauge-ring" width="118" height="118" viewBox="0 0 118 118">
+                  <circle class="track" cx="59" cy="59" r="53"></circle>
+                  <circle class="fill" id="gauge-fill" cx="59" cy="59" r="53"></circle>
+                </svg>
+                <div class="trend-num-wrap">
+                  <div class="big" id="trend-big">82<small>%</small></div>
+                  <div class="delta" id="trend-delta">&uarr; steadier than last week</div>
+                </div>
+              </div>
+              <div id="trend-week-view">
+                <div class="bars">
+                  <div class="bar" style="height:40%"></div>
+                  <div class="bar" style="height:65%"></div>
+                  <div class="bar" style="height:50%"></div>
+                  <div class="bar" style="height:80%"></div>
+                  <div class="bar" style="height:70%"></div>
+                  <div class="bar" style="height:90%"></div>
+                  <div class="bar today" style="height:67%"></div>
+                </div>
+                <div class="bar-labels"><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span></div>
+              </div>
+              <div id="trend-month-view" style="display:none;">
+                <div class="bars">
+                  <div class="bar" style="height:52%"></div>
+                  <div class="bar" style="height:61%"></div>
+                  <div class="bar" style="height:74%"></div>
+                  <div class="bar today" style="height:82%"></div>
+                </div>
+                <div class="bar-labels"><span>Wk 1</span><span>Wk 2</span><span>Wk 3</span><span>Wk 4</span></div>
+              </div>
+              <div class="trend-note" id="trend-note">Tuesday's dip lines up with the team offsite, not a slip.</div>
+              <button class="trend-toggle" tabindex="0" id="trend-toggle-btn" onclick="toggleTrendView()">See full month &rarr;</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== NEW / COLD-START STATE ===== -->
+      <div id="state-new" style="display:none;">
+        <div class="foryou-layout">
+          <div class="thread-col">
+            <div class="thread-wrap">
+              <div class="thread-line"></div>
+
+              <div class="node-card">
+                <div class="node-dot">&#10022;</div>
+                <div class="card">
+                  <div class="card-label">Today's briefing</div>
+                  <div class="briefing-title">Nothing to show yet</div>
+                  <div class="empty-text">We build your briefing from a few days of tasks and rings. Add a couple of tasks today and check back tomorrow evening.</div>
+                </div>
+              </div>
+
+              <div class="node-card">
+                <div class="node-dot">!</div>
+                <div class="card">
+                  <div class="card-label">Suggested nudge</div>
+                  <div class="empty-text">No suggestions yet &mdash; nudges start once we notice a real pattern, usually within a week of regular use.</div>
+                </div>
+              </div>
+
+              <div class="node-card">
+                <div class="node-dot muted">&middot;</div>
+                <div class="card">
+                  <div class="card-label">What got missed</div>
+                  <div class="empty-text">Nothing tracked yet &mdash; there's nothing to show until you've added a few tasks.</div>
+                </div>
+              </div>
+
+              <div class="node-card">
+                <div class="node-dot sage">&hearts;</div>
+                <div class="card">
+                  <div class="card-label">Worth celebrating</div>
+                  <div class="empty-text">Add friends to send and receive kudos when something's worth celebrating.</div>
+                  <div class="actions">
+                    <div class="btn primary" tabindex="0" onclick="openNavModal('friends')" role="button">Add friends</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="rail-col">
+            <div class="card rail-card rail-empty">
+              <div class="card-label">This week's pattern</div>
+              <div class="briefing-title">Not enough data yet</div>
+              <div class="empty-text">This fills in after your first few days &mdash; check back once you've closed a few rings.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-overlay" id="nav-modal-overlay" onclick="if(event.target===this) closeNavModal()">
+        <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="nav-modal-title">
+          <div class="modal-icon" id="nav-modal-icon">&#128279;</div>
+          <div class="modal-title" id="nav-modal-title">This would open Rings</div>
+          <div class="modal-body" id="nav-modal-body">In the real app, this deep-links to the Rings tab scoped to <b>Gym</b> &mdash; it doesn't close the ring from here. Closing a ring likely involves more than one tap (duration, reps, streak), so this mockup shows the intended destination instead of faking that interaction.</div>
+          <button class="modal-btn" tabindex="0" onclick="closeNavModal()">Got it</button>
+        </div>
+      </div>
+
+    </div>
+  </main>
+  <div class="rings-widget" aria-label="Today's rings, 3 left">
+    <div class="rw-label">TODAY &middot; 3 LEFT</div>
+    <div class="rw-rings">
+      <div class="rw-ring"><div class="rw-circle plan">0/2</div><div class="rw-tag">PLAN</div></div>
+      <div class="rw-ring"><div class="rw-circle do">0/3</div><div class="rw-tag">DO</div></div>
+      <div class="rw-ring"><div class="rw-circle share">0/1</div><div class="rw-tag">SHARE</div></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+  // ---------- sidebar collapse ----------
+  function toggleSidebar(){
+    document.getElementById('sidebar').classList.toggle('collapsed');
+  }
+
+  // ---------- keyboard support for div-as-button interactive elements ----------
+  function bindKeyboard(el){
+    el.addEventListener('keydown', function(e){
+      if(e.key === 'Enter' || e.key === ' '){
+        e.preventDefault();
+        el.click();
+      }
+    });
+  }
+  document.querySelectorAll('[tabindex="0"]').forEach(function(el){
+    if(!el.hasAttribute('role')) el.setAttribute('role','button');
+    bindKeyboard(el);
+  });
+
+  // ---------- theme: light / dark / system, one source of truth ----------
+  var themeMode = 'light'; // 'light' | 'dark' | 'system'
+
+  function systemPrefersDark(){
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  }
+  function effectiveTheme(){
+    return themeMode === 'system' ? (systemPrefersDark() ? 'dark' : 'light') : themeMode;
+  }
+  function applyTheme(){
+    var dark = effectiveTheme() === 'dark';
+    document.getElementById('app-shell').classList.toggle('dark-mode', dark);
+    var btn = document.getElementById('theme-toggle-icon');
+    if(btn) btn.setAttribute('href', dark ? '#ic-sun' : '#ic-moon');
+    var segs = document.querySelectorAll('[data-theme]');
+    segs.forEach(function(s){ s.classList.toggle('active', s.getAttribute('data-theme') === themeMode); });
+    if(typeof onThemeChange === 'function') onThemeChange(dark);
+  }
+  function setTheme(mode){
+    themeMode = mode;
+    applyTheme();
+  }
+  // Sidebar's quick toggle: a true bidirectional flip between light and dark,
+  // matching the mobile settings file's sun/moon behavior — an explicit choice,
+  // same source of truth the settings page's System/Light/Dark control reads from.
+  function quickToggleTheme(){
+    setTheme(effectiveTheme() === 'dark' ? 'light' : 'dark');
+  }
+  applyTheme();
+
+
+  var GAUGE_C = 2 * Math.PI * 53;
+  function setGauge(pct){
+    var el = document.getElementById('gauge-fill');
+    if(!el) return;
+    el.style.strokeDasharray = GAUGE_C.toFixed(1);
+    el.style.strokeDashoffset = (GAUGE_C * (1 - pct / 100)).toFixed(1);
+  }
+  setGauge(82);
+
+  function setState(s){
+    document.getElementById('state-active').style.display = (s==='active') ? 'block' : 'none';
+    document.getElementById('state-new').style.display = (s==='new') ? 'block' : 'none';
+    document.getElementById('pill-active').classList.toggle('active', s==='active');
+    document.getElementById('pill-new').classList.toggle('active', s==='new');
+    var greet = document.getElementById('greet-name');
+    var sub = document.getElementById('subline');
+    if(s==='new'){
+      greet.textContent = 'Welcome, Maya.';
+      sub.textContent = "Your personalization hasn't kicked in yet — insights show up here as you use Kindred.";
+    } else {
+      greet.textContent = 'Evening, Maya.';
+      sub.textContent = "Here's where your thread picked up today.";
+    }
+  }
+  function toggleWhy(){
+    var panel = document.getElementById('why-panel');
+    var btn = document.getElementById('why-btn');
+    var open = panel.classList.toggle('open');
+    btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+  }
+  var trendMonthOpen = false;
+  function toggleTrendView(){
+    trendMonthOpen = !trendMonthOpen;
+    document.getElementById('trend-week-view').style.display = trendMonthOpen ? 'none' : 'block';
+    document.getElementById('trend-month-view').style.display = trendMonthOpen ? 'block' : 'none';
+    document.getElementById('trend-big').innerHTML = trendMonthOpen ? '69<small>%</small>' : '82<small>%</small>';
+    document.getElementById('trend-delta').textContent = trendMonthOpen ? 'trending up over 4 weeks' : '↑ steadier than last week';
+    document.getElementById('trend-note').textContent = trendMonthOpen
+      ? "Each bar averages a full week. The climb tracks with your focus-time nudges landing more consistently."
+      : "Tuesday's dip lines up with the team offsite, not a slip.";
+    document.getElementById('trend-toggle-btn').textContent = trendMonthOpen ? '← Back to this week' : 'See full month →';
+    setGauge(trendMonthOpen ? 69 : 82);
+  }
+  var missedActions = {
+    expense: { done: '✓ Moved to today', undone: 'Move to today' },
+    dentist: { done: '✓ Time block added', undone: 'Add a time block' }
+  };
+  function resolveMissed(id){
+    document.getElementById('miss-cta-' + id).style.display = 'none';
+    var fb = document.getElementById('miss-feedback-' + id);
+    fb.classList.add('show');
+    fb.innerHTML = '<span>' + missedActions[id].done + '</span><button class="undo" onclick="undoMissed(\'' + id + '\')">Undo</button>';
+  }
+  function undoMissed(id){
+    document.getElementById('miss-cta-' + id).style.display = 'inline-flex';
+    var fb = document.getElementById('miss-feedback-' + id);
+    fb.classList.remove('show');
+    fb.innerHTML = '';
+  }
+  function resolveNudge(kind){
+    document.getElementById('nudge-actions').style.display = 'none';
+    var fb = document.getElementById('nudge-feedback');
+    fb.classList.add('show');
+    if(kind === 'moved'){
+      fb.innerHTML = '<span>✓ Moved to 8:40am</span><button class="undo" onclick="undoNudge()">Undo</button>';
+    } else {
+      fb.innerHTML = '<span style="color:var(--text-muted)">Dismissed — won\'t ask again this week</span><button class="undo" onclick="undoNudge()">Undo</button>';
+    }
+  }
+  function undoNudge(){
+    document.getElementById('nudge-actions').style.display = 'flex';
+    var fb = document.getElementById('nudge-feedback');
+    fb.classList.remove('show');
+    fb.innerHTML = '';
+  }
+  function resolveKudos(kind){
+    document.getElementById('kudos-actions').style.display = 'none';
+    var fb = document.getElementById('kudos-feedback');
+    fb.classList.add('show');
+    if(kind === 'sent'){
+      fb.innerHTML = '<span>✓ Kudos sent to Jordan</span><button class="undo" onclick="undoKudos()">Undo</button>';
+    } else {
+      fb.innerHTML = '<span style="color:var(--text-muted)">Skipped — we\'ll surface this less often</span><button class="undo" onclick="undoKudos()">Undo</button>';
+    }
+  }
+  function undoKudos(){
+    document.getElementById('kudos-actions').style.display = 'flex';
+    var fb = document.getElementById('kudos-feedback');
+    fb.classList.remove('show');
+    fb.innerHTML = '';
+  }
+  var navModalContent = {
+    ring: {
+      icon: '🔗',
+      title: 'This would open Rings',
+      body: 'In the real app, this deep-links to the Rings tab scoped to <b>Gym</b> — it doesn\'t close the ring from here. Closing a ring likely involves more than one tap of state (duration, reps, streak), so this mockup shows the intended destination instead of faking that interaction.'
+    },
+    friends: {
+      icon: '👥',
+      title: 'This would open Friends',
+      body: 'In the real app, this deep-links to the Friends tab to search for and add someone. Adding a friend involves sending a request and waiting on their acceptance — more than a single tap — so this mockup shows the intended destination instead of faking that flow.'
+    }
+  };
+  function openNavModal(kind){
+    var c = navModalContent[kind];
+    document.getElementById('nav-modal-icon').textContent = c.icon;
+    document.getElementById('nav-modal-title').textContent = c.title;
+    document.getElementById('nav-modal-body').innerHTML = c.body;
+    document.getElementById('nav-modal-overlay').classList.add('open');
+  }
+  function closeNavModal(){
+    document.getElementById('nav-modal-overlay').classList.remove('open');
+  }
+
+</script>
+</body>
+</html>

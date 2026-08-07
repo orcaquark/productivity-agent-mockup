@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Kindred — Personalization Settings (Desktop)</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root{
+    /* ===== Light theme (default) — neutral grays, zero violet tint, per guide Section 1 ===== */
+    --bg: #ffffff;
+    --sidebar-bg: #f5f5f5;
+    --sidebar-active: #e5e5e5;
+    --card: #ffffff;
+    --card-raised: #f6f6f8;
+    --border: #e0e0e0;
+    --thread: #d8d2e8;
+    --violet: #854dff;
+    --violet-dim: #854dff2a;
+    --violet-soft: #854dff14;
+    --sage: #4f8a4b;
+    --sage-dim: #93c08f22;
+    --coral-warn: #d9714e;
+    --coral-warn-dim: #d9714e16;
+    --danger: #ff5c5f;
+    --danger-dim: #ff5c5f14;
+    --danger-soft: #ff5c5f0d;
+    --pending: #fe9a00;
+    --text: #221d33;
+    --text-muted: #919090;
+    --text-faint: #a8a4b0;
+    --text-secondary: #4a4458;
+    --divider: #ece7f6;
+    --seg-active: #ffffff;
+    --shadow: 0 20px 50px -20px rgba(30,20,60,0.16);
+  }
+
+  /* ===== Dark theme — carries a real violet/blue tint in its darks ===== */
+  .app-shell.dark-mode{
+    --bg: #0c0c1a;
+    --sidebar-bg: #171626;
+    --sidebar-active: #1f1d2e;
+    --card: #171626;
+    --card-raised: #1d1b2e;
+    --border: #242233;
+    --thread: #332d44;
+    --violet-dim: #854dff3a;
+    --violet-soft: #854dff22;
+    --sage-dim: #93c08f33;
+    --coral-warn-dim: #d9714e26;
+    --danger-dim: #ff5c5f26;
+    --danger-soft: #ff5c5f16;
+    --text: #f4f2f9;
+    --text-muted: #8b879a;
+    --text-faint: #656179;
+    --text-secondary: #cfc9dc;
+    --divider: #23212f;
+    --seg-active: #2b2740;
+    --shadow: 0 20px 50px -20px rgba(0,0,0,0.55);
+  }
+
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html,body{ height:100%; }
+  body{
+    background:#e8e6ec;
+    font-family:'Inter',sans-serif;
+    color:var(--text);
+  }
+  button, a{ font-family:inherit; color:inherit; }
+  .truncate{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+  :focus-visible{
+    outline: 2px solid var(--violet);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+
+  button, a, [tabindex], .clickable{ cursor:pointer; }
+
+  /* ===== App shell frame — a bezel standing in for the browser viewport,
+     the desktop equivalent of the mobile files' .phone/.notch chrome ===== */
+  .device-frame{
+    width:1360px; height:860px; margin:26px auto;
+    border-radius:14px; border:1px solid #cfcbd8; overflow:hidden;
+    box-shadow: 0 40px 90px -30px rgba(30,20,60,0.35);
+    background: var(--bg);
+  }
+
+  .app-shell{
+    width:100%; height:100%; display:flex; background:var(--bg); position:relative;
+    transition: background .2s;
+  }
+
+  /* ================= SIDEBAR ================= */
+  .sidebar{
+    width:325px; min-width:325px; height:100%; background:var(--sidebar-bg);
+    border-right:1px solid var(--border); display:flex; flex-direction:column;
+    padding:22px 16px 16px; transition: background .2s, border-color .2s, margin-left .18s, width .18s, min-width .18s, padding .18s;
+    overflow:hidden;
+  }
+  .sidebar.collapsed{ width:0; min-width:0; padding-left:0; padding-right:0; border-right:none; }
+  .sidebar.collapsed > *{ display:none; }
+
+  .sidebar-top{ display:flex; align-items:center; justify-content:space-between; padding:0 6px 20px; }
+  .wordmark{ font-family:'Fraunces', serif; font-weight:600; font-size:21px; color:var(--text); }
+  .icon-btn{
+    width:32px; height:32px; border-radius:9px; border:none; background:transparent;
+    display:flex; align-items:center; justify-content:center; color:var(--text-muted);
+  }
+  .icon-btn:hover{ background:var(--sidebar-active); }
+  .icon-btn svg{ width:17px; height:17px; }
+
+  .sb-primary{ display:flex; flex-direction:column; gap:8px; margin-bottom:18px; }
+  .sb-btn{
+    display:flex; align-items:center; gap:9px; padding:10px 13px; border-radius:11px; border:none;
+    font-size:13.5px; font-weight:600; min-height:40px;
+  }
+  .sb-btn .kbd{
+    margin-left:auto; font-family:'JetBrains Mono', monospace; font-size:10px; font-weight:500;
+    letter-spacing:0.02em; opacity:0.72;
+  }
+  .sb-btn.primary{ background:var(--violet); color:#fff; }
+  .sb-btn.primary:hover{ background:#7640ea; }
+  .sb-btn.ai{ background:transparent; color:var(--text); border:1px solid var(--border); }
+  .sb-btn.ai:hover{ background:var(--sidebar-active); }
+  .sb-btn svg{ width:15px; height:15px; flex-shrink:0; }
+
+  .nav-list{ display:flex; flex-direction:column; gap:2px; margin-bottom:18px; }
+  .nav-item{
+    display:flex; align-items:center; gap:11px; padding:9px 10px; border-radius:9px;
+    font-size:13.5px; color:var(--text-muted); text-decoration:none; min-height:38px;
+  }
+  .nav-item svg{ width:16px; height:16px; flex-shrink:0; }
+  .nav-item .kbd{
+    margin-left:auto; font-family:'JetBrains Mono', monospace; font-size:9.5px; color:var(--text-faint);
+  }
+  .nav-item:hover{ background:var(--sidebar-active); color:var(--text); }
+  .nav-item.active{ background:var(--sidebar-active); color:var(--text); font-weight:600; }
+  .nav-item.active svg{ color:var(--violet); }
+
+  .sb-section-label{
+    font-family:'JetBrains Mono', monospace; font-size:9.5px; letter-spacing:0.1em; text-transform:uppercase;
+    color:var(--text-faint); padding:0 10px; margin-bottom:8px;
+  }
+  .workspace-list{ flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:1px; scrollbar-width:none; margin-bottom:10px; }
+  .workspace-list::-webkit-scrollbar{ display:none; }
+  .ws-item{
+    display:flex; align-items:center; gap:10px; padding:8px 10px; border-radius:9px;
+    font-size:12.5px; color:var(--text); min-height:34px;
+  }
+  .ws-item:hover{ background:var(--sidebar-active); }
+  .ws-item svg{ width:14px; height:14px; flex-shrink:0; color:var(--text-muted); }
+  .ws-item span{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+  .sidebar-footer{ display:flex; flex-direction:column; gap:2px; border-top:1px solid var(--border); padding-top:10px; }
+  .footer-item{
+    display:flex; align-items:center; gap:11px; padding:9px 10px; border-radius:9px;
+    font-size:13px; color:var(--text-muted); text-decoration:none; min-height:36px;
+  }
+  .footer-item:hover{ background:var(--sidebar-active); color:var(--text); }
+  .footer-item.active{ background:var(--sidebar-active); color:var(--text); font-weight:600; }
+  .footer-item.active svg{ color:var(--violet); }
+  .footer-item svg{ width:15px; height:15px; flex-shrink:0; }
+  .theme-row{ display:flex; align-items:center; justify-content:space-between; padding:9px 10px; }
+  .theme-row .label{ font-size:13px; color:var(--text-muted); }
+  .theme-toggle-btn{
+    width:30px; height:30px; border-radius:9px; border:none; background:transparent;
+    display:flex; align-items:center; justify-content:center; color:var(--text-muted);
+  }
+  .theme-toggle-btn:hover{ background:var(--sidebar-active); color:var(--text); }
+  .theme-toggle-btn svg{ width:16px; height:16px; }
+
+  /* ================= MAIN PANE ================= */
+  .main-pane{ flex:1; min-width:0; display:flex; flex-direction:column; height:100%; background:var(--bg); }
+  .top-strip{
+    display:flex; align-items:center; justify-content:space-between; padding:16px 28px;
+    flex-shrink:0; min-height:56px;
+  }
+  .top-strip-left{ display:flex; align-items:center; gap:10px; }
+  .top-strip-right{ display:flex; align-items:center; gap:10px; }
+
+  .collapse-btn{
+    width:32px; height:32px; border-radius:9px; border:none; background:transparent;
+    display:flex; align-items:center; justify-content:center; color:var(--text-muted);
+  }
+  .collapse-btn:hover{ background:var(--card-raised); color:var(--text); }
+  .collapse-btn svg{ width:17px; height:17px; }
+
+  .gear-btn{
+    width:34px; height:34px; border-radius:10px; border:none; background:transparent;
+    display:flex; align-items:center; justify-content:center; color:var(--text-muted);
+  }
+  .gear-btn:hover{ background:var(--card-raised); color:var(--text); }
+  .gear-btn svg{ width:18px; height:18px; }
+
+  .content-scroll{ flex:1; overflow-y:auto; padding:8px 28px 48px; }
+
+  /* State-switcher pill, relocated to the top strip per Section 3a */
+  .state-switch{
+    display:flex; gap:4px; background:var(--card-raised); border:1px solid var(--border);
+    border-radius:11px; padding:3px;
+  }
+  .state-pill{
+    font-family:'JetBrains Mono', monospace; font-size:10.5px; padding:7px 12px; min-height:30px;
+    display:flex; align-items:center; border-radius:8px; color:var(--text-muted); font-weight:500;
+    border:none; background:transparent;
+  }
+  .state-pill.active{ background:var(--card); color:var(--violet); box-shadow:0 1px 4px rgba(80,60,140,0.16); }
+
+  /* ================= CARD LANGUAGE ================= */
+  .card{ background:var(--card); border:1px solid var(--border); border-radius:16px; }
+  .card-accent{ border-left:3px solid var(--violet); }
+
+  /* ================= FLOATING RINGS WIDGET — global chrome, every screen ================= */
+  .rings-widget{
+    position:absolute; right:26px; bottom:26px; background:var(--card); border:1px solid var(--border);
+    border-radius:18px; padding:16px 20px; box-shadow:var(--shadow); z-index:40;
+    display:flex; flex-direction:column; align-items:center; gap:12px;
+  }
+  .rings-widget .rw-label{
+    font-family:'JetBrains Mono', monospace; font-size:10px; letter-spacing:0.1em; text-transform:uppercase;
+    color:var(--text-faint);
+  }
+  .rings-widget .rw-rings{ display:flex; gap:14px; }
+  .rw-ring{ display:flex; flex-direction:column; align-items:center; gap:6px; }
+  .rw-circle{
+    width:46px; height:46px; border-radius:50%; border:3px solid var(--border);
+    display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:600; color:var(--text);
+  }
+  .rw-circle.plan{ border-color:#d9c9f8; }
+  .rw-circle.do{ border-color:#c9d9f8; }
+  .rw-circle.share{ border-color:#c9f0d9; }
+  .rw-ring .rw-tag{
+    font-family:'JetBrains Mono', monospace; font-size:8.5px; letter-spacing:0.08em; color:var(--text-faint);
+  }
+
+  .content-scroll{ max-width:760px; margin:0 auto; }
+
+  .settings-head{ padding:22px 0 20px; }
+  .settings-title{ font-family:'Fraunces', serif; font-weight:500; font-size:28px; color:var(--text); }
+
+  .eyebrow{
+    font-family:'JetBrains Mono', monospace; font-size:10.5px; letter-spacing:0.12em; text-transform:uppercase;
+    color:var(--text-faint); margin:28px 2px 12px;
+  }
+  .eyebrow:first-child{ margin-top:0; }
+  .eyebrow-sub{
+    font-family:'JetBrains Mono', monospace; font-size:9.5px; letter-spacing:0.1em; text-transform:uppercase;
+    color:var(--text-faint); margin:22px 2px 10px;
+  }
+
+  .group{ background: var(--card); border:1px solid var(--border); border-radius:16px; overflow:hidden; }
+  .group-spacer{ height:22px; }
+
+  .row{
+    display:flex; align-items:center; justify-content:space-between; gap:16px;
+    padding:16px 20px; border-bottom:1px solid var(--divider); min-height:52px;
+  }
+  .row:last-child{ border-bottom:none; }
+  .row.clickable:hover{ background:var(--card-raised); }
+
+  .row-text .t{ font-size:14px; color:var(--text); font-weight:500; margin-bottom:3px; }
+  .row-text .d{ font-size:12.5px; color:var(--text-muted); line-height:1.4; }
+  .row-value{ font-size:13px; color:var(--violet); font-weight:600; text-align:right; flex-shrink:0; display:flex; align-items:center; gap:5px; }
+  .chev{ color:var(--text-faint); font-size:14px; }
+
+  .switch{ width:44px; height:26px; border-radius:14px; background:var(--border); position:relative; flex-shrink:0; min-height:26px; }
+  .switch.on{ background: var(--violet); }
+  .switch .knob{ position:absolute; top:3px; left:3px; width:20px; height:20px; border-radius:50%; background:#fff; box-shadow:0 1px 3px rgba(0,0,0,0.25); transition:left .2s; }
+  .switch.on .knob{ left:21px; }
+
+  .inferred-tag{
+    font-size:9.5px; font-family:'JetBrains Mono', monospace; letter-spacing:0.04em; color: var(--sage);
+    background: var(--sage-dim); padding:2px 7px; border-radius:6px; margin-left:7px; text-transform:uppercase;
+  }
+
+  .pill-wrap{ display:flex; flex-wrap:wrap; gap:6px; max-width:220px; justify-content:flex-end; }
+  .pill{ font-size:11px; padding:4px 10px; border-radius:10px; background: var(--violet-soft); color: var(--violet); font-weight:600; }
+
+  .note-card{
+    display:flex; gap:11px; background: var(--violet-soft); border:1px solid var(--violet-dim);
+    border-radius:14px; padding:14px 16px; margin-top:14px;
+  }
+  .note-card .ic{ width:16px; height:16px; flex-shrink:0; color:var(--violet); margin-top:1px; }
+  .note-card p{ font-size:12.5px; color:var(--text-secondary); line-height:1.55; }
+  .note-card b{ color:var(--text); }
+
+  .transparency-link{ display:flex; align-items:center; justify-content:space-between; padding:15px 20px; min-height:52px; }
+  .transparency-link:not(:last-child){ border-bottom:1px solid var(--divider); }
+  .transparency-link:hover{ background:var(--card-raised); }
+  .transparency-link .t{ font-size:13px; color:var(--violet); font-weight:600; }
+
+  /* Segmented pill control — matches production's Theme / Check-in Frequency pattern:
+     a lighter neutral pill behind the selected label, not a violet fill. */
+  .seg-pill-track{ display:flex; gap:3px; background:var(--card-raised); border-radius:12px; padding:4px; margin-top:12px; }
+  .seg-pill-opt{ flex:1; text-align:center; padding:9px 4px; border-radius:9px; font-size:12.5px; font-weight:500; color:var(--text-muted); }
+  .seg-pill-opt.active{ background: var(--seg-active); color:var(--text); font-weight:700; box-shadow:0 1px 3px rgba(0,0,0,0.12); }
+  .row.stack{ flex-direction:column; align-items:stretch; }
+  .row.stack .row-text{ margin-bottom:2px; }
+
+  .focus-panel{ display:none; padding:0 20px 16px; }
+  .focus-panel.open{ display:block; }
+  .focus-chip-grid{ display:flex; flex-wrap:wrap; gap:7px; }
+  .fchip{ font-size:12px; padding:8px 13px; border-radius:10px; background:var(--card-raised); color:var(--text-muted); border:1px solid var(--border); min-height:34px; display:flex; align-items:center; }
+  .fchip:hover{ border-color:var(--violet-dim); }
+  .fchip.selected{ background:var(--violet-soft); color:var(--violet); border-color:var(--violet); font-weight:600; }
+  .focus-hint{ font-size:11px; color:var(--text-faint); margin-top:10px; }
+
+  .pause-row{ display:flex; gap:9px; padding:0 20px 14px; }
+  .pause-pill{
+    flex:1; text-align:center; padding:9px 0; border-radius:10px; font-size:12.5px; font-weight:600;
+    background: var(--card-raised); color:var(--text-muted); border:1px solid var(--border); min-height:34px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .pause-pill:hover{ border-color:var(--violet-dim); }
+  .pause-pill.active{ background: var(--violet-soft); border-color: var(--violet); color: var(--violet); }
+  .pause-status{ font-size:12px; color:var(--text-faint); padding:0 20px 16px; }
+
+  .inline-note{ display:none; align-items:center; gap:7px; font-size:12px; color:var(--sage); font-weight:600; padding:0 20px 14px; }
+  .inline-note.show{ display:flex; }
+
+  .status-banner{
+    display:none; align-items:flex-start; justify-content:space-between; gap:12px;
+    background: var(--violet-soft); border:1px solid var(--violet-dim); border-radius:14px;
+    padding:15px 18px; margin-bottom:18px;
+  }
+  .status-banner.show{ display:flex; }
+  .status-banner.turnedOff{ background: var(--danger-soft); border-color:var(--danger-dim); }
+  .status-banner .sb-text{ font-size:12.5px; color:var(--text-muted); line-height:1.5; flex:1; }
+  .status-banner .sb-text b{ color:var(--text); }
+  .status-banner .sb-action{
+    font-size:12.5px; font-weight:700; color:var(--violet); flex-shrink:0; min-height:32px;
+    display:flex; align-items:center; white-space:nowrap;
+  }
+  .status-banner .sb-action:hover{ text-decoration:underline; }
+  .status-banner.turnedOff .sb-action{ color:var(--danger); }
+
+  .agent-disabled{ opacity:0.42; pointer-events:none; filter:saturate(0.7); transition:opacity .2s; }
+
+  /* ---- destructive block: visually pulled away from the safe rows above ---- */
+  .destructive-block{
+    background: var(--danger-soft); border:1px solid var(--danger-dim); border-radius:16px; overflow:hidden;
+  }
+  .danger-row{ display:flex; justify-content:space-between; align-items:center; padding:16px 20px; min-height:52px; border-bottom:1px solid var(--danger-dim); }
+  .danger-row:last-child{ border-bottom:none; }
+  .danger-row:hover{ background:rgba(255,92,95,0.08); }
+  .danger-row .t{ font-size:14px; color:var(--danger); font-weight:600; }
+  .danger-row .d{ font-size:12.5px; color:var(--text-muted); margin-top:3px; }
+
+  /* ---- confirmation / info modal — converts the mobile bottom sheet, same copy and danger styling ---- */
+  .modal-overlay{
+    position:absolute; inset:0; background: rgba(15,12,26,0.5); display:none;
+    align-items:center; justify-content:center; z-index:60;
+  }
+  .modal-overlay.open{ display:flex; }
+  .modal-box{ width:420px; background: var(--card); border:1px solid var(--border); border-radius:22px; padding:28px 26px; box-shadow:0 30px 70px -18px rgba(20,10,50,0.45); }
+  .ic-big{ font-size:28px; text-align:center; margin-bottom:12px; }
+  .modal-box h3{ font-family:'Fraunces', serif; font-weight:500; font-size:19px; color:var(--text); text-align:center; margin-bottom:11px; }
+  .modal-box p{ font-size:13px; color:var(--text-muted); text-align:center; line-height:1.6; margin-bottom:22px; }
+  .modal-box p b{ color: var(--text); }
+  .modal-actions{ display:flex; flex-direction:column; gap:9px; }
+  .modal-btn2{
+    width:100%; padding:13px 0; border-radius:13px; text-align:center; font-size:13.5px; font-weight:600;
+    min-height:46px; display:flex; align-items:center; justify-content:center; border:none; font-family:inherit;
+  }
+  .modal-btn2.danger{ background: var(--danger); color:#fff; }
+  .modal-btn2.danger:hover{ background:#e34649; }
+  .modal-btn2.primary{ background: var(--violet); color:#fff; }
+  .modal-btn2.primary:hover{ background:#7640ea; }
+  .modal-btn2.cancel{ background: var(--card-raised); color:var(--text); }
+  .modal-btn2.cancel:hover{ background:var(--sidebar-active); }
+
+</style>
+
+</head>
+<body>
+<!-- Reusable icon defs — simple 24x24 stroke icons, generic geometric shapes -->
+<svg width="0" height="0" style="position:absolute">
+<defs>
+<g id="ic-bell"><path d="M12 4a5 5 0 0 0-5 5v3.2c0 .6-.22 1.18-.62 1.63L5 15.5h14l-1.38-1.67A2.5 2.5 0 0 1 17 12.2V9a5 5 0 0 0-5-5Z" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linejoin="round"/><path d="M10 18.5a2 2 0 0 0 4 0" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linecap="round"/></g>
+<g id="ic-plus"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></g>
+<g id="ic-sparkle"><path d="M12 3.5 13.4 9l5.6 1.4-5.6 1.4L12 17.3 10.6 11.8 5 10.4l5.6-1.4L12 3.5Z" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linejoin="round"/></g>
+<g id="ic-home"><path d="M4 11.5 12 5l8 6.5" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 10v8.5a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V10" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linejoin="round"/></g>
+<g id="ic-star"><path d="M12 4.5 13.7 10 19.5 12 13.7 14 12 19.5 10.3 14 4.5 12 10.3 10 12 4.5Z" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linejoin="round"/></g>
+<g id="ic-calendar"><rect x="4.5" y="6" width="15" height="14" rx="2.2" stroke="currentColor" stroke-width="1.7" fill="none"/><path d="M4.5 10.5h15M8.3 4v3.5M15.7 4v3.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></g>
+<g id="ic-feed"><rect x="4.5" y="5" width="15" height="14" rx="2.2" stroke="currentColor" stroke-width="1.7" fill="none"/><path d="M7.5 9.5h9M7.5 13h9M7.5 16.2h5.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></g>
+<g id="ic-search"><circle cx="10.8" cy="10.8" r="6" stroke="currentColor" stroke-width="1.7" fill="none"/><path d="m19 19-3.6-3.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></g>
+<g id="ic-profile"><circle cx="12" cy="8.5" r="3.5" stroke="currentColor" stroke-width="1.7" fill="none"/><path d="M5 19c1.3-3.5 4-5 7-5s5.7 1.5 7 5" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linecap="round"/></g>
+<g id="ic-gear"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.6" fill="none"/><path d="M12 3.5v2.3M12 18.2v2.3M20.5 12h-2.3M5.8 12H3.5M17.8 6.2l-1.6 1.6M7.8 16.2l-1.6 1.6M17.8 17.8l-1.6-1.6M7.8 7.8 6.2 6.2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></g>
+<g id="ic-logout"><path d="M9 4H6a1.5 1.5 0 0 0-1.5 1.5v13A1.5 1.5 0 0 0 6 20h3" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M13.5 8 17.5 12 13.5 16M17.5 12H9.5" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>
+<g id="ic-sun"><circle cx="12" cy="12" r="3.6" stroke="currentColor" stroke-width="1.7" fill="none"/><path d="M12 3v2M12 19v2M21 12h-2M5 12H3M18.4 5.6l-1.4 1.4M7 16l-1.4 1.4M18.4 18.4 17 17M7 8 5.6 5.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></g>
+<g id="ic-moon"><path d="M19.5 14.2A8 8 0 0 1 9.8 4.5a8 8 0 1 0 9.7 9.7Z" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linejoin="round"/></g>
+<g id="ic-collapse"><rect x="4" y="5" width="16" height="14" rx="2.3" stroke="currentColor" stroke-width="1.6" fill="none"/><path d="M9.5 5v14" stroke="currentColor" stroke-width="1.6"/></g>
+<g id="ic-ws-cal"><rect x="4.5" y="6" width="15" height="14" rx="2.2" stroke="currentColor" stroke-width="1.7" fill="none"/><path d="M4.5 10.5h15" stroke="currentColor" stroke-width="1.7"/></g>
+<g id="ic-ws-wave"><path d="M4 9c1.6-1.6 3.2-1.6 4.8 0s3.2 1.6 4.8 0 3.2-1.6 4.8 0 3.2 1.6 4.8 0M4 15c1.6-1.6 3.2-1.6 4.8 0s3.2 1.6 4.8 0 3.2-1.6 4.8 0 3.2 1.6 4.8 0" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linecap="round"/></g>
+<g id="ic-ws-kite"><path d="M12 3.5 19 9l-2.2 9.5L12 21l-4.8-2.5L5 9l7-5.5Z" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linejoin="round"/></g>
+<g id="ic-chevron"><path d="m9 6 6 6-6 6" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>
+<g id="ic-back"><path d="m15 6-6 6 6 6" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>
+<g id="ic-lock"><rect x="5.5" y="10.5" width="13" height="9" rx="2" stroke="currentColor" stroke-width="1.6" fill="none"/><path d="M8.2 10.5V7.8a3.8 3.8 0 1 1 7.6 0v2.7" stroke="currentColor" stroke-width="1.6" fill="none"/></g>
+<g id="ic-edit"><path d="m15.5 5.5 3 3L8 19H5v-3L15.5 5.5Z" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linejoin="round"/></g>
+<g id="ic-warn"><path d="M12 4 21 19H3L12 4Z" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linejoin="round"/><path d="M12 10v4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="12" cy="16.6" r="0.9" fill="currentColor"/></g>
+<g id="ic-pause"><rect x="7" y="5.5" width="3.4" height="13" rx="1" stroke="currentColor" stroke-width="1.4" fill="none"/><rect x="13.6" y="5.5" width="3.4" height="13" rx="1" stroke="currentColor" stroke-width="1.4" fill="none"/></g>
+<g id="ic-download"><path d="M12 4v11" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="m7.5 11 4.5 4.5L16.5 11" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 18.5h14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></g>
+<g id="ic-reset"><path d="M4.5 12a7.5 7.5 0 1 1 2.4 5.5" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linecap="round"/><path d="M4.5 17v-4.5H9" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>
+</defs>
+</svg>
+
+<div class="device-frame">
+<div class="app-shell" id="app-shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-top">
+      <div class="wordmark">Kindred</div>
+      <button class="icon-btn" aria-label="Notifications"><svg viewBox="0 0 24 24"><use href="#ic-bell"/></svg></button>
+    </div>
+    <div class="sb-primary">
+      <button class="sb-btn primary" tabindex="0"><svg viewBox="0 0 24 24"><use href="#ic-plus"/></svg>New task<span class="kbd">&#8679;T</span></button>
+      <button class="sb-btn ai" tabindex="0"><svg viewBox="0 0 24 24"><use href="#ic-sparkle"/></svg>Create with AI<span class="kbd">&#8679;A</span></button>
+    </div>
+    <nav class="nav-list" aria-label="Primary">
+      <a class="nav-item" tabindex="0"><svg viewBox="0 0 24 24"><use href="#ic-home"/></svg>Home<span class="kbd">&#8679;H</span></a>
+      <a class="nav-item" tabindex="0"><svg viewBox="0 0 24 24"><use href="#ic-star"/></svg>For You<span class="kbd">&#8679;F</span></a>
+      <a class="nav-item" tabindex="0"><svg viewBox="0 0 24 24"><use href="#ic-calendar"/></svg>Calendar<span class="kbd">&#8679;C</span></a>
+      <a class="nav-item" tabindex="0"><svg viewBox="0 0 24 24"><use href="#ic-feed"/></svg>Feed</a>
+      <a class="nav-item" tabindex="0"><svg viewBox="0 0 24 24"><use href="#ic-search"/></svg>Search</a>
+      <a class="nav-item" tabindex="0"><svg viewBox="0 0 24 24"><use href="#ic-profile"/></svg>Profile</a>
+    </nav>
+    <div class="sb-section-label">Workspaces</div>
+    <div class="workspace-list">
+      <div class="ws-item" tabindex="0"><svg viewBox="0 0 24 24"><use href="#ic-ws-cal"/></svg><span>abhikaboy@gmail.com</span></div>
+      <div class="ws-item" tabindex="0"><svg viewBox="0 0 24 24"><use href="#ic-ws-wave"/></svg><span>lol</span></div>
+      <div class="ws-item" tabindex="0"><svg viewBox="0 0 24 24"><use href="#ic-ws-kite"/></svg><span>lol Kokomo</span></div>
+    </div>
+    <div class="sidebar-footer">
+      <a class="footer-item active" tabindex="0"><svg viewBox="0 0 24 24"><use href="#ic-gear"/></svg>Settings</a>
+      <a class="footer-item" tabindex="0"><svg viewBox="0 0 24 24"><use href="#ic-logout"/></svg>Log out</a>
+      <div class="theme-row">
+        <span class="label">Theme</span>
+        <button class="theme-toggle-btn" tabindex="0" onclick="quickToggleTheme()" aria-label="Toggle light and dark theme">
+          <svg viewBox="0 0 24 24"><use id="theme-toggle-icon" href="#ic-moon"/></svg>
+        </button>
+      </div>
+    </div>
+  </aside>
+  <main class="main-pane">
+    <div class="top-strip">
+      <div class="top-strip-left">
+        <button class="collapse-btn" tabindex="0" onclick="toggleSidebar()" aria-label="Collapse sidebar"><svg viewBox="0 0 24 24"><use href="#ic-collapse"/></svg></button>
+      </div>
+      <div class="top-strip-right">
+        
+      </div>
+    </div>
+    <div class="content-scroll">
+      <div class="settings-head">
+        <div class="settings-title">Personalization settings</div>
+      </div>
+
+      <!-- Status banner: hidden until personalization is paused or turned off -->
+      <div class="status-banner" id="status-banner">
+        <div class="sb-text" id="sb-text"></div>
+        <div class="sb-action" id="sb-action" tabindex="0" role="button"></div>
+      </div>
+
+      <div id="agent-dependent-sections">
+
+        <!-- ===== APPEARANCE — folded into production's real section, not duplicated ===== -->
+        <div class="eyebrow">Appearance</div>
+        <div class="group">
+          <div class="row stack">
+            <div class="row-text">
+              <div class="t">Theme</div>
+              <div class="d">Dark mode available for light sensitivity</div>
+            </div>
+            <div class="seg-pill-track" role="group" aria-label="Theme">
+              <div class="seg-pill-opt" id="seg-system" data-theme="system" tabindex="0" role="button" onclick="setTheme('system')">System</div>
+              <div class="seg-pill-opt active" id="seg-light" data-theme="light" tabindex="0" role="button" onclick="setTheme('light')">Light</div>
+              <div class="seg-pill-opt" id="seg-dark" data-theme="dark" tabindex="0" role="button" onclick="setTheme('dark')">Dark</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== NOTIFICATIONS — nudges get folded in here, frequency rebuilt as a segmented pill ===== -->
+        <div class="eyebrow">Notifications</div>
+        <div class="group">
+          <div class="row">
+            <div class="row-text">
+              <div class="t">Allow nudges</div>
+              <div class="d">Turn off to stop all check-ins</div>
+            </div>
+            <div class="switch on" id="sw-nudges" tabindex="0" role="switch" aria-checked="true" onclick="toggleSwitch('sw-nudges')"><div class="knob"></div></div>
+          </div>
+          <div class="row stack">
+            <div class="row-text">
+              <div class="t">Frequency</div>
+              <div class="d">How often personalization suggests a nudge</div>
+            </div>
+            <div class="seg-pill-track" role="group" aria-label="Nudge frequency">
+              <div class="seg-pill-opt active" id="freq-0" tabindex="0" role="button" onclick="setFrequency(0)">Light touch</div>
+              <div class="seg-pill-opt" id="freq-1" tabindex="0" role="button" onclick="setFrequency(1)">Some check-ins</div>
+              <div class="seg-pill-opt" id="freq-2" tabindex="0" role="button" onclick="setFrequency(2)">Frequent</div>
+            </div>
+          </div>
+          <div class="row clickable" tabindex="0" role="button" onclick="cycleQuietHours()">
+            <div class="row-text">
+              <div class="t">Quiet hours</div>
+              <div class="d">No nudges sent during this window</div>
+            </div>
+            <div class="row-value"><span id="quiet-text">9pm&ndash;7am</span><span class="chev">&rsaquo;</span></div>
+          </div>
+          <div class="row">
+            <div class="row-text">
+              <div class="t">Auto-reduce when ignored</div>
+              <div class="d">Nudges ease up automatically if you dismiss them often</div>
+            </div>
+            <div class="switch on" id="sw-autoreduce" tabindex="0" role="switch" aria-checked="true" onclick="toggleSwitch('sw-autoreduce')"><div class="knob"></div></div>
+          </div>
+          <div class="row" style="border-bottom:none; flex-direction:column; align-items:stretch;">
+            <div class="row-text" style="margin-bottom:2px;">
+              <div class="t">Need a break?</div>
+              <div class="d">Pause nudges only &mdash; briefings and reports keep going</div>
+            </div>
+          </div>
+          <div class="pause-row">
+            <div class="pause-pill active" tabindex="0" role="button" onclick="selectPause(this,'today')">Today</div>
+            <div class="pause-pill" tabindex="0" role="button" onclick="selectPause(this,'week')">1 week</div>
+            <div class="pause-pill" tabindex="0" role="button" onclick="selectPause(this,'forever')">Until I turn it back on</div>
+          </div>
+          <div class="pause-status" id="pause-status">Paused for the rest of today</div>
+        </div>
+
+        <!-- ===== PERSONALIZATION — new category; combines learned traits and reports/briefings ===== -->
+        <div class="eyebrow">Personalization</div>
+        <div class="group">
+          <div class="row clickable" tabindex="0" role="button" onclick="cyclePlanning()">
+            <div class="row-text">
+              <div class="t">Planning style <span class="inferred-tag">From you</span></div>
+              <div class="d">Used to time evening check-ins</div>
+            </div>
+            <div class="row-value"><span id="planning-text">Night-before</span><span class="chev">&rsaquo;</span></div>
+          </div>
+
+          <div class="row clickable" tabindex="0" role="button" onclick="toggleFocusPanel()">
+            <div class="row-text">
+              <div class="t">Peak focus times <span class="inferred-tag">Inferred</span></div>
+              <div class="d">Updated from your last 30 days of completions</div>
+            </div>
+            <div class="pill-wrap" id="focus-pill-wrap">
+              <div class="pill">Early AM</div>
+              <div class="pill">Mid AM</div>
+            </div>
+          </div>
+          <div class="focus-panel" id="focus-panel">
+            <div class="focus-chip-grid">
+              <div class="fchip selected" tabindex="0" role="button" onclick="toggleFocusChip(this)">Early AM</div>
+              <div class="fchip selected" tabindex="0" role="button" onclick="toggleFocusChip(this)">Mid AM</div>
+              <div class="fchip" tabindex="0" role="button" onclick="toggleFocusChip(this)">Early PM</div>
+              <div class="fchip" tabindex="0" role="button" onclick="toggleFocusChip(this)">Late PM</div>
+              <div class="fchip" tabindex="0" role="button" onclick="toggleFocusChip(this)">Evening</div>
+              <div class="fchip" tabindex="0" role="button" onclick="toggleFocusChip(this)">Late night</div>
+            </div>
+            <div class="focus-hint">Click to add or remove a window &mdash; updates the summary above immediately.</div>
+          </div>
+
+          <div class="row clickable" tabindex="0" role="button" onclick="cycleTone()">
+            <div class="row-text">
+              <div class="t">Tone preference <span class="inferred-tag">From you</span></div>
+              <div class="d">Shapes nudge and digest wording</div>
+            </div>
+            <div class="row-value"><span id="tone-text">Direct</span><span class="chev">&rsaquo;</span></div>
+          </div>
+        </div>
+
+        <div class="note-card">
+          <svg class="ic" viewBox="0 0 24 24"><use href="#ic-edit"/></svg>
+          <p><b>Inferred</b> traits update automatically as you use Kindred. Click any row to correct it &mdash; your correction always wins over what we observe.</p>
+        </div>
+        <div class="group" style="margin-top:10px;">
+          <div class="transparency-link" tabindex="0" role="button" onclick="openModal('data')">
+            <div class="t">See exactly what data this uses</div>
+            <div class="chev">&rsaquo;</div>
+          </div>
+          <div class="transparency-link" tabindex="0" role="button" onclick="openAuditModal()">
+            <div class="t">See what's changed</div>
+            <div class="chev">&rsaquo;</div>
+          </div>
+        </div>
+
+        <div class="eyebrow-sub">Reports &amp; briefings</div>
+        <div class="group">
+          <div class="row">
+            <div class="row-text">
+              <div class="t">Daily briefing</div>
+              <div class="d">A short recap each evening</div>
+            </div>
+            <div class="switch on" id="sw-daily" tabindex="0" role="switch" aria-checked="true" onclick="toggleSwitch('sw-daily')"><div class="knob"></div></div>
+          </div>
+          <div class="row">
+            <div class="row-text">
+              <div class="t">Weekly trend summary</div>
+              <div class="d">Sent Sunday evenings</div>
+            </div>
+            <div class="switch on" id="sw-weekly" tabindex="0" role="switch" aria-checked="true" onclick="toggleSwitch('sw-weekly')"><div class="knob"></div></div>
+          </div>
+          <div class="row">
+            <div class="row-text">
+              <div class="t">Show productivity score</div>
+              <div class="d">On by default &mdash; turn off to see the trend shape without a single number</div>
+            </div>
+            <div class="switch on" id="sw-score" tabindex="0" role="switch" aria-checked="true" onclick="toggleSwitch('sw-score')"><div class="knob"></div></div>
+          </div>
+        </div>
+
+        <div class="group-spacer"></div>
+        <div class="eyebrow">Friends &amp; sharing</div>
+        <div class="group">
+          <div class="row">
+            <div class="row-text">
+              <div class="t">Kudos suggestions</div>
+              <div class="d">Get prompted to celebrate friends' streaks</div>
+            </div>
+            <div class="switch on" id="sw-kudos" tabindex="0" role="switch" aria-checked="true" onclick="toggleSwitch('sw-kudos')"><div class="knob"></div></div>
+          </div>
+          <div class="row" style="border-bottom:none;">
+            <div class="row-text">
+              <div class="t">Share my progress with friends</div>
+              <div class="d">Off &mdash; your missed tasks and scores stay private</div>
+            </div>
+            <div class="switch" id="sw-share" tabindex="0" role="switch" aria-checked="false" onclick="toggleSwitch('sw-share')"><div class="knob"></div></div>
+          </div>
+        </div>
+
+      </div><!-- /agent-dependent-sections -->
+
+      <div class="group-spacer"></div>
+      <div class="eyebrow">Personalization data</div>
+      <div class="group">
+        <div class="row clickable" tabindex="0" role="button" onclick="exportData()">
+          <div class="row-text">
+            <div class="t">Export my personalization data</div>
+            <div class="d">Download everything Kindred has learned for your personalization, as a file</div>
+          </div>
+          <div class="chev">&rsaquo;</div>
+        </div>
+        <div class="inline-note" id="export-note">&#10003; Export ready &mdash; check your downloads</div>
+
+        <div class="row clickable" tabindex="0" role="button" onclick="openModal('reset')">
+          <div class="row-text">
+            <div class="t">Reset your personalization</div>
+            <div class="d">Start over with onboarding preferences only</div>
+          </div>
+          <div class="chev">&rsaquo;</div>
+        </div>
+        <div class="inline-note" id="reset-note">&#10003; Preferences reset to defaults</div>
+
+        <div class="row clickable" tabindex="0" role="button" onclick="openModal('pause')" style="border-bottom:none;">
+          <div class="row-text">
+            <div class="t">Pause personalization</div>
+            <div class="d">Stop everything temporarily &mdash; resumes automatically</div>
+          </div>
+          <div class="chev">&rsaquo;</div>
+        </div>
+      </div>
+
+      <div class="group-spacer" style="height:14px;"></div>
+      <div class="destructive-block">
+        <div class="danger-row" tabindex="0" role="button" onclick="openModal('turnoff')">
+          <div>
+            <div class="t">Turn off personalization</div>
+            <div class="d">Keep tasks and rings, lose personalization</div>
+          </div>
+          <div class="chev" style="color:var(--danger);">&rsaquo;</div>
+        </div>
+        <div class="danger-row" tabindex="0" role="button" onclick="openModal('delete')">
+          <div>
+            <div class="t">Delete all personalization data</div>
+            <div class="d">Permanently erases learned patterns and history</div>
+          </div>
+          <div class="chev" style="color:var(--danger);">&rsaquo;</div>
+        </div>
+      </div>
+
+      <!-- Confirmation / info modal — converts the mobile bottom sheet -->
+      <div class="modal-overlay" id="modal-overlay" onclick="if(event.target===this) closeModal()">
+        <div class="modal-box" role="dialog" aria-modal="true">
+          <div class="ic-big" id="modal-icon">&#9888;&#65039;</div>
+          <h3 id="modal-title">Title</h3>
+          <p id="modal-body">Body</p>
+          <div class="modal-actions" id="modal-actions"></div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+  <div class="rings-widget" aria-label="Today's rings, 3 left">
+    <div class="rw-label">TODAY &middot; 3 LEFT</div>
+    <div class="rw-rings">
+      <div class="rw-ring"><div class="rw-circle plan">0/2</div><div class="rw-tag">PLAN</div></div>
+      <div class="rw-ring"><div class="rw-circle do">0/3</div><div class="rw-tag">DO</div></div>
+      <div class="rw-ring"><div class="rw-circle share">0/1</div><div class="rw-tag">SHARE</div></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+  // ---------- sidebar collapse ----------
+  function toggleSidebar(){
+    document.getElementById('sidebar').classList.toggle('collapsed');
+  }
+
+  // ---------- keyboard support for div-as-button interactive elements ----------
+  function bindKeyboard(el){
+    el.addEventListener('keydown', function(e){
+      if(e.key === 'Enter' || e.key === ' '){
+        e.preventDefault();
+        el.click();
+      }
+    });
+  }
+  document.querySelectorAll('[tabindex="0"]').forEach(function(el){
+    if(!el.hasAttribute('role')) el.setAttribute('role','button');
+    bindKeyboard(el);
+  });
+
+  // ---------- theme: light / dark / system, one source of truth ----------
+  var themeMode = 'light'; // 'light' | 'dark' | 'system'
+
+  function systemPrefersDark(){
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  }
+  function effectiveTheme(){
+    return themeMode === 'system' ? (systemPrefersDark() ? 'dark' : 'light') : themeMode;
+  }
+  function applyTheme(){
+    var dark = effectiveTheme() === 'dark';
+    document.getElementById('app-shell').classList.toggle('dark-mode', dark);
+    var btn = document.getElementById('theme-toggle-icon');
+    if(btn) btn.setAttribute('href', dark ? '#ic-sun' : '#ic-moon');
+    var segs = document.querySelectorAll('[data-theme]');
+    segs.forEach(function(s){ s.classList.toggle('active', s.getAttribute('data-theme') === themeMode); });
+    if(typeof onThemeChange === 'function') onThemeChange(dark);
+  }
+  function setTheme(mode){
+    themeMode = mode;
+    applyTheme();
+  }
+  // Sidebar's quick toggle: a true bidirectional flip between light and dark,
+  // matching the mobile settings file's sun/moon behavior — an explicit choice,
+  // same source of truth the settings page's System/Light/Dark control reads from.
+  function quickToggleTheme(){
+    setTheme(effectiveTheme() === 'dark' ? 'light' : 'dark');
+  }
+  applyTheme();
+
+
+  function toggleSwitch(id){
+    var el = document.getElementById(id);
+    var on = el.classList.toggle('on');
+    el.setAttribute('aria-checked', on ? 'true' : 'false');
+  }
+
+  // ---------- audit trail ----------
+  var auditLog = [
+    { label: 'Peak focus times', value: 'Early AM, Mid AM', when: 'Jul 18 · inferred from your activity' },
+    { label: 'Tone preference', value: 'Direct', when: 'Jul 12 · set during onboarding' },
+    { label: 'Planning style', value: 'Night-before', when: 'Jul 12 · set during onboarding' }
+  ];
+  function logAuditChange(label, value){
+    auditLog.unshift({ label: label, value: value, when: 'Just now · you changed this' });
+  }
+  function openAuditModal(){
+    document.getElementById('modal-icon').textContent = '🕘';
+    document.getElementById('modal-title').textContent = "What's changed";
+    document.getElementById('modal-body').innerHTML = auditLog.map(function(e){
+      return '<b>' + e.label + '</b> → ' + e.value + '<br><span style="color:var(--text-faint);font-size:10.5px;">' + e.when + '</span>';
+    }).join('<br><br>');
+    var actionsEl = document.getElementById('modal-actions');
+    actionsEl.innerHTML = '';
+    var closeBtn = document.createElement('div');
+    closeBtn.className = 'modal-btn2 cancel';
+    closeBtn.textContent = 'Close';
+    closeBtn.setAttribute('tabindex', '0');
+    closeBtn.setAttribute('role', 'button');
+    closeBtn.onclick = closeModal;
+    bindKeyboard(closeBtn);
+    actionsEl.appendChild(closeBtn);
+    document.getElementById('modal-overlay').classList.add('open');
+  }
+
+  // ---------- learned-traits rows ----------
+  var planningOptions = ['Night-before','Morning of','No real plan','Varies week to week'];
+  var planningIndex = 0;
+  function cyclePlanning(){
+    planningIndex = (planningIndex + 1) % planningOptions.length;
+    var val = planningOptions[planningIndex];
+    document.getElementById('planning-text').textContent = val;
+    logAuditChange('Planning style', val);
+  }
+
+  var toneOptions = ['Direct','Cheerful','Quiet'];
+  var toneIndex = 0;
+  function cycleTone(){
+    toneIndex = (toneIndex + 1) % toneOptions.length;
+    var val = toneOptions[toneIndex];
+    document.getElementById('tone-text').textContent = val;
+    logAuditChange('Tone preference', val);
+  }
+
+  function toggleFocusPanel(){
+    document.getElementById('focus-panel').classList.toggle('open');
+  }
+  function toggleFocusChip(el){
+    el.classList.toggle('selected');
+    updateFocusSummary();
+    var selected = Array.from(document.querySelectorAll('.fchip.selected')).map(function(c){ return c.textContent; });
+    logAuditChange('Peak focus times', selected.length ? selected.join(', ') : 'No pattern yet');
+  }
+  function updateFocusSummary(){
+    var selected = Array.from(document.querySelectorAll('.fchip.selected')).map(function(c){ return c.textContent; });
+    var wrap = document.getElementById('focus-pill-wrap');
+    if(selected.length === 0){
+      wrap.innerHTML = '<span style="font-size:11px;color:var(--text-faint);">No pattern yet</span>';
+    } else {
+      wrap.innerHTML = selected.map(function(s){ return '<div class="pill">' + s + '</div>'; }).join('');
+    }
+  }
+
+  function resetLearnedValues(){
+    planningIndex = 0;
+    toneIndex = 0;
+    document.getElementById('planning-text').textContent = 'Not set yet';
+    document.getElementById('tone-text').textContent = 'Not set yet';
+    document.querySelectorAll('.fchip').forEach(function(c){ c.classList.remove('selected'); });
+    updateFocusSummary();
+    auditLog.unshift({ label: 'Personalization', value: 'Reset to defaults', when: 'Just now · you reset this' });
+  }
+
+  // ---------- nudges ----------
+  var freqLabels = ['Light touch', 'Some check-ins', 'Frequent'];
+  var freqIndex = 0;
+  function setFrequency(idx){
+    freqIndex = idx;
+    for(var i=0;i<3;i++){
+      document.getElementById('freq-' + i).classList.toggle('active', i === idx);
+    }
+    logAuditChange('Nudge frequency', freqLabels[idx]);
+  }
+
+  var quietOptions = ['9pm–7am','10pm–8am','Off'];
+  var quietIndex = 0;
+  function cycleQuietHours(){
+    quietIndex = (quietIndex + 1) % quietOptions.length;
+    document.getElementById('quiet-text').textContent = quietOptions[quietIndex];
+  }
+
+  var pauseLabels = { today: 'Paused for the rest of today', week: 'Paused for 1 week', forever: 'Paused until you turn nudges back on' };
+  function selectPause(el, value){
+    document.querySelectorAll('.pause-pill').forEach(function(p){ p.classList.remove('active'); });
+    el.classList.add('active');
+    document.getElementById('pause-status').textContent = pauseLabels[value];
+  }
+
+  // ---------- data actions ----------
+  function exportData(){
+    var note = document.getElementById('export-note');
+    note.classList.add('show');
+    clearTimeout(window._exportTimer);
+    window._exportTimer = setTimeout(function(){ note.classList.remove('show'); }, 4000);
+  }
+
+  // ---------- status banner (paused / turned off / deleted) ----------
+  function showBanner(kind, detail){
+    var banner = document.getElementById('status-banner');
+    var text = document.getElementById('sb-text');
+    var action = document.getElementById('sb-action');
+    var dependent = document.getElementById('agent-dependent-sections');
+
+    banner.classList.remove('turnedOff');
+
+    if(kind === 'paused'){
+      text.innerHTML = '<b>Personalization paused.</b> Nudges, briefings, and reports are off ' + detail + '.';
+      action.textContent = 'Resume now';
+      action.onclick = resumeAgent;
+      dependent.classList.add('agent-disabled');
+    } else if(kind === 'turnedOff'){
+      banner.classList.add('turnedOff');
+      text.innerHTML = '<b>Personalization is off.</b> Your tasks and rings are unaffected.';
+      action.textContent = 'Turn back on';
+      action.onclick = resumeAgent;
+      dependent.classList.add('agent-disabled');
+    } else if(kind === 'deleted'){
+      banner.classList.add('turnedOff');
+      text.innerHTML = '<b>Personalization data deleted.</b> Your patterns and history are gone — we\'ll start learning your personalization again from scratch. Tasks and rings are unaffected.';
+      action.textContent = 'Dismiss';
+      action.onclick = resumeAgent;
+      dependent.classList.remove('agent-disabled');
+    }
+    banner.classList.add('show');
+  }
+  function resumeAgent(){
+    document.getElementById('status-banner').classList.remove('show');
+    document.getElementById('agent-dependent-sections').classList.remove('agent-disabled');
+  }
+
+  // ---------- confirmation / info modal (was a bottom sheet on mobile) ----------
+  var modalContent = {
+    pause: {
+      icon: '⏸️',
+      title: 'Pause personalization?',
+      body: "Nudges, briefings, and reports all stop until you resume. Nothing is deleted, and your settings stay exactly as they are.",
+      actions: [
+        { label: 'Pause for 1 day', style: 'primary', onClick: function(){ showBanner('paused', 'for 1 day'); } },
+        { label: 'Pause for 1 week', style: 'primary', onClick: function(){ showBanner('paused', 'for 1 week'); } },
+        { label: 'Pause until I resume', style: 'primary', onClick: function(){ showBanner('paused', 'until you resume'); } }
+      ]
+    },
+    turnoff: {
+      icon: '⚠️',
+      title: 'Turn off personalization?',
+      body: "You'll stop receiving nudges, briefings, and trend reports. Your tasks and rings stay exactly as they are. <b>This won't delete anything</b> — you can turn personalization back on later and pick up where you left off.",
+      actions: [
+        { label: 'Turn off personalization', style: 'danger', onClick: function(){ showBanner('turnedOff'); } }
+      ]
+    },
+    delete: {
+      icon: '⚠️',
+      title: 'Delete all personalization data?',
+      body: "This permanently erases everything we've learned for your personalization — your patterns, nudge history, and trend data. <b>This cannot be undone.</b> Your tasks and rings themselves are not affected.",
+      actions: [
+        { label: 'Delete everything', style: 'danger', onClick: function(){ resetLearnedValues(); showBanner('deleted'); } }
+      ]
+    },
+    reset: {
+      icon: '↺',
+      title: 'Reset your personalization?',
+      body: "Clears your planning style, tone, and focus-time pattern back to defaults. Your task and ring history is not affected, and personalization will start learning again from scratch.",
+      actions: [
+        { label: 'Reset preferences', style: 'danger', onClick: function(){
+            resetLearnedValues();
+            var note = document.getElementById('reset-note');
+            note.classList.add('show');
+            clearTimeout(window._resetTimer);
+            window._resetTimer = setTimeout(function(){ note.classList.remove('show'); }, 4000);
+          } }
+      ]
+    },
+    data: {
+      icon: '🔍',
+      title: 'What this uses',
+      body: "Planning style and tone come directly from your onboarding answers. Peak focus times are inferred from your last 30 days of task completions, refreshed nightly. None of this is shared with friends, and none of it leaves your account unless you click Export.",
+      actions: [
+        { label: 'Got it', style: 'primary', onClick: function(){} }
+      ]
+    }
+  };
+
+  function openModal(kind){
+    var c = modalContent[kind];
+    document.getElementById('modal-icon').textContent = c.icon;
+    document.getElementById('modal-title').textContent = c.title;
+    document.getElementById('modal-body').innerHTML = c.body;
+
+    var actionsEl = document.getElementById('modal-actions');
+    actionsEl.innerHTML = '';
+    c.actions.forEach(function(a){
+      var btn = document.createElement('div');
+      btn.className = 'modal-btn2 ' + (a.style || '');
+      btn.textContent = a.label;
+      btn.setAttribute('tabindex', '0');
+      btn.setAttribute('role', 'button');
+      btn.onclick = function(){ a.onClick && a.onClick(); closeModal(); };
+      bindKeyboard(btn);
+      actionsEl.appendChild(btn);
+    });
+    var cancel = document.createElement('div');
+    cancel.className = 'modal-btn2 cancel';
+    cancel.textContent = 'Cancel';
+    cancel.setAttribute('tabindex', '0');
+    cancel.setAttribute('role', 'button');
+    cancel.onclick = closeModal;
+    bindKeyboard(cancel);
+    actionsEl.appendChild(cancel);
+
+    document.getElementById('modal-overlay').classList.add('open');
+  }
+  function closeModal(){
+    document.getElementById('modal-overlay').classList.remove('open');
+  }
+
+</script>
+</body>
+</html>

@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Kindred — Personalization Onboarding (Desktop)</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root{
+    /* ===== Light theme (default) — neutral grays, zero violet tint, per guide Section 1 ===== */
+    --bg: #ffffff;
+    --sidebar-bg: #f5f5f5;
+    --sidebar-active: #e5e5e5;
+    --card: #ffffff;
+    --card-raised: #f6f6f8;
+    --border: #e0e0e0;
+    --thread: #d8d2e8;
+    --violet: #854dff;
+    --violet-dim: #854dff2a;
+    --violet-soft: #854dff14;
+    --sage: #4f8a4b;
+    --sage-dim: #93c08f22;
+    --coral-warn: #d9714e;
+    --coral-warn-dim: #d9714e16;
+    --danger: #ff5c5f;
+    --danger-dim: #ff5c5f14;
+    --danger-soft: #ff5c5f0d;
+    --pending: #fe9a00;
+    --text: #221d33;
+    --text-muted: #919090;
+    --text-faint: #a8a4b0;
+    --text-secondary: #4a4458;
+    --divider: #ece7f6;
+    --seg-active: #ffffff;
+    --shadow: 0 20px 50px -20px rgba(30,20,60,0.16);
+  }
+
+  /* ===== Dark theme — carries a real violet/blue tint in its darks ===== */
+  .app-shell.dark-mode{
+    --bg: #0c0c1a;
+    --sidebar-bg: #171626;
+    --sidebar-active: #1f1d2e;
+    --card: #171626;
+    --card-raised: #1d1b2e;
+    --border: #242233;
+    --thread: #332d44;
+    --violet-dim: #854dff3a;
+    --violet-soft: #854dff22;
+    --sage-dim: #93c08f33;
+    --coral-warn-dim: #d9714e26;
+    --danger-dim: #ff5c5f26;
+    --danger-soft: #ff5c5f16;
+    --text: #f4f2f9;
+    --text-muted: #8b879a;
+    --text-faint: #656179;
+    --text-secondary: #cfc9dc;
+    --divider: #23212f;
+    --seg-active: #2b2740;
+    --shadow: 0 20px 50px -20px rgba(0,0,0,0.55);
+  }
+
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  html,body{ height:100%; }
+  body{
+    background:#e8e6ec;
+    font-family:'Inter',sans-serif;
+    color:var(--text);
+  }
+  button, a{ font-family:inherit; color:inherit; }
+  .truncate{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+  :focus-visible{
+    outline: 2px solid var(--violet);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+
+  button, a, [tabindex], .clickable{ cursor:pointer; }
+
+  /* ===== App shell frame — a bezel standing in for the browser viewport,
+     the desktop equivalent of the mobile files' .phone/.notch chrome ===== */
+  .device-frame{
+    width:1360px; height:860px; margin:26px auto;
+    border-radius:14px; border:1px solid #cfcbd8; overflow:hidden;
+    box-shadow: 0 40px 90px -30px rgba(30,20,60,0.35);
+    background: var(--bg);
+  }
+
+  .app-shell{
+    width:100%; height:100%; display:flex; background:var(--bg); position:relative;
+    transition: background .2s;
+  }
+
+  /* ================= SIDEBAR ================= */
+  .sidebar{
+    width:325px; min-width:325px; height:100%; background:var(--sidebar-bg);
+    border-right:1px solid var(--border); display:flex; flex-direction:column;
+    padding:22px 16px 16px; transition: background .2s, border-color .2s, margin-left .18s, width .18s, min-width .18s, padding .18s;
+    overflow:hidden;
+  }
+  .sidebar.collapsed{ width:0; min-width:0; padding-left:0; padding-right:0; border-right:none; }
+  .sidebar.collapsed > *{ display:none; }
+
+  .sidebar-top{ display:flex; align-items:center; justify-content:space-between; padding:0 6px 20px; }
+  .wordmark{ font-family:'Fraunces', serif; font-weight:600; font-size:21px; color:var(--text); }
+  .icon-btn{
+    width:32px; height:32px; border-radius:9px; border:none; background:transparent;
+    display:flex; align-items:center; justify-content:center; color:var(--text-muted);
+  }
+  .icon-btn:hover{ background:var(--sidebar-active); }
+  .icon-btn svg{ width:17px; height:17px; }
+
+  .sb-primary{ display:flex; flex-direction:column; gap:8px; margin-bottom:18px; }
+  .sb-btn{
+    display:flex; align-items:center; gap:9px; padding:10px 13px; border-radius:11px; border:none;
+    font-size:13.5px; font-weight:600; min-height:40px;
+  }
+  .sb-btn .kbd{
+    margin-left:auto; font-family:'JetBrains Mono', monospace; font-size:10px; font-weight:500;
+    letter-spacing:0.02em; opacity:0.72;
+  }
+  .sb-btn.primary{ background:var(--violet); color:#fff; }
+  .sb-btn.primary:hover{ background:#7640ea; }
+  .sb-btn.ai{ background:transparent; color:var(--text); border:1px solid var(--border); }
+  .sb-btn.ai:hover{ background:var(--sidebar-active); }
+  .sb-btn svg{ width:15px; height:15px; flex-shrink:0; }
+
+  .nav-list{ display:flex; flex-direction:column; gap:2px; margin-bottom:18px; }
+  .nav-item{
+    display:flex; align-items:center; gap:11px; padding:9px 10px; border-radius:9px;
+    font-size:13.5px; color:var(--text-muted); text-decoration:none; min-height:38px;
+  }
+  .nav-item svg{ width:16px; height:16px; flex-shrink:0; }
+  .nav-item .kbd{
+    margin-left:auto; font-family:'JetBrains Mono', monospace; font-size:9.5px; color:var(--text-faint);
+  }
+  .nav-item:hover{ background:var(--sidebar-active); color:var(--text); }
+  .nav-item.active{ background:var(--sidebar-active); color:var(--text); font-weight:600; }
+  .nav-item.active svg{ color:var(--violet); }
+
+  .sb-section-label{
+    font-family:'JetBrains Mono', monospace; font-size:9.5px; letter-spacing:0.1em; text-transform:uppercase;
+    color:var(--text-faint); padding:0 10px; margin-bottom:8px;
+  }
+  .workspace-list{ flex:1; overflow-y:auto; display:flex; flex-direction:column; gap:1px; scrollbar-width:none; margin-bottom:10px; }
+  .workspace-list::-webkit-scrollbar{ display:none; }
+  .ws-item{
+    display:flex; align-items:center; gap:10px; padding:8px 10px; border-radius:9px;
+    font-size:12.5px; color:var(--text); min-height:34px;
+  }
+  .ws-item:hover{ background:var(--sidebar-active); }
+  .ws-item svg{ width:14px; height:14px; flex-shrink:0; color:var(--text-muted); }
+  .ws-item span{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+  .sidebar-footer{ display:flex; flex-direction:column; gap:2px; border-top:1px solid var(--border); padding-top:10px; }
+  .footer-item{
+    display:flex; align-items:center; gap:11px; padding:9px 10px; border-radius:9px;
+    font-size:13px; color:var(--text-muted); text-decoration:none; min-height:36px;
+  }
+  .footer-item:hover{ background:var(--sidebar-active); color:var(--text); }
+  .footer-item.active{ background:var(--sidebar-active); color:var(--text); font-weight:600; }
+  .footer-item.active svg{ color:var(--violet); }
+  .footer-item svg{ width:15px; height:15px; flex-shrink:0; }
+  .theme-row{ display:flex; align-items:center; justify-content:space-between; padding:9px 10px; }
+  .theme-row .label{ font-size:13px; color:var(--text-muted); }
+  .theme-toggle-btn{
+    width:30px; height:30px; border-radius:9px; border:none; background:transparent;
+    display:flex; align-items:center; justify-content:center; color:var(--text-muted);
+  }
+  .theme-toggle-btn:hover{ background:var(--sidebar-active); color:var(--text); }
+  .theme-toggle-btn svg{ width:16px; height:16px; }
+
+  /* ================= MAIN PANE ================= */
+  .main-pane{ flex:1; min-width:0; display:flex; flex-direction:column; height:100%; background:var(--bg); }
+  .top-strip{
+    display:flex; align-items:center; justify-content:space-between; padding:16px 28px;
+    flex-shrink:0; min-height:56px;
+  }
+  .top-strip-left{ display:flex; align-items:center; gap:10px; }
+  .top-strip-right{ display:flex; align-items:center; gap:10px; }
+
+  .collapse-btn{
+    width:32px; height:32px; border-radius:9px; border:none; background:transparent;
+    display:flex; align-items:center; justify-content:center; color:var(--text-muted);
+  }
+  .collapse-btn:hover{ background:var(--card-raised); color:var(--text); }
+  .collapse-btn svg{ width:17px; height:17px; }
+
+  .gear-btn{
+    width:34px; height:34px; border-radius:10px; border:none; background:transparent;
+    display:flex; align-items:center; justify-content:center; color:var(--text-muted);
+  }
+  .gear-btn:hover{ background:var(--card-raised); color:var(--text); }
+  .gear-btn svg{ width:18px; height:18px; }
+
+  .content-scroll{ flex:1; overflow-y:auto; padding:8px 28px 48px; }
+
+  /* State-switcher pill, relocated to the top strip per Section 3a */
+  .state-switch{
+    display:flex; gap:4px; background:var(--card-raised); border:1px solid var(--border);
+    border-radius:11px; padding:3px;
+  }
+  .state-pill{
+    font-family:'JetBrains Mono', monospace; font-size:10.5px; padding:7px 12px; min-height:30px;
+    display:flex; align-items:center; border-radius:8px; color:var(--text-muted); font-weight:500;
+    border:none; background:transparent;
+  }
+  .state-pill.active{ background:var(--card); color:var(--violet); box-shadow:0 1px 4px rgba(80,60,140,0.16); }
+
+  /* ================= CARD LANGUAGE ================= */
+  .card{ background:var(--card); border:1px solid var(--border); border-radius:16px; }
+  .card-accent{ border-left:3px solid var(--violet); }
+
+  /* ================= FLOATING RINGS WIDGET — global chrome, every screen ================= */
+  .rings-widget{
+    position:absolute; right:26px; bottom:26px; background:var(--card); border:1px solid var(--border);
+    border-radius:18px; padding:16px 20px; box-shadow:var(--shadow); z-index:40;
+    display:flex; flex-direction:column; align-items:center; gap:12px;
+  }
+  .rings-widget .rw-label{
+    font-family:'JetBrains Mono', monospace; font-size:10px; letter-spacing:0.1em; text-transform:uppercase;
+    color:var(--text-faint);
+  }
+  .rings-widget .rw-rings{ display:flex; gap:14px; }
+  .rw-ring{ display:flex; flex-direction:column; align-items:center; gap:6px; }
+  .rw-circle{
+    width:46px; height:46px; border-radius:50%; border:3px solid var(--border);
+    display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:600; color:var(--text);
+  }
+  .rw-circle.plan{ border-color:#d9c9f8; }
+  .rw-circle.do{ border-color:#c9d9f8; }
+  .rw-circle.share{ border-color:#c9f0d9; }
+  .rw-ring .rw-tag{
+    font-family:'JetBrains Mono', monospace; font-size:8.5px; letter-spacing:0.08em; color:var(--text-faint);
+  }
+
+  /* ---- dimmed shell behind the modal ---- */
+  .backdrop-content{ padding:40px 8px; max-width:640px; }
+  .backdrop-eyebrow{
+    font-family:'JetBrains Mono', monospace; font-size:11px; letter-spacing:0.12em; text-transform:uppercase;
+    color:var(--violet); margin-bottom:8px;
+  }
+  .backdrop-greeting{ font-family:'Fraunces', serif; font-weight:500; font-size:30px; color:var(--text); margin-bottom:8px; }
+  .backdrop-sub{ font-size:14px; color:var(--text-muted); line-height:1.55; max-width:480px; }
+
+  .onboard-backdrop{
+    position:absolute; inset:0; background:rgba(15,12,26,0.5); z-index:45;
+    display:flex; align-items:center; justify-content:center; padding:40px;
+  }
+  .onboard-stack{ display:flex; flex-direction:column; align-items:center; gap:16px; max-height:100%; }
+
+  /* ---- the modal itself: new markup, no mobile equivalent to port from ---- */
+  .onboard-modal{
+    width:600px; max-height:100%; background:var(--card); border:1px solid var(--border); border-radius:22px;
+    box-shadow:0 40px 90px -18px rgba(20,10,50,0.5); display:flex; flex-direction:column; overflow:hidden;
+  }
+
+  .step-page{ display:none; flex-direction:column; max-height:680px; }
+  .step-page.active{ display:flex; }
+
+  .ob-topbar{ display:flex; align-items:center; gap:14px; padding:26px 30px 16px; flex-shrink:0; }
+  .ob-back{
+    width:36px; height:36px; min-width:36px; border-radius:10px; background:var(--card-raised);
+    display:flex; align-items:center; justify-content:center; color:var(--text-muted); border:none;
+  }
+  .ob-back svg{ width:16px; height:16px; }
+  .ob-back:hover{ background:var(--sidebar-active); }
+  .ob-back[disabled]{ opacity:0.35; }
+  .ob-back[disabled]:hover{ background:var(--card-raised); }
+  .ob-progress{ flex:1; display:flex; gap:6px; }
+  .ob-progress .seg{ flex:1; height:3px; border-radius:2px; background:var(--border); }
+  .ob-progress .seg.filled{ background:var(--violet); }
+
+  .ob-screen{ flex:1; overflow-y:auto; padding:6px 30px 26px; }
+
+  .step-tag{ font-family:'JetBrains Mono', monospace; font-size:11px; letter-spacing:0.12em; text-transform:uppercase; color:var(--violet); margin-bottom:12px; }
+  .step-title{ font-family:'Fraunces', serif; font-weight:500; font-size:26px; color:var(--text); line-height:1.2; margin-bottom:10px; }
+  .step-sub{ font-size:13.5px; color:var(--text-muted); line-height:1.55; margin-bottom:24px; }
+
+  .option{
+    display:flex; align-items:flex-start; gap:13px; padding:15px 16px; min-height:56px;
+    border-radius:14px; background: var(--card); border:1px solid var(--border); margin-bottom:10px;
+  }
+  .option:hover{ border-color:var(--violet-dim); }
+  .option.selected{ border-color: var(--violet); background: var(--violet-soft); }
+  .opt-icon{ width:36px; height:36px; border-radius:10px; background: var(--card-raised); display:flex; align-items:center; justify-content:center; font-size:17px; flex-shrink:0; }
+  .option.selected .opt-icon{ background: var(--violet-dim); }
+  .opt-text .t{ font-size:14.5px; font-weight:600; color:var(--text); margin-bottom:3px; }
+  .opt-text .d{ font-size:12.5px; color:var(--text-muted); line-height:1.4; }
+  .opt-check{ margin-left:auto; width:19px; height:19px; border-radius:50%; border:1.5px solid var(--border); flex-shrink:0; margin-top:2px; display:flex; align-items:center; justify-content:center; font-size:10px; color:#fff; }
+  .option.selected .opt-check{ border-color: var(--violet); background: var(--violet); }
+
+  .slider-card{ background: var(--card); border:1px solid var(--border); border-radius:18px; padding:20px; margin-bottom:14px; }
+  .slider-label{ display:flex; justify-content:space-between; font-size:13.5px; color:var(--text); font-weight:500; margin-bottom:16px; }
+  .slider-label span{ color:var(--violet); font-family:'JetBrains Mono', monospace; font-size:12px; }
+  .track{ height:6px; border-radius:4px; background:var(--border); position:relative; margin-bottom:8px; touch-action:none; }
+  .track .fill{ position:absolute; left:0; top:0; bottom:0; border-radius:4px; background: var(--violet); }
+  .track .knob{
+    position:absolute; top:50%; transform:translate(-50%,-50%); width:20px; height:20px; border-radius:50%;
+    background:var(--card); border:3px solid var(--violet); touch-action:none; cursor:grab;
+  }
+  .track .knob:active{ cursor:grabbing; }
+
+  .learn-more-panel{
+    display:none; margin-top:10px; padding:13px 15px; background:var(--violet-soft);
+    border-radius:12px; font-size:12.5px; color:var(--text-muted); line-height:1.6;
+  }
+  .learn-more-panel.open{ display:block; }
+  .learn-more-panel b{ color:var(--text); }
+  .scale-labels{ display:flex; justify-content:space-between; font-size:11px; color:var(--text-faint); margin-bottom:6px; }
+  .drag-hint{ font-size:10.5px; color:var(--text-faint); font-style:italic; }
+
+  /* Step 0's two preview cards sit side by side — the room a 600px modal
+     has that a 392px phone doesn't. */
+  .preview-row{ display:flex; gap:12px; margin-bottom:14px; }
+  .preview-row .preview-card{ flex:1; margin-bottom:0; }
+  .preview-card{ padding:17px 18px; }
+  .preview-label{
+    font-family:'JetBrains Mono', monospace; font-size:10.5px; letter-spacing:0.1em; text-transform:uppercase;
+    color:var(--violet); margin-bottom:9px;
+  }
+  .preview-text{ font-size:13px; line-height:1.55; color:var(--text-secondary); }
+  .preview-text b{ color:var(--text); font-weight:600; }
+
+  .tone-heading{ font-family:'JetBrains Mono', monospace; font-size:11px; letter-spacing:0.1em; text-transform:uppercase; color:var(--violet); margin:22px 0 5px; }
+  .tone-sub{ font-size:12.5px; color:var(--text-muted); line-height:1.5; margin-bottom:14px; }
+  .option .d.quoted{ font-style:italic; }
+
+  .time-grid{ display:flex; flex-wrap:wrap; gap:9px; }
+  .time-chip{ padding:10px 15px; min-height:40px; display:flex; align-items:center; border-radius:12px; background: var(--card); border:1px solid var(--border); font-size:13px; color:var(--text-muted); }
+  .time-chip:hover{ border-color:var(--violet-dim); }
+  .time-chip.selected{ background: var(--violet-soft); border-color: var(--violet); color: var(--violet); font-weight:600; }
+
+  .summary-card{ background: var(--card-raised); border:1px solid var(--border); border-radius:18px; padding:19px; margin-bottom:14px; }
+  .summary-row{ display:flex; justify-content:space-between; align-items:flex-start; padding:11px 0; border-bottom:1px solid var(--divider); }
+  .summary-row:last-child{ border-bottom:none; padding-bottom:0; }
+  .summary-row:first-child{ padding-top:0; }
+  .summary-k{ font-size:12px; color:var(--text-faint); font-family:'JetBrains Mono', monospace; padding-top:2px; }
+  .summary-v{ font-size:13.5px; color:var(--text); font-weight:500; text-align:right; max-width:280px; }
+  .edit-link{ font-size:11.5px; color:var(--violet); margin-top:4px; background:none; border:none; font-family:inherit; min-height:26px; }
+  .edit-link:hover{ text-decoration:underline; }
+
+  .privacy-note{ display:flex; gap:11px; background: var(--violet-soft); border:1px solid var(--violet-dim); border-radius:14px; padding:14px 16px; margin-bottom:16px; }
+  .privacy-note .ic{ flex-shrink:0; width:17px; height:17px; color:var(--violet); margin-top:1px; }
+  .privacy-note p{ font-size:12.5px; color:var(--text-secondary); line-height:1.55; }
+  .privacy-note b{ color:var(--text); }
+  .learn-more{
+    font-size:11.5px; color:var(--violet); display:inline-block; margin-top:5px; font-weight:600;
+    background:none; border:none; padding:0; font-family:inherit; text-align:left;
+  }
+  .learn-more:hover{ text-decoration:underline; }
+
+  .save-note{ display:flex; align-items:center; gap:7px; font-size:11.5px; color:var(--text-faint); margin-bottom:12px; justify-content:center; }
+
+  .ob-footer{ padding:16px 30px 26px; background:var(--card); border-top:1px solid var(--border); flex-shrink:0; }
+  .cta{ width:100%; padding:15px 0; min-height:50px; border-radius:14px; background: var(--violet); color:#fff; text-align:center; font-size:14.5px; font-weight:700; margin-bottom:9px; border:none; display:flex; align-items:center; justify-content:center; font-family:inherit; }
+  .cta:hover{ background:#7640ea; }
+  .cta[disabled]{ opacity:0.6; }
+  .cta[disabled]:hover{ background:var(--violet); }
+  .skip{ text-align:center; font-size:12.5px; color:var(--text-faint); min-height:28px; display:flex; align-items:center; justify-content:center; background:none; border:none; width:100%; font-family:inherit; }
+  .skip:hover{ color:var(--text-muted); }
+
+  .label-row{ display:flex; justify-content:center; gap:16px; flex-wrap:wrap; }
+  .page-dot{ font-size:11.5px; color:rgba(255,255,255,0.6); transition:color .15s, font-weight .15s; }
+  .page-dot.active{ color:#c9adff; font-weight:600; }
+
+</style>
+
+</head>
+<body>
+<!-- Reusable icon defs — simple 24x24 stroke icons, generic geometric shapes -->
+<svg width="0" height="0" style="position:absolute">
+<defs>
+<g id="ic-bell"><path d="M12 4a5 5 0 0 0-5 5v3.2c0 .6-.22 1.18-.62 1.63L5 15.5h14l-1.38-1.67A2.5 2.5 0 0 1 17 12.2V9a5 5 0 0 0-5-5Z" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linejoin="round"/><path d="M10 18.5a2 2 0 0 0 4 0" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linecap="round"/></g>
+<g id="ic-plus"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></g>
+<g id="ic-sparkle"><path d="M12 3.5 13.4 9l5.6 1.4-5.6 1.4L12 17.3 10.6 11.8 5 10.4l5.6-1.4L12 3.5Z" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linejoin="round"/></g>
+<g id="ic-home"><path d="M4 11.5 12 5l8 6.5" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 10v8.5a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V10" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linejoin="round"/></g>
+<g id="ic-star"><path d="M12 4.5 13.7 10 19.5 12 13.7 14 12 19.5 10.3 14 4.5 12 10.3 10 12 4.5Z" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linejoin="round"/></g>
+<g id="ic-calendar"><rect x="4.5" y="6" width="15" height="14" rx="2.2" stroke="currentColor" stroke-width="1.7" fill="none"/><path d="M4.5 10.5h15M8.3 4v3.5M15.7 4v3.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></g>
+<g id="ic-feed"><rect x="4.5" y="5" width="15" height="14" rx="2.2" stroke="currentColor" stroke-width="1.7" fill="none"/><path d="M7.5 9.5h9M7.5 13h9M7.5 16.2h5.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></g>
+<g id="ic-search"><circle cx="10.8" cy="10.8" r="6" stroke="currentColor" stroke-width="1.7" fill="none"/><path d="m19 19-3.6-3.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></g>
+<g id="ic-profile"><circle cx="12" cy="8.5" r="3.5" stroke="currentColor" stroke-width="1.7" fill="none"/><path d="M5 19c1.3-3.5 4-5 7-5s5.7 1.5 7 5" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linecap="round"/></g>
+<g id="ic-gear"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.6" fill="none"/><path d="M12 3.5v2.3M12 18.2v2.3M20.5 12h-2.3M5.8 12H3.5M17.8 6.2l-1.6 1.6M7.8 16.2l-1.6 1.6M17.8 17.8l-1.6-1.6M7.8 7.8 6.2 6.2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></g>
+<g id="ic-logout"><path d="M9 4H6a1.5 1.5 0 0 0-1.5 1.5v13A1.5 1.5 0 0 0 6 20h3" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M13.5 8 17.5 12 13.5 16M17.5 12H9.5" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>
+<g id="ic-sun"><circle cx="12" cy="12" r="3.6" stroke="currentColor" stroke-width="1.7" fill="none"/><path d="M12 3v2M12 19v2M21 12h-2M5 12H3M18.4 5.6l-1.4 1.4M7 16l-1.4 1.4M18.4 18.4 17 17M7 8 5.6 5.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></g>
+<g id="ic-moon"><path d="M19.5 14.2A8 8 0 0 1 9.8 4.5a8 8 0 1 0 9.7 9.7Z" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linejoin="round"/></g>
+<g id="ic-collapse"><rect x="4" y="5" width="16" height="14" rx="2.3" stroke="currentColor" stroke-width="1.6" fill="none"/><path d="M9.5 5v14" stroke="currentColor" stroke-width="1.6"/></g>
+<g id="ic-ws-cal"><rect x="4.5" y="6" width="15" height="14" rx="2.2" stroke="currentColor" stroke-width="1.7" fill="none"/><path d="M4.5 10.5h15" stroke="currentColor" stroke-width="1.7"/></g>
+<g id="ic-ws-wave"><path d="M4 9c1.6-1.6 3.2-1.6 4.8 0s3.2 1.6 4.8 0 3.2-1.6 4.8 0 3.2 1.6 4.8 0M4 15c1.6-1.6 3.2-1.6 4.8 0s3.2 1.6 4.8 0 3.2-1.6 4.8 0 3.2 1.6 4.8 0" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linecap="round"/></g>
+<g id="ic-ws-kite"><path d="M12 3.5 19 9l-2.2 9.5L12 21l-4.8-2.5L5 9l7-5.5Z" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linejoin="round"/></g>
+<g id="ic-chevron"><path d="m9 6 6 6-6 6" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>
+<g id="ic-back"><path d="m15 6-6 6 6 6" stroke="currentColor" stroke-width="1.8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>
+<g id="ic-lock"><rect x="5.5" y="10.5" width="13" height="9" rx="2" stroke="currentColor" stroke-width="1.6" fill="none"/><path d="M8.2 10.5V7.8a3.8 3.8 0 1 1 7.6 0v2.7" stroke="currentColor" stroke-width="1.6" fill="none"/></g>
+<g id="ic-edit"><path d="m15.5 5.5 3 3L8 19H5v-3L15.5 5.5Z" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linejoin="round"/></g>
+<g id="ic-warn"><path d="M12 4 21 19H3L12 4Z" stroke="currentColor" stroke-width="1.6" fill="none" stroke-linejoin="round"/><path d="M12 10v4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="12" cy="16.6" r="0.9" fill="currentColor"/></g>
+<g id="ic-pause"><rect x="7" y="5.5" width="3.4" height="13" rx="1" stroke="currentColor" stroke-width="1.4" fill="none"/><rect x="13.6" y="5.5" width="3.4" height="13" rx="1" stroke="currentColor" stroke-width="1.4" fill="none"/></g>
+<g id="ic-download"><path d="M12 4v11" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="m7.5 11 4.5 4.5L16.5 11" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 18.5h14" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></g>
+<g id="ic-reset"><path d="M4.5 12a7.5 7.5 0 1 1 2.4 5.5" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linecap="round"/><path d="M4.5 17v-4.5H9" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linecap="round" stroke-linejoin="round"/></g>
+</defs>
+</svg>
+
+<div class="device-frame">
+<div class="app-shell" id="app-shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-top">
+      <div class="wordmark">Kindred</div>
+      <button class="icon-btn" aria-label="Notifications"><svg viewBox="0 0 24 24"><use href="#ic-bell"/></svg></button>
+    </div>
+    <div class="sb-primary">
+      <button class="sb-btn primary" tabindex="0"><svg viewBox="0 0 24 24"><use href="#ic-plus"/></svg>New task<span class="kbd">&#8679;T</span></button>
+      <button class="sb-btn ai" tabindex="0"><svg viewBox="0 0 24 24"><use href="#ic-sparkle"/></svg>Create with AI<span class="kbd">&#8679;A</span></button>
+    </div>
+    <nav class="nav-list" aria-label="Primary">
+      <a class="nav-item" tabindex="0"><svg viewBox="0 0 24 24"><use href="#ic-home"/></svg>Home<span class="kbd">&#8679;H</span></a>
+      <a class="nav-item active" tabindex="0" aria-current="page"><svg viewBox="0 0 24 24"><use href="#ic-star"/></svg>For You<span class="kbd">&#8679;F</span></a>
+      <a class="nav-item" tabindex="0"><svg viewBox="0 0 24 24"><use href="#ic-calendar"/></svg>Calendar<span class="kbd">&#8679;C</span></a>
+      <a class="nav-item" tabindex="0"><svg viewBox="0 0 24 24"><use href="#ic-feed"/></svg>Feed</a>
+      <a class="nav-item" tabindex="0"><svg viewBox="0 0 24 24"><use href="#ic-search"/></svg>Search</a>
+      <a class="nav-item" tabindex="0"><svg viewBox="0 0 24 24"><use href="#ic-profile"/></svg>Profile</a>
+    </nav>
+    <div class="sb-section-label">Workspaces</div>
+    <div class="workspace-list">
+      <div class="ws-item" tabindex="0"><svg viewBox="0 0 24 24"><use href="#ic-ws-cal"/></svg><span>abhikaboy@gmail.com</span></div>
+      <div class="ws-item" tabindex="0"><svg viewBox="0 0 24 24"><use href="#ic-ws-wave"/></svg><span>lol</span></div>
+      <div class="ws-item" tabindex="0"><svg viewBox="0 0 24 24"><use href="#ic-ws-kite"/></svg><span>lol Kokomo</span></div>
+    </div>
+    <div class="sidebar-footer">
+      <a class="footer-item" tabindex="0"><svg viewBox="0 0 24 24"><use href="#ic-gear"/></svg>Settings</a>
+      <a class="footer-item" tabindex="0"><svg viewBox="0 0 24 24"><use href="#ic-logout"/></svg>Log out</a>
+      <div class="theme-row">
+        <span class="label">Theme</span>
+        <button class="theme-toggle-btn" tabindex="0" onclick="quickToggleTheme()" aria-label="Toggle light and dark theme">
+          <svg viewBox="0 0 24 24"><use id="theme-toggle-icon" href="#ic-moon"/></svg>
+        </button>
+      </div>
+    </div>
+  </aside>
+  <main class="main-pane">
+    <div class="top-strip">
+      <div class="top-strip-left">
+        <button class="collapse-btn" tabindex="0" onclick="toggleSidebar()" aria-label="Collapse sidebar"><svg viewBox="0 0 24 24"><use href="#ic-collapse"/></svg></button>
+      </div>
+      <div class="top-strip-right">
+        <button class="gear-btn" tabindex="0" aria-label="Settings"><svg viewBox="0 0 24 24"><use href="#ic-gear"/></svg></button>
+      </div>
+    </div>
+    <div class="content-scroll">
+      <div class="backdrop-content">
+        <div class="backdrop-eyebrow">Thursday &middot; Personalization</div>
+        <div class="backdrop-greeting">Welcome, Maya.</div>
+        <div class="backdrop-sub">Your thread will pick up here once onboarding is done &mdash; finish the four questions in the panel to get started.</div>
+      </div>
+
+      <div class="onboard-backdrop">
+        <div class="onboard-stack">
+        <div class="onboard-modal" role="dialog" aria-modal="true" aria-label="Personalization onboarding">
+
+          <!-- STEP 0: Welcome / what to expect -->
+          <div class="step-page active" data-step="0">
+            <div class="ob-topbar">
+              <button class="ob-back" aria-label="Go back" disabled><svg viewBox="0 0 24 24"><use href="#ic-back"/></svg></button>
+              <div class="ob-progress"><div class="seg"></div><div class="seg"></div><div class="seg"></div><div class="seg"></div></div>
+            </div>
+            <div class="ob-screen">
+              <div class="step-tag">Before you start</div>
+              <div class="step-title">Here's what to expect</div>
+              <div class="step-sub">Four quick questions tune how Kindred times and words your suggestions.</div>
+
+              <div class="preview-row">
+                <div class="slider-card preview-card">
+                  <div class="preview-label">Example &middot; Evening briefing</div>
+                  <div class="preview-text">You closed <b>4 of 6</b> rings today. Your focus held strongest before noon &mdash; that's the third day this week your completions cluster before 1pm.</div>
+                </div>
+                <div class="slider-card preview-card">
+                  <div class="preview-label">Example &middot; Suggested nudge</div>
+                  <div class="preview-text">Move "Read 20 min" to 8:40am? You finish reading tasks 3x more often when they're scheduled before your commute.</div>
+                </div>
+              </div>
+
+              <div class="privacy-note">
+                <svg class="ic" viewBox="0 0 24 24"><use href="#ic-lock"/></svg>
+                <p><b>Your first briefing lands tonight.</b> Nudges take about a week. Everything here is visible only to you, and you can change any answer later.</p>
+              </div>
+            </div>
+            <div class="ob-footer">
+              <div class="cta" tabindex="0" onclick="goToStep(1)">Let's get started</div>
+              <button class="skip" tabindex="0" onclick="skipToDefaults()">Skip setup &mdash; use defaults</button>
+            </div>
+          </div>
+
+          <!-- STEP 1: How do you plan -->
+          <div class="step-page" data-step="1">
+            <div class="ob-topbar">
+              <button class="ob-back" aria-label="Go back" tabindex="0" onclick="goToStep(0)"><svg viewBox="0 0 24 24"><use href="#ic-back"/></svg></button>
+              <div class="ob-progress"><div class="seg filled"></div><div class="seg"></div><div class="seg"></div><div class="seg"></div></div>
+            </div>
+            <div class="ob-screen">
+              <div class="step-tag">Step 1 of 4</div>
+              <div class="step-title">How do you usually plan your day?</div>
+              <div class="step-sub">This shapes how your suggestions get timed and personalized. There's no right answer, and you can change it later.</div>
+
+              <div class="option selected" tabindex="0" data-group="plan" data-summary="Night-before planner" onclick="selectOption(this)">
+                <div class="opt-icon">&#128197;</div>
+                <div class="opt-text"><div class="t">I plan the night before</div><div class="d">Set tomorrow up before bed</div></div>
+                <div class="opt-check">&#10003;</div>
+              </div>
+              <div class="option" tabindex="0" data-group="plan" data-summary="Morning-of planner" onclick="selectOption(this)">
+                <div class="opt-icon">&#9749;</div>
+                <div class="opt-text"><div class="t">I plan first thing in the morning</div><div class="d">Figure it out over coffee</div></div>
+                <div class="opt-check"></div>
+              </div>
+              <div class="option" tabindex="0" data-group="plan" data-summary="No real plan" onclick="selectOption(this)">
+                <div class="opt-icon">&#127754;</div>
+                <div class="opt-text"><div class="t">I don't really plan &mdash; I go with it</div><div class="d">Tasks get done as they come up</div></div>
+                <div class="opt-check"></div>
+              </div>
+              <div class="option" tabindex="0" data-group="plan" data-summary="Varies week to week" onclick="selectOption(this)">
+                <div class="opt-icon">&#128260;</div>
+                <div class="opt-text"><div class="t">It changes week to week</div><div class="d">Depends on what's going on</div></div>
+                <div class="opt-check"></div>
+              </div>
+            </div>
+            <div class="ob-footer">
+              <div class="cta" tabindex="0" onclick="goToStep(2)">Continue</div>
+              <button class="skip" tabindex="0" onclick="goToStep(2)">Skip for now &mdash; you can set this up later</button>
+            </div>
+          </div>
+
+          <!-- STEP 2: nudge intensity -->
+          <div class="step-page" data-step="2">
+            <div class="ob-topbar">
+              <button class="ob-back" aria-label="Go back" tabindex="0" onclick="goToStep(1)"><svg viewBox="0 0 24 24"><use href="#ic-back"/></svg></button>
+              <div class="ob-progress"><div class="seg filled"></div><div class="seg filled"></div><div class="seg"></div><div class="seg"></div></div>
+            </div>
+            <div class="ob-screen">
+              <div class="step-tag">Step 2 of 4</div>
+              <div class="step-title">How much should we check in?</div>
+              <div class="step-sub">You can change this any time &mdash; we'll also back off automatically if nudges aren't landing.</div>
+
+              <div class="slider-card">
+                <div class="slider-label">Nudge frequency <span id="freq-label">LIGHT TOUCH</span></div>
+                <div class="track" id="freq-track">
+                  <div class="fill" id="freq-fill" style="width:28%"></div>
+                  <div class="knob" id="freq-knob" style="left:28%" tabindex="0" role="slider" aria-label="Nudge frequency" aria-valuemin="0" aria-valuemax="100" aria-valuenow="28"></div>
+                </div>
+                <div class="scale-labels"><span>Rarely</span><span>Sometimes</span><span>Often</span></div>
+                <div class="drag-hint">Drag to adjust</div>
+              </div>
+
+              <div class="tone-heading">Tone</div>
+              <div class="tone-sub">Same nudge, three ways to say it &mdash; pick the one that sounds like you.</div>
+
+              <div class="option" tabindex="0" data-group="tone" data-summary="Quiet" onclick="selectOption(this)">
+                <div class="opt-icon">&#127765;</div>
+                <div class="opt-text"><div class="t">Quiet</div><div class="d quoted">"Reading task's still open &mdash; 8:40am tends to work better for you."</div></div>
+                <div class="opt-check"></div>
+              </div>
+              <div class="option selected" tabindex="0" data-group="tone" data-summary="Direct, matter-of-fact" onclick="selectOption(this)">
+                <div class="opt-icon">&#127919;</div>
+                <div class="opt-text"><div class="t">Direct, matter-of-fact</div><div class="d quoted">"Move 'Read 20 min' to 8:40am? You finish it 3x more often then."</div></div>
+                <div class="opt-check">&#10003;</div>
+              </div>
+              <div class="option" tabindex="0" data-group="tone" data-summary="Cheerful" onclick="selectOption(this)">
+                <div class="opt-icon">&#10024;</div>
+                <div class="opt-text"><div class="t">Cheerful</div><div class="d quoted">"Psst &mdash; your reading goes way better before 9am. Want to move it?"</div></div>
+                <div class="opt-check"></div>
+              </div>
+
+              <div class="privacy-note" style="margin-top:20px;">
+                <svg class="ic" viewBox="0 0 24 24"><use href="#ic-sparkle"/></svg>
+                <p>Nudges are <b>suggestions, not alerts</b> &mdash; dismiss any of them and we'll learn from it. You'll also see a daily limit in settings, so this never piles up.</p>
+              </div>
+            </div>
+            <div class="ob-footer">
+              <div class="cta" tabindex="0" onclick="goToStep(3)">Continue</div>
+              <button class="skip" tabindex="0" onclick="goToStep(3)">Skip for now &mdash; you can set this up later</button>
+            </div>
+          </div>
+
+          <!-- STEP 3: peak focus time -->
+          <div class="step-page" data-step="3">
+            <div class="ob-topbar">
+              <button class="ob-back" aria-label="Go back" tabindex="0" onclick="goToStep(2)"><svg viewBox="0 0 24 24"><use href="#ic-back"/></svg></button>
+              <div class="ob-progress"><div class="seg filled"></div><div class="seg filled"></div><div class="seg filled"></div><div class="seg"></div></div>
+            </div>
+            <div class="ob-screen">
+              <div class="step-tag">Step 3 of 4</div>
+              <div class="step-title">When are you sharpest?</div>
+              <div class="step-sub">Pick as many as feel true. We'll watch your actual completions too, and adjust this over time.</div>
+
+              <div class="time-grid">
+                <div class="time-chip selected" tabindex="0" onclick="toggleChip(this)">Early morning</div>
+                <div class="time-chip selected" tabindex="0" onclick="toggleChip(this)">Mid-morning</div>
+                <div class="time-chip" tabindex="0" onclick="toggleChip(this)">Early afternoon</div>
+                <div class="time-chip" tabindex="0" onclick="toggleChip(this)">Late afternoon</div>
+                <div class="time-chip" tabindex="0" onclick="toggleChip(this)">Evening</div>
+                <div class="time-chip" tabindex="0" onclick="toggleChip(this)">Late night</div>
+              </div>
+
+              <div class="privacy-note" style="margin-top:20px;">
+                <svg class="ic" viewBox="0 0 24 24"><use href="#ic-edit"/></svg>
+                <p>You can always see and <b>edit your personalization</b> from settings. If what we observe disagrees with what you picked here, your edits always win.</p>
+              </div>
+            </div>
+            <div class="ob-footer">
+              <div class="cta" tabindex="0" onclick="goToStep(4)">Continue</div>
+              <button class="skip" tabindex="0" onclick="goToStep(4)">Skip for now &mdash; you can set this up later</button>
+            </div>
+          </div>
+
+          <!-- STEP 4: summary / confirm -->
+          <div class="step-page" data-step="4">
+            <div class="ob-topbar">
+              <button class="ob-back" aria-label="Go back" tabindex="0" onclick="goToStep(3)"><svg viewBox="0 0 24 24"><use href="#ic-back"/></svg></button>
+              <div class="ob-progress"><div class="seg filled"></div><div class="seg filled"></div><div class="seg filled"></div><div class="seg filled"></div></div>
+            </div>
+            <div class="ob-screen">
+              <div class="step-tag">Step 4 of 4</div>
+              <div class="step-title">Your personalization is dialed in</div>
+              <div class="step-sub">Here's what we'll use to start. Nothing here is permanent.</div>
+
+              <div class="summary-card">
+                <div class="summary-row"><div class="summary-k">PLANNING STYLE</div><div class="summary-v"><span id="summary-plan">Night-before planner</span><br><button class="edit-link" tabindex="0" onclick="goToStep(1)">Edit</button></div></div>
+                <div class="summary-row"><div class="summary-k">NUDGE FREQUENCY</div><div class="summary-v"><span id="summary-freq">Light touch</span><br><button class="edit-link" tabindex="0" onclick="goToStep(2)">Edit</button></div></div>
+                <div class="summary-row"><div class="summary-k">TONE</div><div class="summary-v"><span id="summary-tone">Direct, matter-of-fact</span><br><button class="edit-link" tabindex="0" onclick="goToStep(2)">Edit</button></div></div>
+                <div class="summary-row"><div class="summary-k">PEAK FOCUS</div><div class="summary-v"><span id="summary-focus">Early &amp; mid-morning</span><br><button class="edit-link" tabindex="0" onclick="goToStep(3)">Edit</button></div></div>
+              </div>
+
+              <div class="privacy-note">
+                <svg class="ic" viewBox="0 0 24 24"><use href="#ic-lock"/></svg>
+                <p>Visible only to you &mdash; none of this is shown to friends unless you choose to share it.</p>
+              </div>
+              <button class="learn-more" id="learn-more-link" tabindex="0" onclick="toggleLearnMore()">Learn more about how this data is used &rarr;</button>
+              <div class="learn-more-panel" id="learn-more-panel">
+                <p>Planning style and tone come directly from what you picked here. Peak focus times start from your answers too, then get refined from your actual completions over time &mdash; and your picks always win if the two disagree. Nothing here is shared with friends, and you can export or delete it anytime from <b>Settings &rarr; Personalization data</b>.</p>
+              </div>
+            </div>
+            <div class="ob-footer">
+              <div class="save-note">&#10003; Your answers save automatically as you go</div>
+              <div class="cta" tabindex="0" id="finish-btn" onclick="finishOnboarding()">Start using Kindred</div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="label-row">
+          <div class="page-dot" data-dot="1">1 &middot; Planning style</div>
+          <div class="page-dot" data-dot="2">2 &middot; Nudge tuning</div>
+          <div class="page-dot" data-dot="3">3 &middot; Focus times</div>
+          <div class="page-dot" data-dot="4">4 &middot; Confirm</div>
+        </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+  <div class="rings-widget" aria-label="Today's rings, 3 left">
+    <div class="rw-label">TODAY &middot; 3 LEFT</div>
+    <div class="rw-rings">
+      <div class="rw-ring"><div class="rw-circle plan">0/2</div><div class="rw-tag">PLAN</div></div>
+      <div class="rw-ring"><div class="rw-circle do">0/3</div><div class="rw-tag">DO</div></div>
+      <div class="rw-ring"><div class="rw-circle share">0/1</div><div class="rw-tag">SHARE</div></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+  // ---------- sidebar collapse ----------
+  function toggleSidebar(){
+    document.getElementById('sidebar').classList.toggle('collapsed');
+  }
+
+  // ---------- keyboard support for div-as-button interactive elements ----------
+  function bindKeyboard(el){
+    el.addEventListener('keydown', function(e){
+      if(e.key === 'Enter' || e.key === ' '){
+        e.preventDefault();
+        el.click();
+      }
+    });
+  }
+  document.querySelectorAll('[tabindex="0"]').forEach(function(el){
+    if(!el.hasAttribute('role')) el.setAttribute('role','button');
+    bindKeyboard(el);
+  });
+
+  // ---------- theme: light / dark / system, one source of truth ----------
+  var themeMode = 'light'; // 'light' | 'dark' | 'system'
+
+  function systemPrefersDark(){
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  }
+  function effectiveTheme(){
+    return themeMode === 'system' ? (systemPrefersDark() ? 'dark' : 'light') : themeMode;
+  }
+  function applyTheme(){
+    var dark = effectiveTheme() === 'dark';
+    document.getElementById('app-shell').classList.toggle('dark-mode', dark);
+    var btn = document.getElementById('theme-toggle-icon');
+    if(btn) btn.setAttribute('href', dark ? '#ic-sun' : '#ic-moon');
+    var segs = document.querySelectorAll('[data-theme]');
+    segs.forEach(function(s){ s.classList.toggle('active', s.getAttribute('data-theme') === themeMode); });
+    if(typeof onThemeChange === 'function') onThemeChange(dark);
+  }
+  function setTheme(mode){
+    themeMode = mode;
+    applyTheme();
+  }
+  // Sidebar's quick toggle: a true bidirectional flip between light and dark,
+  // matching the mobile settings file's sun/moon behavior — an explicit choice,
+  // same source of truth the settings page's System/Light/Dark control reads from.
+  function quickToggleTheme(){
+    setTheme(effectiveTheme() === 'dark' ? 'light' : 'dark');
+  }
+  applyTheme();
+
+
+  var currentStep = 0;
+
+  function goToStep(n){
+    if(n < 0 || n > 4) return;
+    document.querySelectorAll('.step-page').forEach(function(p){ p.classList.remove('active'); });
+    document.querySelector('.step-page[data-step="' + n + '"]').classList.add('active');
+    document.querySelectorAll('.page-dot').forEach(function(d){
+      d.classList.toggle('active', d.getAttribute('data-dot') === String(n));
+    });
+    currentStep = n;
+    if(n === 4) updateSummary();
+    var screen = document.querySelector('.step-page[data-step="' + n + '"] .ob-screen');
+    if(screen) screen.scrollTop = 0;
+  }
+
+  function finishOnboarding(){
+    var btn = document.getElementById('finish-btn');
+    btn.textContent = '✓ All set!';
+    btn.setAttribute('disabled', 'true');
+  }
+
+  function skipToDefaults(){
+    // Jumps straight to the confirm screen using whatever is already
+    // pre-selected (plan, frequency, tone, focus times) — no answers lost,
+    // just no extra taps for someone who doesn't want to walk through it.
+    goToStep(4);
+  }
+
+  function selectOption(el){
+    var group = el.getAttribute('data-group');
+    document.querySelectorAll('[data-group="'+group+'"]').forEach(function(o){
+      o.classList.remove('selected');
+      o.querySelector('.opt-check').textContent = '';
+    });
+    el.classList.add('selected');
+    el.querySelector('.opt-check').textContent = '✓';
+  }
+  function toggleChip(el){
+    el.classList.toggle('selected');
+  }
+
+  var sliderDisplay = {
+    freq: { idx: 0, labels: ['Light touch', 'Some check-ins', 'Frequent'] }
+  };
+
+  function setupSlider(trackId, fillId, knobId, labelId, labels, stateKey){
+    var track = document.getElementById(trackId);
+    var fill = document.getElementById(fillId);
+    var knob = document.getElementById(knobId);
+    var label = document.getElementById(labelId);
+    var dragging = false;
+
+    function pctFromEvent(e){
+      var rect = track.getBoundingClientRect();
+      var clientX = (e.touches && e.touches[0]) ? e.touches[0].clientX : e.clientX;
+      var x = clientX - rect.left;
+      return Math.max(0, Math.min(100, (x / rect.width) * 100));
+    }
+    function update(pct){
+      pct = Math.round(pct);
+      fill.style.width = pct + '%';
+      knob.style.left = pct + '%';
+      knob.setAttribute('aria-valuenow', pct);
+      var idx = pct < 34 ? 0 : (pct < 67 ? 1 : 2);
+      label.textContent = labels[idx];
+      sliderDisplay[stateKey].idx = idx;
+    }
+    function start(e){ dragging = true; update(pctFromEvent(e)); e.preventDefault(); }
+    function move(e){ if(dragging){ update(pctFromEvent(e)); e.preventDefault(); } }
+    function end(){ dragging = false; }
+
+    track.addEventListener('pointerdown', start);
+    window.addEventListener('pointermove', move, { passive:false });
+    window.addEventListener('pointerup', end);
+    track.addEventListener('touchstart', start, { passive:false });
+    window.addEventListener('touchmove', move, { passive:false });
+    window.addEventListener('touchend', end);
+
+    knob.addEventListener('keydown', function(e){
+      var current = parseFloat(knob.style.left) || 0;
+      if(e.key === 'ArrowRight' || e.key === 'ArrowUp'){ update(Math.min(100, current + 5)); e.preventDefault(); }
+      if(e.key === 'ArrowLeft' || e.key === 'ArrowDown'){ update(Math.max(0, current - 5)); e.preventDefault(); }
+    });
+  }
+  setupSlider('freq-track', 'freq-fill', 'freq-knob', 'freq-label', ['LIGHT TOUCH', 'SOME CHECK-INS', 'FREQUENT'], 'freq');
+
+  function updateSummary(){
+    var planEl = document.querySelector('.option.selected[data-group="plan"]');
+    document.getElementById('summary-plan').textContent = planEl ? planEl.getAttribute('data-summary') : 'Not set yet';
+
+    document.getElementById('summary-freq').textContent = sliderDisplay.freq.labels[sliderDisplay.freq.idx];
+
+    var toneEl = document.querySelector('.option.selected[data-group="tone"]');
+    document.getElementById('summary-tone').textContent = toneEl ? toneEl.getAttribute('data-summary') : 'Not set yet';
+
+    var times = Array.from(document.querySelectorAll('.time-chip.selected')).map(function(c){ return c.textContent; });
+    document.getElementById('summary-focus').textContent = times.length
+      ? times.join(', ')
+      : 'No pattern yet — we\'ll use your activity instead';
+  }
+
+  function toggleLearnMore(){
+    var panel = document.getElementById('learn-more-panel');
+    var link = document.getElementById('learn-more-link');
+    var open = panel.classList.toggle('open');
+    link.textContent = open ? 'Show less ↑' : 'Learn more about how this data is used →';
+  }
+
+</script>
+</body>
+</html>
