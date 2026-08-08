@@ -80,7 +80,7 @@
   /* ===== App shell frame — a bezel standing in for the browser viewport,
      the desktop equivalent of the mobile files' .phone/.notch chrome ===== */
   .device-frame{
-    width:1360px; height:860px; margin:26px auto;
+    width:1440px; height:810px; margin:26px auto;
     border-radius:14px; border:1px solid #cfcbd8; overflow:hidden;
     box-shadow: 0 40px 90px -30px rgba(30,20,60,0.35);
     background: var(--bg);
@@ -298,7 +298,7 @@
   .row.stack{ flex-direction:column; align-items:stretch; }
   .row.stack .row-text{ margin-bottom:2px; }
 
-  .focus-panel{ display:none; padding:0 20px 16px; }
+  .focus-panel{ display:none; padding:16px 20px 18px; }
   .focus-panel.open{ display:block; }
   .focus-chip-grid{ display:flex; flex-wrap:wrap; gap:7px; }
   .fchip{ font-size:12px; padding:8px 13px; border-radius:10px; background:var(--card-raised); color:var(--text-muted); border:1px solid var(--border); min-height:34px; display:flex; align-items:center; }
@@ -500,12 +500,22 @@
               <div class="seg-pill-opt" id="freq-2" tabindex="0" role="button" onclick="setFrequency(2)">Frequent</div>
             </div>
           </div>
-          <div class="row clickable" tabindex="0" role="button" onclick="cycleQuietHours()">
+          <div class="row clickable" tabindex="0" role="button" onclick="toggleQuietPanel()">
             <div class="row-text">
               <div class="t">Quiet hours</div>
               <div class="d">No nudges sent during this window</div>
             </div>
-            <div class="row-value"><span id="quiet-text">9pm&ndash;7am</span><span class="chev">&rsaquo;</span></div>
+            <div class="pill-wrap" id="quiet-pill-wrap">
+              <div class="pill">9pm&ndash;7am</div>
+            </div>
+          </div>
+          <div class="focus-panel" id="quiet-panel">
+            <div class="focus-chip-grid" id="quiet-chip-grid">
+              <div class="fchip selected" tabindex="0" role="button" onclick="selectQuietChip(this)">9pm&ndash;7am</div>
+              <div class="fchip" tabindex="0" role="button" onclick="selectQuietChip(this)">10pm&ndash;8am</div>
+              <div class="fchip" tabindex="0" role="button" onclick="selectQuietChip(this)">Off</div>
+            </div>
+            <div class="focus-hint">Click to choose a window &mdash; updates the summary above immediately.</div>
           </div>
           <div class="row">
             <div class="row-text">
@@ -531,12 +541,23 @@
         <!-- ===== PERSONALIZATION — new category; combines learned traits and reports/briefings ===== -->
         <div class="eyebrow">Personalization</div>
         <div class="group">
-          <div class="row clickable" tabindex="0" role="button" onclick="cyclePlanning()">
+          <div class="row clickable" tabindex="0" role="button" onclick="togglePlanningPanel()">
             <div class="row-text">
               <div class="t">Planning style <span class="inferred-tag">From you</span></div>
               <div class="d">Used to time evening check-ins</div>
             </div>
-            <div class="row-value"><span id="planning-text">Night-before</span><span class="chev">&rsaquo;</span></div>
+            <div class="pill-wrap" id="planning-pill-wrap">
+              <div class="pill">Night-before</div>
+            </div>
+          </div>
+          <div class="focus-panel" id="planning-panel">
+            <div class="focus-chip-grid" id="planning-chip-grid">
+              <div class="fchip selected" tabindex="0" role="button" onclick="selectPlanningChip(this)">Night-before</div>
+              <div class="fchip" tabindex="0" role="button" onclick="selectPlanningChip(this)">Morning of</div>
+              <div class="fchip" tabindex="0" role="button" onclick="selectPlanningChip(this)">No real plan</div>
+              <div class="fchip" tabindex="0" role="button" onclick="selectPlanningChip(this)">Varies week to week</div>
+            </div>
+            <div class="focus-hint">Click to choose how you plan &mdash; updates the summary above immediately.</div>
           </div>
 
           <div class="row clickable" tabindex="0" role="button" onclick="toggleFocusPanel()">
@@ -550,7 +571,7 @@
             </div>
           </div>
           <div class="focus-panel" id="focus-panel">
-            <div class="focus-chip-grid">
+            <div class="focus-chip-grid" id="focus-chip-grid">
               <div class="fchip selected" tabindex="0" role="button" onclick="toggleFocusChip(this)">Early AM</div>
               <div class="fchip selected" tabindex="0" role="button" onclick="toggleFocusChip(this)">Mid AM</div>
               <div class="fchip" tabindex="0" role="button" onclick="toggleFocusChip(this)">Early PM</div>
@@ -561,12 +582,22 @@
             <div class="focus-hint">Click to add or remove a window &mdash; updates the summary above immediately.</div>
           </div>
 
-          <div class="row clickable" tabindex="0" role="button" onclick="cycleTone()">
+          <div class="row clickable" tabindex="0" role="button" onclick="toggleTonePanel()">
             <div class="row-text">
               <div class="t">Tone preference <span class="inferred-tag">From you</span></div>
               <div class="d">Shapes nudge and digest wording</div>
             </div>
-            <div class="row-value"><span id="tone-text">Direct</span><span class="chev">&rsaquo;</span></div>
+            <div class="pill-wrap" id="tone-pill-wrap">
+              <div class="pill">Direct</div>
+            </div>
+          </div>
+          <div class="focus-panel" id="tone-panel">
+            <div class="focus-chip-grid" id="tone-chip-grid">
+              <div class="fchip selected" tabindex="0" role="button" onclick="selectToneChip(this)">Direct</div>
+              <div class="fchip" tabindex="0" role="button" onclick="selectToneChip(this)">Cheerful</div>
+              <div class="fchip" tabindex="0" role="button" onclick="selectToneChip(this)">Quiet</div>
+            </div>
+            <div class="focus-hint">Click to choose a tone &mdash; updates the summary above immediately.</div>
           </div>
         </div>
 
@@ -787,22 +818,27 @@
     document.getElementById('modal-overlay').classList.add('open');
   }
 
-  // ---------- learned-traits rows ----------
-  var planningOptions = ['Night-before','Morning of','No real plan','Varies week to week'];
-  var planningIndex = 0;
-  function cyclePlanning(){
-    planningIndex = (planningIndex + 1) % planningOptions.length;
-    var val = planningOptions[planningIndex];
-    document.getElementById('planning-text').textContent = val;
+  // ---------- learned-traits rows (each is single-select via an expandable chip panel,
+  //             same interaction model as Peak focus times) ----------
+  function togglePlanningPanel(){
+    document.getElementById('planning-panel').classList.toggle('open');
+  }
+  function selectPlanningChip(el){
+    document.querySelectorAll('#planning-chip-grid .fchip').forEach(function(c){ c.classList.remove('selected'); });
+    el.classList.add('selected');
+    var val = el.textContent;
+    document.getElementById('planning-pill-wrap').innerHTML = '<div class="pill">' + val + '</div>';
     logAuditChange('Planning style', val);
   }
 
-  var toneOptions = ['Direct','Cheerful','Quiet'];
-  var toneIndex = 0;
-  function cycleTone(){
-    toneIndex = (toneIndex + 1) % toneOptions.length;
-    var val = toneOptions[toneIndex];
-    document.getElementById('tone-text').textContent = val;
+  function toggleTonePanel(){
+    document.getElementById('tone-panel').classList.toggle('open');
+  }
+  function selectToneChip(el){
+    document.querySelectorAll('#tone-chip-grid .fchip').forEach(function(c){ c.classList.remove('selected'); });
+    el.classList.add('selected');
+    var val = el.textContent;
+    document.getElementById('tone-pill-wrap').innerHTML = '<div class="pill">' + val + '</div>';
     logAuditChange('Tone preference', val);
   }
 
@@ -812,11 +848,11 @@
   function toggleFocusChip(el){
     el.classList.toggle('selected');
     updateFocusSummary();
-    var selected = Array.from(document.querySelectorAll('.fchip.selected')).map(function(c){ return c.textContent; });
+    var selected = Array.from(document.querySelectorAll('#focus-chip-grid .fchip.selected')).map(function(c){ return c.textContent; });
     logAuditChange('Peak focus times', selected.length ? selected.join(', ') : 'No pattern yet');
   }
   function updateFocusSummary(){
-    var selected = Array.from(document.querySelectorAll('.fchip.selected')).map(function(c){ return c.textContent; });
+    var selected = Array.from(document.querySelectorAll('#focus-chip-grid .fchip.selected')).map(function(c){ return c.textContent; });
     var wrap = document.getElementById('focus-pill-wrap');
     if(selected.length === 0){
       wrap.innerHTML = '<span style="font-size:11px;color:var(--text-faint);">No pattern yet</span>';
@@ -826,11 +862,9 @@
   }
 
   function resetLearnedValues(){
-    planningIndex = 0;
-    toneIndex = 0;
-    document.getElementById('planning-text').textContent = 'Not set yet';
-    document.getElementById('tone-text').textContent = 'Not set yet';
-    document.querySelectorAll('.fchip').forEach(function(c){ c.classList.remove('selected'); });
+    document.querySelectorAll('#planning-chip-grid .fchip, #tone-chip-grid .fchip, #focus-chip-grid .fchip').forEach(function(c){ c.classList.remove('selected'); });
+    document.getElementById('planning-pill-wrap').innerHTML = '<span style="font-size:11px;color:var(--text-faint);">Not set yet</span>';
+    document.getElementById('tone-pill-wrap').innerHTML = '<span style="font-size:11px;color:var(--text-faint);">Not set yet</span>';
     updateFocusSummary();
     auditLog.unshift({ label: 'Personalization', value: 'Reset to defaults', when: 'Just now · you reset this' });
   }
@@ -846,11 +880,13 @@
     logAuditChange('Nudge frequency', freqLabels[idx]);
   }
 
-  var quietOptions = ['9pm–7am','10pm–8am','Off'];
-  var quietIndex = 0;
-  function cycleQuietHours(){
-    quietIndex = (quietIndex + 1) % quietOptions.length;
-    document.getElementById('quiet-text').textContent = quietOptions[quietIndex];
+  function toggleQuietPanel(){
+    document.getElementById('quiet-panel').classList.toggle('open');
+  }
+  function selectQuietChip(el){
+    document.querySelectorAll('#quiet-chip-grid .fchip').forEach(function(c){ c.classList.remove('selected'); });
+    el.classList.add('selected');
+    document.getElementById('quiet-pill-wrap').innerHTML = '<div class="pill">' + el.textContent + '</div>';
   }
 
   var pauseLabels = { today: 'Paused for the rest of today', week: 'Paused for 1 week', forever: 'Paused until you turn nudges back on' };
