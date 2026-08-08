@@ -80,7 +80,7 @@
   /* ===== App shell frame — a bezel standing in for the browser viewport,
      the desktop equivalent of the mobile files' .phone/.notch chrome ===== */
   .device-frame{
-    width:1360px; height:860px; margin:26px auto;
+    width:1440px; height:810px; margin:26px auto;
     border-radius:14px; border:1px solid #cfcbd8; overflow:hidden;
     box-shadow: 0 40px 90px -30px rgba(30,20,60,0.35);
     background: var(--bg);
@@ -359,15 +359,18 @@
   /* ---- Right rail: trend module, echoes the Profile gauge without becoming it ---- */
   .rail-card{ padding:24px; }
   .rail-card .card-label{ margin-bottom:16px; }
-  .trend-head{ display:flex; justify-content:center; align-items:center; margin-bottom:16px; position:relative; height:118px; }
+  .trend-head{ display:flex; justify-content:center; align-items:center; margin-bottom:10px; position:relative; height:118px; }
   .gauge-ring{ position:absolute; top:0; left:50%; transform:translateX(-50%); }
   .gauge-ring circle{ fill:none; }
   .gauge-ring .track{ stroke:var(--border); stroke-width:6; }
   .gauge-ring .fill{ stroke:var(--violet); stroke-width:6; stroke-linecap:round; transform:rotate(-90deg); transform-origin:59px 59px; transition:stroke-dashoffset .3s; }
   .trend-num-wrap{ position:relative; z-index:1; display:flex; flex-direction:column; align-items:center; }
-  .trend-head .big{ font-family:'Fraunces', serif; font-size:34px; color:var(--text); line-height:1; }
-  .trend-head .big small{ font-size:15px; color:var(--text-muted); font-family:'Inter'; }
-  .trend-head .delta{ font-size:11px; color:var(--sage); font-family:'JetBrains Mono', monospace; margin-top:6px; text-align:center; }
+  /* .big is sized to the digits only (position:relative, inline-block) so align-items:center on
+     trend-num-wrap centers the NUMBER in the ring; the % is pinned outside that box via absolute
+     positioning so it can't pull the digits off-center */
+  .trend-head .big{ position:relative; display:inline-block; font-family:'Fraunces', serif; font-size:34px; color:var(--text); line-height:1; }
+  .trend-head .big small{ position:absolute; left:100%; top:3px; margin-left:1px; font-size:15px; color:var(--text-muted); font-family:'Inter'; white-space:nowrap; }
+  .delta{ font-size:11px; color:var(--sage); font-family:'JetBrains Mono', monospace; text-align:center; margin-bottom:16px; }
   .bars{ display:flex; align-items:flex-end; gap:8px; height:64px; margin-bottom:8px; }
   .bar{ flex:1; background: var(--card-raised); border-radius:5px 5px 2px 2px; position:relative; }
   .bar.today{ background: var(--violet); }
@@ -379,8 +382,8 @@
     min-height:32px; background:none; border:none; padding:0; border-bottom:1px solid var(--violet-dim); font-family:inherit;
   }
   .trend-toggle:hover{ border-bottom-color:var(--violet); }
-  .rail-empty{ text-align:center; padding:20px 4px; }
-  .rail-empty .briefing-title{ font-size:16px; }
+  .rail-empty .briefing-title{ font-size:16px; text-align:center; margin-top:28px; }
+  .rail-empty .empty-text{ text-align:center; }
 
   /* ---- Page-level modal overlay (deep-link placeholders), replaces the mobile bottom-inset sheet ---- */
   .modal-overlay{
@@ -481,7 +484,7 @@
         <div class="state-switch" role="group" aria-label="Preview state">
           <button class="state-pill active" id="pill-active" tabindex="0" onclick="setState('active')">Active user</button>
           <button class="state-pill" id="pill-new" tabindex="0" onclick="setState('new')">New user</button>
-        </div> <button class="gear-btn" tabindex="0" aria-label="Settings"><svg viewBox="0 0 24 24"><use href="#ic-gear"/></svg></button>
+        </div> <button class="gear-btn" tabindex="0" onclick="openNavModal('settings')" aria-label="Settings"><svg viewBox="0 0 24 24"><use href="#ic-gear"/></svg></button>
       </div>
     </div>
     <div class="content-scroll">
@@ -590,9 +593,9 @@
                 </svg>
                 <div class="trend-num-wrap">
                   <div class="big" id="trend-big">82<small>%</small></div>
-                  <div class="delta" id="trend-delta">&uarr; steadier than last week</div>
                 </div>
               </div>
+              <div class="delta" id="trend-delta">&uarr; steadier than last week</div>
               <div id="trend-week-view">
                 <div class="bars">
                   <div class="bar" style="height:40%"></div>
@@ -850,6 +853,11 @@
       icon: '👥',
       title: 'This would open Friends',
       body: 'In the real app, this deep-links to the Friends tab to search for and add someone. Adding a friend involves sending a request and waiting on their acceptance — more than a single tap — so this mockup shows the intended destination instead of faking that flow.'
+    },
+    settings: {
+      icon: '⚙️',
+      title: 'This would open Settings',
+      body: 'In the real app, this deep-links to Personalization settings — quiet hours, nudge frequency, and tone all live there.'
     }
   };
   function openNavModal(kind){
