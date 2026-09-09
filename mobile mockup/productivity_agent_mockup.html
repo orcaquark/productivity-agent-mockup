@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Kindred — Personalization</title>
+<link rel="stylesheet" href="styles/main.css">
+<link rel="stylesheet" href="styles/productivity_agent_mockup.css">
+</head>
+<body>
+
+<div class="wrap-outer">
+<div class="phone">
+  <div class="notch"></div>
+  <div class="scroll">
+
+    <div class="eyebrow">Thursday · Personalization</div>
+    <div class="greeting"><span id="greet-name">Evening, Maya.</span></div>
+    <div class="subline" id="subline">Here's where your thread picked up today.</div>
+
+    <div class="state-switch" role="group" aria-label="Preview state">
+      <button class="state-pill active" id="pill-active" tabindex="0" onclick="setState('active')">Active user</button>
+      <button class="state-pill" id="pill-new" tabindex="0" onclick="setState('new')">New user</button>
+    </div>
+
+    <!-- ===== ACTIVE / POPULATED STATE ===== -->
+    <div id="state-active">
+      <div class="thread-wrap">
+        <div class="thread-line"></div>
+
+        <div class="node-card">
+          <div class="node-dot">✦</div>
+          <div class="card">
+            <div class="card-label">Today's briefing</div>
+            <div class="briefing-title">A lighter day, mostly mornings</div>
+            <div class="briefing-text">
+              You closed <b>4 of 6</b> rings today. Your focus held strongest before noon — that's the third day this week your completions cluster before 1pm.
+            </div>
+            <div class="chip-row">
+              <div class="chip active" tabindex="0">✦ Mornings work for you</div>
+              <div class="chip task" id="gym-chip" tabindex="0" onclick="openNavModal('ring')" role="button">
+                <span class="dot"></span>Gym ring open<span class="go">→</span>
+              </div>
+            </div>
+            <div class="chip-caption">Purple = a pattern we noticed about you · Green = an open ring you can still close today</div>
+          </div>
+        </div>
+
+        <div class="node-card">
+          <div class="node-dot">!</div>
+          <div class="card">
+            <div class="card-label"><span>Suggested nudge</span><span class="cap-note">1 of 2 today</span></div>
+            <div class="nudge-row">
+              <div class="nudge-copy">
+                <div class="title truncate">Move "Read 20 min" to 8:40am?</div>
+                <div class="desc">You complete reading tasks 3x more often when they're scheduled before your commute.</div>
+              </div>
+            </div>
+            <button class="why-link" onclick="toggleWhy()" aria-expanded="false" id="why-btn">Why am I seeing this</button>
+            <div class="why-panel" id="why-panel">
+              Based on <b>14 days</b> of task timing: reading tasks completed before 9am finished 3x more often than the same task scheduled later. This nudge will stop appearing if you dismiss it twice in a row.
+            </div>
+            <div class="actions" id="nudge-actions">
+              <div class="btn primary" tabindex="0" onclick="resolveNudge('moved')">Move it</div>
+              <div class="btn ghost" tabindex="0" onclick="resolveNudge('dismissed')">Not now</div>
+            </div>
+            <div class="feedback-row" id="nudge-feedback"></div>
+          </div>
+        </div>
+
+        <div class="node-card">
+          <div class="node-dot sage">~</div>
+          <div class="card">
+            <div class="card-label">This week's pattern</div>
+            <div class="trend-head">
+              <div class="big" id="trend-big">82<small>%</small></div>
+              <div class="delta" id="trend-delta">↑ steadier than last week</div>
+            </div>
+            <div id="trend-week-view">
+              <div class="bars">
+                <div class="bar" style="height:40%"></div>
+                <div class="bar" style="height:65%"></div>
+                <div class="bar" style="height:50%"></div>
+                <div class="bar" style="height:80%"></div>
+                <div class="bar" style="height:70%"></div>
+                <div class="bar" style="height:90%"></div>
+                <div class="bar today" style="height:67%"></div>
+              </div>
+              <div class="bar-labels"><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span></div>
+            </div>
+            <div id="trend-month-view" style="display:none;">
+              <div class="bars">
+                <div class="bar" style="height:52%"></div>
+                <div class="bar" style="height:61%"></div>
+                <div class="bar" style="height:74%"></div>
+                <div class="bar today" style="height:82%"></div>
+              </div>
+              <div class="bar-labels"><span>Wk 1</span><span>Wk 2</span><span>Wk 3</span><span>Wk 4</span></div>
+            </div>
+            <div class="trend-note" id="trend-note">Tuesday's dip lines up with the team offsite, not a slip.</div>
+            <button class="trend-toggle" tabindex="0" id="trend-toggle-btn" onclick="toggleTrendView()">See full month →</button>
+          </div>
+        </div>
+
+        <div class="node-card">
+          <div class="node-dot muted">·</div>
+          <div class="card">
+            <div class="card-label">What got missed</div>
+            <div class="miss-item" id="miss-expense">
+              <div class="miss-body">
+                <div class="miss-name truncate">Submit expense report</div>
+                <div class="miss-why">Pushed 3 times — usually means it's not actually urgent</div>
+                <button class="miss-cta" tabindex="0" id="miss-cta-expense" onclick="resolveMissed('expense')">Move to today</button>
+                <div class="miss-feedback" id="miss-feedback-expense"></div>
+              </div>
+              <div class="miss-tag">2D AGO</div>
+            </div>
+            <div class="miss-item" id="miss-dentist">
+              <div class="miss-body">
+                <div class="miss-name truncate">Call dentist</div>
+                <div class="miss-why">Created during a busy stretch, no time block set</div>
+                <button class="miss-cta" tabindex="0" id="miss-cta-dentist" onclick="resolveMissed('dentist')">Add a time block</button>
+                <div class="miss-feedback" id="miss-feedback-dentist"></div>
+              </div>
+              <div class="miss-tag">TODAY</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="node-card">
+          <div class="node-dot sage">♥</div>
+          <div class="card kudos-card" id="kudos-card">
+            <div class="card-label">Worth celebrating</div>
+            <div class="kudos-row">
+              <div class="avatar">J</div>
+              <div class="kudos-text"><b>Jordan</b> completed Morning Run every day this week.</div>
+            </div>
+            <div class="kudos-actions" id="kudos-actions">
+              <div class="kudos-btn send" tabindex="0" onclick="resolveKudos('sent')">Send kudos</div>
+              <div class="kudos-btn skip" tabindex="0" onclick="resolveKudos('skipped')">Skip</div>
+            </div>
+            <div class="kudos-feedback" id="kudos-feedback"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ===== NEW / COLD-START STATE ===== -->
+    <div id="state-new" style="display:none;">
+      <div class="thread-wrap">
+        <div class="thread-line"></div>
+
+        <div class="node-card">
+          <div class="node-dot">✦</div>
+          <div class="card">
+            <div class="card-label">Today's briefing</div>
+            <div class="briefing-title">Nothing to show yet</div>
+            <div class="empty-text">We build your briefing from a few days of tasks and rings. Add a couple of tasks today and check back tomorrow evening.</div>
+          </div>
+        </div>
+
+        <div class="node-card">
+          <div class="node-dot">!</div>
+          <div class="card">
+            <div class="card-label">Suggested nudge</div>
+            <div class="empty-text">No suggestions yet — nudges start once we notice a real pattern, usually within a week of regular use.</div>
+          </div>
+        </div>
+
+        <div class="node-card">
+          <div class="node-dot sage">~</div>
+          <div class="card">
+            <div class="card-label">This week's pattern</div>
+            <div class="bars">
+              <div class="bar" style="height:14%"></div>
+              <div class="bar" style="height:14%"></div>
+              <div class="bar" style="height:14%"></div>
+              <div class="bar" style="height:14%"></div>
+              <div class="bar" style="height:14%"></div>
+              <div class="bar" style="height:14%"></div>
+              <div class="bar" style="height:14%"></div>
+            </div>
+            <div class="bar-labels"><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span></div>
+            <div class="trend-note">Not enough data yet — this fills in after your first few days.</div>
+          </div>
+        </div>
+
+        <div class="node-card">
+          <div class="node-dot muted">·</div>
+          <div class="card">
+            <div class="card-label">What got missed</div>
+            <div class="empty-text">Nothing tracked yet — there's nothing to show until you've added a few tasks.</div>
+          </div>
+        </div>
+
+        <div class="node-card">
+          <div class="node-dot sage">♥</div>
+          <div class="card">
+            <div class="card-label">Worth celebrating</div>
+            <div class="empty-text">Add friends to send and receive kudos when something's worth celebrating.</div>
+            <div class="actions">
+              <div class="btn primary" tabindex="0" onclick="openNavModal('friends')" role="button">Add friends</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <div class="navbar">
+    <div class="nav-item"><div class="nav-dot"></div>Tasks</div>
+    <div class="nav-item"><div class="nav-dot"></div>Rings</div>
+    <div class="nav-item active" aria-current="page"><div class="nav-dot"></div>For You</div>
+    <div class="nav-item"><div class="nav-dot"></div>Friends</div>
+    <div class="nav-item"><div class="nav-dot"></div>Profile</div>
+  </div>
+
+  <div class="modal-overlay" id="nav-modal-overlay" onclick="if(event.target===this) closeNavModal()">
+    <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="nav-modal-title">
+      <div class="modal-icon" id="nav-modal-icon">🔗</div>
+      <div class="modal-title" id="nav-modal-title">This would open Rings</div>
+      <div class="modal-body" id="nav-modal-body">In the real app, this deep-links to the Rings tab scoped to <b>Gym</b> — it doesn't close the ring from here. Closing a ring likely involves more than one tap (duration, reps, streak), so this mockup shows the intended destination instead of faking that interaction.</div>
+      <button class="modal-btn" tabindex="0" onclick="closeNavModal()">Got it</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<script src="scripts/productivity_agent_mockup.js"></script>
+</body>
+</html>

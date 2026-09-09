@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Kindred — Personalization Settings</title>
+<link rel="stylesheet" href="styles/main.css">
+<link rel="stylesheet" href="styles/agent_settings_mockup.css">
+</head>
+<body>
+
+<div class="phone" id="phone">
+  <div class="notch"></div>
+  <div class="topbar">
+    <div class="back">←</div>
+    <div class="title">Personalization settings</div>
+  </div>
+
+  <div class="scroll">
+
+    <!-- Status banner: hidden until personalization is paused or turned off -->
+    <div class="status-banner" id="status-banner">
+      <div class="sb-text" id="sb-text"></div>
+      <div class="sb-action" id="sb-action" tabindex="0" role="button"></div>
+    </div>
+
+    <div id="agent-dependent-sections">
+
+      <div class="eyebrow">Your personalization</div>
+      <div class="group">
+        <div class="row clickable" tabindex="0" role="button" onclick="cyclePlanning()">
+          <div class="row-text">
+            <div class="t">Planning style <span class="inferred-tag">From you</span></div>
+            <div class="d">Used to time evening check-ins</div>
+          </div>
+          <div class="row-value"><span id="planning-text">Night-before</span><span class="chev">›</span></div>
+        </div>
+
+        <div class="row clickable" tabindex="0" role="button" onclick="toggleFocusPanel()">
+          <div class="row-text">
+            <div class="t">Peak focus times <span class="inferred-tag">Inferred</span></div>
+            <div class="d">Updated from your last 30 days of completions</div>
+          </div>
+          <div class="pill-wrap" id="focus-pill-wrap">
+            <div class="pill">Early AM</div>
+            <div class="pill">Mid AM</div>
+          </div>
+        </div>
+        <div class="focus-panel" id="focus-panel">
+          <div class="focus-chip-grid">
+            <div class="fchip selected" tabindex="0" role="button" onclick="toggleFocusChip(this)">Early AM</div>
+            <div class="fchip selected" tabindex="0" role="button" onclick="toggleFocusChip(this)">Mid AM</div>
+            <div class="fchip" tabindex="0" role="button" onclick="toggleFocusChip(this)">Early PM</div>
+            <div class="fchip" tabindex="0" role="button" onclick="toggleFocusChip(this)">Late PM</div>
+            <div class="fchip" tabindex="0" role="button" onclick="toggleFocusChip(this)">Evening</div>
+            <div class="fchip" tabindex="0" role="button" onclick="toggleFocusChip(this)">Late night</div>
+          </div>
+          <div class="focus-hint">Tap to add or remove a window — updates the summary above immediately.</div>
+        </div>
+
+        <div class="row clickable" tabindex="0" role="button" onclick="cycleTone()">
+          <div class="row-text">
+            <div class="t">Tone preference <span class="inferred-tag">From you</span></div>
+            <div class="d">Shapes nudge and digest wording</div>
+          </div>
+          <div class="row-value"><span id="tone-text">Direct</span><span class="chev">›</span></div>
+        </div>
+      </div>
+
+      <div class="note-card">
+        <div class="ic">✏️</div>
+        <p><b>Inferred</b> traits update automatically as you use Kindred. Tap any row to correct it — your correction always wins over what we observe.</p>
+      </div>
+      <div class="group" style="margin-top:10px;">
+        <div class="transparency-link" tabindex="0" role="button" onclick="openSheet('data')">
+          <div class="t">See exactly what data this uses</div>
+          <div class="chev">›</div>
+        </div>
+        <div class="transparency-link" tabindex="0" role="button" onclick="openAuditSheet()">
+          <div class="t">See what's changed</div>
+          <div class="chev">›</div>
+        </div>
+      </div>
+
+      <div class="group-spacer"></div>
+      <div class="eyebrow">Nudges</div>
+      <div class="group">
+        <div class="row">
+          <div class="row-text">
+            <div class="t">Allow nudges</div>
+            <div class="d">Turn off to stop all check-ins</div>
+          </div>
+          <div class="switch on" id="sw-nudges" tabindex="0" role="switch" aria-checked="true" onclick="toggleSwitch('sw-nudges')"><div class="knob"></div></div>
+        </div>
+        <div class="row clickable" tabindex="0" role="button" onclick="cycleFrequency()">
+          <div class="row-text">
+            <div class="t">Frequency</div>
+            <div class="d" id="freq-label">Light touch</div>
+          </div>
+          <div class="mini-track">
+            <div class="fill" id="freq-fill" style="width:28%"></div>
+            <div class="knob" id="freq-knob" style="left:28%"></div>
+          </div>
+        </div>
+        <div class="row clickable" tabindex="0" role="button" onclick="cycleQuietHours()">
+          <div class="row-text">
+            <div class="t">Quiet hours</div>
+            <div class="d">No nudges sent during this window</div>
+          </div>
+          <div class="row-value"><span id="quiet-text">9pm–7am</span><span class="chev">›</span></div>
+        </div>
+        <div class="row">
+          <div class="row-text">
+            <div class="t">Auto-reduce when ignored</div>
+            <div class="d">Nudges ease up automatically if you dismiss them often</div>
+          </div>
+          <div class="switch on" id="sw-autoreduce" tabindex="0" role="switch" aria-checked="true" onclick="toggleSwitch('sw-autoreduce')"><div class="knob"></div></div>
+        </div>
+        <div class="row" style="border-bottom:none;">
+          <div class="row-text">
+            <div class="t">Need a break?</div>
+            <div class="d">Pause nudges only — briefings and reports keep going</div>
+          </div>
+        </div>
+        <div class="pause-row">
+          <div class="pause-pill active" tabindex="0" role="button" onclick="selectPause(this,'today')">Today</div>
+          <div class="pause-pill" tabindex="0" role="button" onclick="selectPause(this,'week')">1 week</div>
+          <div class="pause-pill" tabindex="0" role="button" onclick="selectPause(this,'forever')">Until I turn it back on</div>
+        </div>
+        <div class="pause-status" id="pause-status">Paused for the rest of today</div>
+      </div>
+
+      <div class="group-spacer"></div>
+      <div class="eyebrow">Reports & briefings</div>
+      <div class="group">
+        <div class="row">
+          <div class="row-text">
+            <div class="t">Daily briefing</div>
+            <div class="d">A short recap each evening</div>
+          </div>
+          <div class="switch on" id="sw-daily" tabindex="0" role="switch" aria-checked="true" onclick="toggleSwitch('sw-daily')"><div class="knob"></div></div>
+        </div>
+        <div class="row">
+          <div class="row-text">
+            <div class="t">Weekly trend summary</div>
+            <div class="d">Sent Sunday evenings</div>
+          </div>
+          <div class="switch on" id="sw-weekly" tabindex="0" role="switch" aria-checked="true" onclick="toggleSwitch('sw-weekly')"><div class="knob"></div></div>
+        </div>
+        <div class="row">
+          <div class="row-text">
+            <div class="t">Show productivity score</div>
+            <div class="d">On by default — turn off to see the trend shape without a single number</div>
+          </div>
+          <div class="switch on" id="sw-score" tabindex="0" role="switch" aria-checked="true" onclick="toggleSwitch('sw-score')"><div class="knob"></div></div>
+        </div>
+      </div>
+
+      <div class="group-spacer"></div>
+      <div class="eyebrow">Friends & sharing</div>
+      <div class="group">
+        <div class="row">
+          <div class="row-text">
+            <div class="t">Kudos suggestions</div>
+            <div class="d">Get prompted to celebrate friends' streaks</div>
+          </div>
+          <div class="switch on" id="sw-kudos" tabindex="0" role="switch" aria-checked="true" onclick="toggleSwitch('sw-kudos')"><div class="knob"></div></div>
+        </div>
+        <div class="row" style="border-bottom:none;">
+          <div class="row-text">
+            <div class="t">Share my progress with friends</div>
+            <div class="d">Off — your missed tasks and scores stay private</div>
+          </div>
+          <div class="switch" id="sw-share" tabindex="0" role="switch" aria-checked="false" onclick="toggleSwitch('sw-share')"><div class="knob"></div></div>
+        </div>
+      </div>
+
+    </div><!-- /agent-dependent-sections -->
+
+    <div class="group-spacer"></div>
+    <div class="eyebrow">Appearance</div>
+    <div class="group">
+      <div class="row">
+        <div class="row-text">
+          <div class="t">Theme</div>
+          <div class="d">Dark mode available for light sensitivity</div>
+        </div>
+        <div class="seg-toggle">
+          <div class="seg-btn active" id="seg-light" tabindex="0" role="button" onclick="setTheme('light')">Light</div>
+          <div class="seg-btn" id="seg-dark" tabindex="0" role="button" onclick="setTheme('dark')">Dark</div>
+          <div class="seg-btn" id="seg-auto" tabindex="0" role="button" onclick="setTheme('auto')">Auto</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="group-spacer"></div>
+    <div class="eyebrow">Data</div>
+    <div class="group">
+      <div class="row clickable" tabindex="0" role="button" onclick="exportData()">
+        <div class="row-text">
+          <div class="t">Export my personalization data</div>
+          <div class="d">Download everything Kindred has learned for your personalization, as a file</div>
+        </div>
+        <div class="chev">›</div>
+      </div>
+      <div class="inline-note" id="export-note">✓ Export ready — check your downloads</div>
+
+      <div class="row clickable" tabindex="0" role="button" onclick="openSheet('reset')">
+        <div class="row-text">
+          <div class="t">Reset your personalization</div>
+          <div class="d">Start over with onboarding preferences only</div>
+        </div>
+        <div class="chev">›</div>
+      </div>
+      <div class="inline-note" id="reset-note">✓ Preferences reset to defaults</div>
+
+      <div class="danger-row neutral" tabindex="0" role="button" onclick="openSheet('pause')">
+        <div>
+          <div class="t">Pause personalization</div>
+          <div class="d">Stop everything temporarily — resumes automatically</div>
+        </div>
+        <div class="chev" style="color:var(--violet);">›</div>
+      </div>
+
+      <div class="danger-row" tabindex="0" role="button" onclick="openSheet('turnoff')">
+        <div>
+          <div class="t">Turn off personalization</div>
+          <div class="d">Keep tasks and rings, lose personalization</div>
+        </div>
+        <div class="chev" style="color:var(--coral-warn);">›</div>
+      </div>
+
+      <div class="danger-row" tabindex="0" role="button" onclick="openSheet('delete')">
+        <div>
+          <div class="t">Delete all personalization data</div>
+          <div class="d">Permanently erases learned patterns and history</div>
+        </div>
+        <div class="chev" style="color:var(--coral-warn);">›</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Confirmation / info sheet: hidden by default, content + actions built dynamically -->
+  <div class="sheet-overlay" id="sheet-overlay" style="display:none;" onclick="closeSheetOnBackdrop(event)">
+    <div class="sheet" onclick="event.stopPropagation()">
+      <div class="sheet-handle"></div>
+      <div class="ic-big" id="sheet-icon">⚠️</div>
+      <h3 id="sheet-title">Title</h3>
+      <p id="sheet-body">Body</p>
+      <div class="sheet-actions" id="sheet-actions"></div>
+    </div>
+  </div>
+</div>
+
+<script src="scripts/agent_settings_mockup.js"></script>
+</body>
+</html>
