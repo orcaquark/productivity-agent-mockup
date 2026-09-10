@@ -1,0 +1,40 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root{
+  /* Neutrals — identical across every mockup */
+  --text: #221d33;
+  --text-muted: #5b5570;
+  --card: #ffffff;
+
+  /* Base accent — page-specific stylesheets may override */
+  --violet: #854dff;
+  --violet-soft: #854dff14;
+}
+
+*{
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body{
+  font-family: 'Inter', sans-serif;
+  color: var(--text);
+}
+
+/* Interactive elements + visible focus ring (WCAG 2.4.7) */
+button, a, [tabindex]{
+  cursor: pointer;
+}
+:focus-visible{
+  outline: 2px solid var(--violet);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* Single-line text truncation utility */
+.truncate{
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
