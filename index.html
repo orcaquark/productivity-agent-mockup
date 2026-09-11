@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Productivity Agent — Design Viewer</title>
+    <link rel="stylesheet" href="main.css">
+</head>
+
+<body>
+
+    <!-- =========================
+         HEADER
+    ========================== -->
+
+    <header class="header">
+
+        <div class="brand">
+            <div class="brand-mark">K</div>
+
+            <span>
+                Productivity Agent
+            </span>
+
+            <span class="brand-subtitle">
+                Design Viewer
+            </span>
+        </div>
+
+        <nav
+            class="primary-nav"
+            id="primary-nav"
+            aria-label="Design categories"
+        ></nav>
+
+        <div class="header-actions" aria-label="Preview controls">
+            <button class="icon-button" id="back-button" type="button" title="Previous design (←)" aria-label="Previous design">←</button>
+            <button class="icon-button" id="forward-button" type="button" title="Next design (→)" aria-label="Next design">→</button>
+            <span class="control-divider" aria-hidden="true"></span>
+            <button class="icon-button" id="zoom-out-button" type="button" title="Zoom out" aria-label="Zoom out">−</button>
+            <button class="fit-button" id="fit-button" type="button" title="Fit preview to the available space">Fit</button>
+            <button class="icon-button" id="zoom-in-button" type="button" title="Zoom in" aria-label="Zoom in">+</button>
+            <output class="zoom-value" id="zoom-value" aria-live="polite">100%</output>
+            <span class="control-divider" aria-hidden="true"></span>
+            <button class="header-button" id="open-button" type="button" title="Open mockup in a new tab">Open ↗</button>
+            <button class="header-button fullscreen" id="fullscreen-button" type="button" title="Enter fullscreen" aria-pressed="false">Fullscreen</button>
+            <span class="control-divider" aria-hidden="true"></span>
+            <button class="icon-button theme-button" id="theme-button" type="button" title="Switch viewer to dark mode" aria-label="Switch viewer to dark mode" aria-pressed="false">◐</button>
+        </div>
+
+    </header>
+
+
+    <!-- =========================
+         DESIGN SELECTOR
+    ========================== -->
+
+    <nav
+        class="subnav"
+        id="subnav"
+        aria-label="Designs"
+    ></nav>
+
+
+    <!-- =========================
+         VIEWER
+    ========================== -->
+
+    <main class="viewer">
+
+        <div class="frame-container">
+
+            <iframe
+                id="mockup-frame"
+                title="Productivity Agent mockup"
+                loading="eager"
+            ></iframe>
+
+            <div
+                class="loading"
+                id="loading"
+                aria-hidden="true"
+            >
+                <div class="loading-indicator">
+                    Loading design...
+                </div>
+            </div>
+
+            <div
+                class="error-message"
+                id="error-message"
+                hidden
+            >
+                <h2>Unable to load design</h2>
+                <p>
+                    The selected mockup could not be loaded.
+                    Check that the file path in the design configuration
+                    matches the repository structure.
+                </p>
+            </div>
+
+        </div>
+</main>
+
+
+    <button class="fullscreen-exit" id="fullscreen-exit-button" type="button" title="Exit fullscreen (Esc)"><span aria-hidden="true">×</span> Exit fullscreen</button>
+
+    <script src="main.js"></script>
+
+</body>
+</html>
