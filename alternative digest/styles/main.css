@@ -1,0 +1,39 @@
+/* ============================================================
+   main.css
+   Shared foundation used by both productivity_agent_digest_mockup.css
+   and digest_annotated_review.css.
+
+   Contains only the rules that were duplicated verbatim (or nearly so)
+   across both files: the webfont import, the global box-model reset,
+   the base body font, and the shared skeleton of the ".eyebrow" label
+   style. Anything that differs in value between the two documents
+   (color tokens, spacing, per-page layout) stays local to its own
+   stylesheet on purpose, since the mockup and the review board are
+   two distinct visual themes that happen to share a naming pattern.
+   ============================================================ */
+
+/* Combined font set: superset of weights/styles needed by both files
+   (mockup uses italic Fraunces for .subhead/.signoff; review does not). */
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+/* Global reset */
+*{
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* Base typography */
+body{
+  font-family: 'Inter', sans-serif;
+}
+
+/* Shared skeleton of the small mono "eyebrow" label used above headings/
+   sections in both documents. Each file sets its own color and
+   margin-bottom to match its local spacing rhythm. */
+.eyebrow{
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
