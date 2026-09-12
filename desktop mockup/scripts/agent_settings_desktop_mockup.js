@@ -2,6 +2,7 @@
   var announce = MockShared.announce;
   var simulateRequest = MockShared.simulateRequest;
   var MockState = MockShared.MockState;
+  var MockSync = MockShared.MockSync;
   var bindKeyboard = MockShared.bindKeyboard;
 
   // ---------- sidebar collapse ----------
@@ -150,6 +151,7 @@
     logAuditChange('Personalization', 'Reset to defaults');
     learnedState = { planning: null, tone: null, focus: [] };
     MockState.save('desktop-settings:learned', learnedState);
+    MockSync.broadcast('personalization-reset', {});
   }
 
   // ---------- nudges: frequency + quiet hours, persisted ----------
@@ -244,6 +246,7 @@
 
     bannerState = { kind: kind, detail: detail };
     MockState.save('desktop-settings:banner', bannerState);
+    MockSync.broadcast('status-changed', bannerState);
   }
   function resumeAgent(){
     document.getElementById('status-banner').classList.remove('show');
@@ -251,6 +254,7 @@
     bannerState = null;
     MockState.save('desktop-settings:banner', null);
     announce('Personalization resumed.');
+    MockSync.broadcast('status-changed', { kind: 'resumed' });
   }
   if(bannerState) showBanner(bannerState.kind, bannerState.detail);
 
