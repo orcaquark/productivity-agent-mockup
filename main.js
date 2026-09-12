@@ -102,6 +102,11 @@ const subnav = document.getElementById("subnav");
 const iframe = document.getElementById("mockup-frame");
 const loading = document.getElementById("loading");
 const errorMessage = document.getElementById("error-message");
+const frameContainer = document.querySelector(".frame-container");
+
+const compareButton = document.getElementById("compare-button");
+const compareBar = document.getElementById("compare-bar");
+const compareSelect = document.getElementById("compare-select");
 
 const openButton = document.getElementById("open-button");
 const fullscreenButton = document.getElementById("fullscreen-button");
@@ -127,6 +132,9 @@ let currentPath = "";
 let viewerDarkMode = localStorage.getItem("productivity-agent-viewer-theme") === "dark";
 let previewZoom = 1;
 let fitMode = true;
+
+let compareMode = false;
+let compareIframeB = null;
 
 
 /* =========================================================
@@ -671,8 +679,53 @@ function syncViewerTheme() {
     themeButton.setAttribute("aria-label", themeButton.title);
 }
 
-function getPreviewDocument() {
-    try { return iframe.contentDocument; } catch (error) { return null; }
+function getPreviewDocument(targetIframe = iframe) {
+    try {
+        return targetIframe.contentDocument;
+    } catch (error) {
+        return null;
+    }
+}
+
+function getFrameFitScale(targetIframe) {
+    const previewDocument = getPreviewDocument(targetIframe);
+
+    if (
+        !previewDocument ||
+        !previewDocument.documentElement ||
+        !targetIframe.clientWidth ||
+        !targetIframe.clientHeight
+    ) {
+        return null;
+    }
+
+    // Measure each prototype at its natural scale.
+    previewDocument.documentElement.style.zoom = "1";
+
+    const deviceFrame =
+        previewDocument.querySelector(".device-frame");
+
+    const contentWidth = Math.max(
+        deviceFrame?.offsetWidth || 0,
+        previewDocument.documentElement.scrollWidth,
+        previewDocument.body?.scrollWidth || 0
+    );
+
+    const contentHeight = Math.max(
+        deviceFrame?.offsetHeight || 0,
+        previewDocument.documentElement.scrollHeight,
+        previewDocument.body?.scrollHeight || 0
+    );
+
+    if (!contentWidth || !contentHeight) {
+        return null;
+    }
+
+    return Math.min(
+        1,
+        targetIframe.clientWidth / contentWidth,
+        targetIframe.clientHeight / contentHeight
+    );
 }
 
 function renderZoom() {
@@ -685,8 +738,16 @@ function renderZoom() {
 function applyPreviewZoom() {
     const previewDocument = getPreviewDocument();
     renderZoom();
-    if (!previewDocument || !previewDocument.documentElement) return;
-    previewDocument.documentElement.style.zoom = String(previewZoom);
+    if (previewDocument && previewDocument.documentElement) {
+        previewDocument.documentElement.style.zoom = String(previewZoom);
+    }
+    // Keep the comparison pane in compare mode visually in sync with pane A.
+    if (compareMode && compareIframeB) {
+        try {
+            const docB = compareIframeB.contentDocument;
+            if (docB && docB.documentElement) docB.documentElement.style.zoom = String(previewZoom);
+        } catch (error) {}
+    }
 }
 
 function setPreviewZoom(value, fromFit = false) {
@@ -701,6 +762,13 @@ function isAnnotatedReview(design) {
 
 function applyDefaultPreviewScale() {
     const design = getCurrentDesign();
+
+    // Compare should always fit automatically, including annotated reviews.
+    if (compareMode) {
+        fitPreviewToViewport();
+        return;
+    }
+
     if (isAnnotatedReview(design)) {
         setPreviewZoom(.95, false);
     } else {
@@ -709,15 +777,27 @@ function applyDefaultPreviewScale() {
 }
 
 function fitPreviewToViewport() {
-    const previewDocument = getPreviewDocument();
-    if (!previewDocument || !iframe.clientWidth || !iframe.clientHeight) return;
-    // Measure at natural scale, then scale the prototype to the iframe's usable area.
-    previewDocument.documentElement.style.zoom = "1";
-    const deviceFrame = previewDocument.querySelector(".device-frame");
-    const contentWidth = Math.max(deviceFrame?.offsetWidth || 0, previewDocument.documentElement.scrollWidth, previewDocument.body?.scrollWidth || 0);
-    const contentHeight = Math.max(deviceFrame?.offsetHeight || 0, previewDocument.documentElement.scrollHeight, previewDocument.body?.scrollHeight || 0);
-    if (!contentWidth || !contentHeight) return setPreviewZoom(1, true);
-    setPreviewZoom(Math.min(1, iframe.clientWidth / contentWidth, iframe.clientHeight / contentHeight), true);
+    const frames = [iframe];
+
+    // Pane B is included only once its selected mockup has loaded.
+    if (
+        compareMode &&
+        compareIframeB &&
+        compareIframeB.dataset.ready === "true"
+    ) {
+        frames.push(compareIframeB);
+    }
+
+    const scales = frames
+        .map(getFrameFitScale)
+        .filter(scale => scale !== null);
+
+    if (!scales.length) {
+        return setPreviewZoom(1, true);
+    }
+
+    // Both panes use the smaller scale, so neither comparison pane overflows.
+    setPreviewZoom(Math.min(...scales), true);
 }
 
 themeButton.addEventListener("click", () => {
@@ -758,6 +838,158 @@ document.addEventListener("fullscreenchange", () => {
 fullscreenButton.addEventListener("click", toggleFullscreen);
 fullscreenExitButton.addEventListener("click", exitFullscreen);
 document.addEventListener("keydown", event => { if (event.key === "Escape" && document.body.classList.contains("fullscreen")) exitFullscreen(); });
+
+/* =========================================================
+    COMPARE MODE
+
+    Loads a second mockup into its own iframe alongside the primary one so
+    two interaction models (e.g. Swiping vs Texting) can be judged side by
+    side. Pane A keeps using the existing nav/subnav; pane B is driven by
+    its own <select>, independent of the URL hash.
+========================================================= */
+
+function buildCompareOptions() {
+
+    compareSelect.innerHTML = "";
+
+    getAllDesigns().forEach(item => {
+
+        const option = document.createElement("option");
+
+        option.value = `${item.categoryId}/${item.id}`;
+        option.textContent = `${designs[item.categoryId].label} — ${item.name}`;
+
+        compareSelect.appendChild(option);
+    });
+}
+
+function loadDesignIntoFrame(targetIframe, design) {
+    targetIframe.dataset.ready = "false";
+    targetIframe.style.opacity = "0";
+    targetIframe.src = design.path;
+
+    targetIframe.addEventListener(
+        "load",
+        () => {
+            targetIframe.dataset.ready = "true";
+            targetIframe.style.opacity = "1";
+
+            // A new comparison selection must always re-fit both panes.
+            if (compareMode) {
+                requestAnimationFrame(fitPreviewToViewport);
+            }
+        },
+        { once: true }
+    );
+}
+
+function enableCompareMode() {
+    compareMode = true;
+
+    frameContainer.classList.add("compare-mode");
+    compareBar.hidden = false;
+
+    compareButton.classList.add("active");
+    compareButton.setAttribute("aria-pressed", "true");
+
+    if (!compareIframeB) {
+        compareIframeB = document.createElement("iframe");
+        compareIframeB.id = "mockup-frame-b";
+        compareIframeB.className = "mockup-frame";
+        compareIframeB.title = "Comparison mockup";
+        frameContainer.appendChild(compareIframeB);
+    }
+
+    buildCompareOptions();
+
+    const all = getAllDesigns();
+
+    const currentIndex = all.findIndex(
+        item =>
+            item.categoryId === currentCategory &&
+            item.id === currentDesign
+    );
+
+    const defaultRight =
+        all[(currentIndex + 1) % all.length];
+
+    compareSelect.value =
+        `${defaultRight.categoryId}/${defaultRight.id}`;
+
+    loadDesignIntoFrame(compareIframeB, defaultRight);
+
+    // Entering compare always resets to automatic Fit.
+    requestAnimationFrame(fitPreviewToViewport);
+}
+
+function disableCompareMode() {
+    compareMode = false;
+
+    frameContainer.classList.remove("compare-mode");
+    compareBar.hidden = true;
+
+    compareButton.classList.remove("active");
+    compareButton.setAttribute("aria-pressed", "false");
+
+    /*
+     * The old implementation only removed the compare-mode class.
+     * The second iframe stayed in the DOM, which is why the compared
+     * screen could remain visible after exiting Compare.
+     */
+    if (compareIframeB) {
+        compareIframeB.src = "about:blank";
+        compareIframeB.remove();
+        compareIframeB = null;
+    }
+
+    // Returning to one pane should also automatically re-fit.
+    requestAnimationFrame(fitPreviewToViewport);
+}
+
+function toggleCompareMode() {
+    compareMode ? disableCompareMode() : enableCompareMode();
+}
+
+compareButton.addEventListener("click", toggleCompareMode);
+
+compareSelect.addEventListener("change", () => {
+    if (!compareIframeB) {
+        return;
+    }
+
+    const [categoryId, designId] =
+        compareSelect.value.split("/");
+
+    const design = getDesign(categoryId, designId);
+
+    if (design) {
+        loadDesignIntoFrame(compareIframeB, design);
+    }
+});
+
+// Relay a mockup's own postMessage broadcasts (see MockShared.MockSync in
+// shared/mockup-shared.js) from whichever pane sent them into the other
+// pane, so — for example — resolving a nudge in pane A can be reflected in
+// pane B when comparing two interaction models built from the same state.
+window.addEventListener("message", event => {
+
+    const data = event.data;
+
+    if (!data || data.channel !== "kindred-mock-sync") return;
+    if (!compareMode) return;
+
+    const sourceWindow = event.source;
+    const targetWindow =
+        sourceWindow === iframe.contentWindow
+            ? compareIframeB?.contentWindow
+            : sourceWindow === compareIframeB?.contentWindow
+                ? iframe.contentWindow
+                : null;
+
+    if (targetWindow) {
+        targetWindow.postMessage(data, "*");
+    }
+});
 
 
 /* =========================================================

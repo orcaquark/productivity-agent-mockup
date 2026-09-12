@@ -46,6 +46,8 @@
             <button class="header-button" id="open-button" type="button" title="Open mockup in a new tab">Open ↗</button>
             <button class="header-button fullscreen" id="fullscreen-button" type="button" title="Enter fullscreen" aria-pressed="false">Fullscreen</button>
             <span class="control-divider" aria-hidden="true"></span>
+            <button class="header-button" id="compare-button" type="button" title="Compare two mockups side by side" aria-pressed="false">Compare</button>
+            <span class="control-divider" aria-hidden="true"></span>
             <button class="icon-button theme-button" id="theme-button" type="button" title="Switch viewer to dark mode" aria-label="Switch viewer to dark mode" aria-pressed="false">◐</button>
         </div>
 
@@ -62,6 +64,11 @@
         aria-label="Designs"
     ></nav>
 
+    <div class="compare-bar" id="compare-bar" hidden>
+        <span class="compare-bar-label">Comparing against:</span>
+        <select id="compare-select" aria-label="Choose comparison mockup"></select>
+    </div>
+
 
     <!-- =========================
          VIEWER
@@ -73,6 +80,7 @@
 
             <iframe
                 id="mockup-frame"
+                class="mockup-frame"
                 title="Productivity Agent mockup"
                 loading="eager"
             ></iframe>
