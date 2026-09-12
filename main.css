@@ -623,23 +623,111 @@ body.fullscreen .frame-container.compare-mode .mockup-frame {
 
 /* This changes the viewer shell only—not the document inside the iframe. */
 body.viewer-dark-mode {
+    /* Original shared variables still used by existing controls. */
+    --bg: #0c0c1a;
+    --surface: #171626;
+    --surface-hover: #242238;
+    --border: #302d40;
+    --text: #f4f2f9;
+    --text-secondary: #b8b2c7;
+    --accent: #854dff;
+    --accent-text: #ffffff;
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+
+    /* Viewer-specific variables. */
     --viewer-bg: #0c0c1a;
     --viewer-surface: #171626;
     --viewer-raised: #1d1b2e;
-    --viewer-border: #242233;
-    --viewer-thread: #332d44;
+    --viewer-border: #302d40;
+    --viewer-thread: #3b3650;
     --viewer-text: #f4f2f9;
-    --viewer-muted: #8b879a;
-    --viewer-secondary: #cfc9dc;
-    --viewer-divider: #23212f;
-    --viewer-shadow: 0 20px 50px -20px rgba(0,0,0,.55);
-    background: #0c0c1a;
+    --viewer-muted: #aaa4ba;
+    --viewer-secondary: #d4cede;
+    --viewer-divider: #2b293a;
+    --viewer-shadow: 0 20px 50px -20px rgba(0, 0, 0, 0.6);
+
+    background: var(--viewer-bg);
+    color: var(--viewer-text);
 }
-body.viewer-dark-mode .subnav { background: #171626; }
-body.viewer-dark-mode .nav-button:hover, body.viewer-dark-mode .design-button:hover { background: #1f1d2e; }
-body.viewer-dark-mode .viewer { background-color: #0c0c1a; background-image: radial-gradient(rgba(133,77,255,.17) .65px,transparent .65px); }
-body.viewer-dark-mode .design-button.active { background: #2b2740; }
-body.viewer-dark-mode #mockup-frame { background: #fff; } /* preview contents are never themed by this control */
+
+body.viewer-dark-mode .header {
+    background: var(--viewer-surface);
+    border-color: var(--viewer-border);
+}
+
+body.viewer-dark-mode .subnav {
+    background: var(--viewer-surface);
+    border-color: var(--viewer-border);
+}
+
+/* Ensure every inactive mockup tab is dark, not just the active one. */
+body.viewer-dark-mode .design-button {
+    background: var(--viewer-raised);
+    border-color: var(--viewer-border);
+    color: var(--viewer-secondary);
+}
+
+body.viewer-dark-mode .design-button:hover {
+    background: #2a2740;
+    border-color: #49435e;
+    color: var(--viewer-text);
+}
+
+body.viewer-dark-mode .design-button.active {
+    background: #2b2740;
+    border-color: #5b4f7a;
+    color: #cbb6ff;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.28);
+}
+
+body.viewer-dark-mode .nav-button {
+    color: var(--viewer-muted);
+}
+
+body.viewer-dark-mode .nav-button:hover {
+    background: var(--viewer-raised);
+    color: var(--viewer-text);
+}
+
+body.viewer-dark-mode .nav-button.active {
+    background: rgba(133, 77, 255, 0.18);
+    color: #cbb6ff;
+}
+
+body.viewer-dark-mode .icon-button,
+body.viewer-dark-mode .header-button,
+body.viewer-dark-mode .fit-button {
+    color: var(--viewer-muted);
+}
+
+body.viewer-dark-mode .icon-button:hover,
+body.viewer-dark-mode .header-button:hover,
+body.viewer-dark-mode .fit-button:hover {
+    background: var(--viewer-raised);
+    border-color: var(--viewer-border);
+    color: var(--viewer-text);
+}
+
+/* The dotted area around the preview frame. */
+body.viewer-dark-mode .viewer {
+    background-color: var(--viewer-bg);
+    background-image:
+        radial-gradient(
+            rgba(163, 123, 255, 0.2) 0.65px,
+            transparent 0.65px
+        );
+}
+
+/* The shell immediately surrounding the iframe preview. */
+body.viewer-dark-mode .frame-container {
+    background: #11101d;
+    border-color: var(--viewer-thread);
+}
+
+/* Keep unloaded iframe surfaces neutral, including Compare pane B. */
+body.viewer-dark-mode .mockup-frame {
+    background: #ffffff;
+}
 
 @media (max-width: 900px) { .brand-subtitle, .zoom-value { display: none; } }
 @media (max-width: 700px) {
