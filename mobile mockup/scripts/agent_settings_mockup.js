@@ -1,28 +1,40 @@
-  // ---------- generic helpers ----------
-  function bindKeyboard(el){
-    el.addEventListener('keydown', function(e){
-      if(e.key === 'Enter' || e.key === ' '){
-        e.preventDefault();
-        el.click();
-      }
-    });
-  }
-  document.querySelectorAll('[tabindex="0"]').forEach(bindKeyboard);
+// ---------- shared utilities (see ../shared/mockup-shared.js) ----------
+  var announce = MockShared.announce;
+  var simulateRequest = MockShared.simulateRequest;
+  var MockState = MockShared.MockState;
+  var bindKeyboard = MockShared.bindKeyboard;
 
+  // ---------- keyboard support for div-as-button interactive elements ----------
+  MockShared.initKeyboardSupport();
+
+  // ---------- toggle switches: persisted by element id ----------
+  var toggleState = MockState.load('mobile-settings:toggles', {});
   function toggleSwitch(id){
     var el = document.getElementById(id);
     var on = el.classList.toggle('on');
     el.setAttribute('aria-checked', on ? 'true' : 'false');
+    toggleState[id] = on;
+    MockState.save('mobile-settings:toggles', toggleState);
   }
+  function restoreToggles(){
+    Object.keys(toggleState).forEach(function(id){
+      var el = document.getElementById(id);
+      if(!el) return;
+      el.classList.toggle('on', toggleState[id]);
+      el.setAttribute('aria-checked', toggleState[id] ? 'true' : 'false');
+    });
+  }
+  restoreToggles();
 
-  // ---------- audit trail ----------
-  var auditLog = [
+  // ---------- audit trail: persisted so history survives a reload ----------
+  var auditLog = MockState.load('mobile-settings:audit-log', [
     { label: 'Peak focus times', value: 'Early AM, Mid AM', when: 'Jul 18 · inferred from your activity' },
     { label: 'Tone preference', value: 'Direct', when: 'Jul 12 · set during onboarding' },
     { label: 'Planning style', value: 'Night-before', when: 'Jul 12 · set during onboarding' }
-  ];
+  ]);
   function logAuditChange(label, value){
     auditLog.unshift({ label: label, value: value, when: 'Just now · you changed this' });
+    MockState.save('mobile-settings:audit-log', auditLog);
   }
   function openAuditSheet(){
     document.getElementById('sheet-icon').textContent = '🕘';
@@ -43,33 +55,46 @@
     document.getElementById('sheet-overlay').style.display = 'flex';
   }
 
-  // ---------- learned-traits rows ----------
+  // ---------- learned-traits rows: cycle-through selects, index persisted ----------
   var planningOptions = ['Night-before','Morning of','No real plan','Varies week to week'];
-  var planningIndex = 0;
+  var planningIndex = MockState.load('mobile-settings:planning-index', 0);
+  function renderPlanning(){
+    document.getElementById('planning-text').textContent = planningOptions[planningIndex];
+  }
   function cyclePlanning(){
     planningIndex = (planningIndex + 1) % planningOptions.length;
-    var val = planningOptions[planningIndex];
-    document.getElementById('planning-text').textContent = val;
-    logAuditChange('Planning style', val);
+    renderPlanning();
+    logAuditChange('Planning style', planningOptions[planningIndex]);
+    MockState.save('mobile-settings:planning-index', planningIndex);
+    announce('Planning style set to ' + planningOptions[planningIndex] + '.');
   }
+  renderPlanning();
 
   var toneOptions = ['Direct','Cheerful','Quiet'];
-  var toneIndex = 0;
+  var toneIndex = MockState.load('mobile-settings:tone-index', 0);
+  function renderTone(){
+    document.getElementById('tone-text').textContent = toneOptions[toneIndex];
+  }
   function cycleTone(){
     toneIndex = (toneIndex + 1) % toneOptions.length;
-    var val = toneOptions[toneIndex];
-    document.getElementById('tone-text').textContent = val;
-    logAuditChange('Tone preference', val);
+    renderTone();
+    logAuditChange('Tone preference', toneOptions[toneIndex]);
+    MockState.save('mobile-settings:tone-index', toneIndex);
+    announce('Tone preference set to ' + toneOptions[toneIndex] + '.');
   }
+  renderTone();
 
   function toggleFocusPanel(){
     document.getElementById('focus-panel').classList.toggle('open');
   }
+  var focusSelection = MockState.load('mobile-settings:focus', []);
   function toggleFocusChip(el){
     el.classList.toggle('selected');
     updateFocusSummary();
     var selected = Array.from(document.querySelectorAll('.fchip.selected')).map(function(c){ return c.textContent; });
     logAuditChange('Peak focus times', selected.length ? selected.join(', ') : 'No pattern yet');
+    focusSelection = selected;
+    MockState.save('mobile-settings:focus', focusSelection);
   }
   function updateFocusSummary(){
     var selected = Array.from(document.querySelectorAll('.fchip.selected')).map(function(c){ return c.textContent; });
@@ -80,38 +105,62 @@
       wrap.innerHTML = selected.map(function(s){ return '<div class="pill">' + s + '</div>'; }).join('');
     }
   }
+  if(focusSelection.length){
+    document.querySelectorAll('.fchip').forEach(function(c){
+      if(focusSelection.indexOf(c.textContent) !== -1) c.classList.add('selected');
+    });
+  }
+  updateFocusSummary();
 
   function resetLearnedValues(){
     planningIndex = 0;
     toneIndex = 0;
+    renderPlanning();
+    renderTone();
     document.getElementById('planning-text').textContent = 'Not set yet';
     document.getElementById('tone-text').textContent = 'Not set yet';
     document.querySelectorAll('.fchip').forEach(function(c){ c.classList.remove('selected'); });
+    focusSelection = [];
     updateFocusSummary();
-    auditLog.unshift({ label: 'Personalization', value: 'Reset to defaults', when: 'Just now · you reset this' });
+    logAuditChange('Personalization', 'Reset to defaults');
+    MockState.save('mobile-settings:planning-index', 0);
+    MockState.save('mobile-settings:tone-index', 0);
+    MockState.save('mobile-settings:focus', []);
   }
 
-  // ---------- nudges ----------
+  // ---------- nudges: frequency + quiet hours, index persisted ----------
   var freqOptions = [
     { label: 'Light touch', pct: 28 },
     { label: 'Some check-ins', pct: 55 },
     { label: 'Frequent', pct: 85 }
   ];
-  var freqIndex = 0;
-  function cycleFrequency(){
-    freqIndex = (freqIndex + 1) % freqOptions.length;
+  var freqIndex = MockState.load('mobile-settings:freq-index', 0);
+  function renderFrequency(){
     var f = freqOptions[freqIndex];
     document.getElementById('freq-label').textContent = f.label;
     document.getElementById('freq-fill').style.width = f.pct + '%';
     document.getElementById('freq-knob').style.left = f.pct + '%';
   }
+  function cycleFrequency(){
+    freqIndex = (freqIndex + 1) % freqOptions.length;
+    renderFrequency();
+    MockState.save('mobile-settings:freq-index', freqIndex);
+    announce('Nudge frequency set to ' + freqOptions[freqIndex].label + '.');
+  }
+  renderFrequency();
 
   var quietOptions = ['9pm–7am','10pm–8am','Off'];
-  var quietIndex = 0;
-  function cycleQuietHours(){
-    quietIndex = (quietIndex + 1) % quietOptions.length;
+  var quietIndex = MockState.load('mobile-settings:quiet-index', 0);
+  function renderQuietHours(){
     document.getElementById('quiet-text').textContent = quietOptions[quietIndex];
   }
+  function cycleQuietHours(){
+    quietIndex = (quietIndex + 1) % quietOptions.length;
+    renderQuietHours();
+    MockState.save('mobile-settings:quiet-index', quietIndex);
+    announce('Quiet hours set to ' + quietOptions[quietIndex] + '.');
+  }
+  renderQuietHours();
 
   var pauseLabels = { today: 'Paused for the rest of today', week: 'Paused for 1 week', forever: 'Paused until you turn nudges back on' };
   function selectPause(el, value){
@@ -121,21 +170,36 @@
   }
 
   // ---------- appearance ----------
+  // Left as this file's own setTheme — its .seg-btn/#phone structure doesn't
+  // match MockShared.createThemeController's #app-shell/[data-theme] shape,
+  // so wiring it to the shared controller would need that function to be
+  // reworked rather than just called differently. Persistence bolted on
+  // instead, sharing the same 'theme' key the desktop mockups use, so a
+  // theme choice made on desktop carries over here too.
   function setTheme(mode){
     document.querySelectorAll('.seg-btn').forEach(function(b){ b.classList.remove('active'); });
     document.getElementById('seg-' + mode).classList.add('active');
     document.getElementById('phone').classList.toggle('dark-mode', mode === 'dark');
+    MockState.save('theme', mode);
   }
+  setTheme(MockState.load('theme', 'light'));
 
-  // ---------- data actions ----------
+  // ---------- data actions: simulated round trip + announced outcome ----------
   function exportData(){
-    var note = document.getElementById('export-note');
-    note.classList.add('show');
-    clearTimeout(window._exportTimer);
-    window._exportTimer = setTimeout(function(){ note.classList.remove('show'); }, 4000);
+    simulateRequest(function(){}, {
+      onSuccess: function(){
+        var note = document.getElementById('export-note');
+        note.classList.add('show');
+        announce('Personalization data exported.');
+        clearTimeout(window._exportTimer);
+        window._exportTimer = setTimeout(function(){ note.classList.remove('show'); }, 4000);
+      }
+    });
   }
 
-  // ---------- status banner (paused / turned off / deleted) ----------
+  // ---------- status banner (paused / turned off / deleted), persisted ----------
+  var bannerState = MockState.load('mobile-settings:banner', null); // { kind, detail } | null
+
   function showBanner(kind, detail){
     var banner = document.getElementById('status-banner');
     var text = document.getElementById('sb-text');
@@ -149,25 +213,35 @@
       action.textContent = 'Resume now';
       action.onclick = resumeAgent;
       dependent.classList.add('agent-disabled');
+      announce('Personalization paused ' + detail + '.');
     } else if(kind === 'turnedOff'){
       banner.classList.add('turnedOff');
       text.innerHTML = '<b>Personalization is off.</b> Your tasks and rings are unaffected.';
       action.textContent = 'Turn back on';
       action.onclick = resumeAgent;
       dependent.classList.add('agent-disabled');
+      announce('Personalization turned off.');
     } else if(kind === 'deleted'){
       banner.classList.add('turnedOff');
       text.innerHTML = '<b>Personalization data deleted.</b> Your patterns and history are gone — we&#39;ll start learning your personalization again from scratch. Tasks and rings are unaffected.';
       action.textContent = 'Dismiss';
       action.onclick = resumeAgent;
       dependent.classList.remove('agent-disabled');
+      announce('Personalization data deleted.');
     }
     banner.classList.add('show');
+
+    bannerState = { kind: kind, detail: detail };
+    MockState.save('mobile-settings:banner', bannerState);
   }
   function resumeAgent(){
     document.getElementById('status-banner').classList.remove('show');
     document.getElementById('agent-dependent-sections').classList.remove('agent-disabled');
+    bannerState = null;
+    MockState.save('mobile-settings:banner', null);
+    announce('Personalization resumed.');
   }
+  if(bannerState) showBanner(bannerState.kind, bannerState.detail);
 
   // ---------- confirmation / info sheet ----------
   var sheetContent = {
@@ -206,6 +280,7 @@
             resetLearnedValues();
             var note = document.getElementById('reset-note');
             note.classList.add('show');
+            announce('Personalization reset to defaults.');
             clearTimeout(window._resetTimer);
             window._resetTimer = setTimeout(function(){ note.classList.remove('show'); }, 4000);
           } }
@@ -235,7 +310,12 @@
       btn.textContent = a.label;
       btn.setAttribute('tabindex', '0');
       btn.setAttribute('role', 'button');
-      btn.onclick = function(){ a.onClick && a.onClick(); closeSheet(); };
+      btn.onclick = function(){
+        actionsEl.querySelectorAll('.sheet-btn').forEach(function(b){ b.classList.add('pending'); });
+        simulateRequest(function(){ a.onClick && a.onClick(); }, {
+          onSuccess: function(){ closeSheet(); }
+        });
+      };
       bindKeyboard(btn);
       actionsEl.appendChild(btn);
     });

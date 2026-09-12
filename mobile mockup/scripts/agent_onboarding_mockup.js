@@ -1,4 +1,20 @@
-  var currentStep = 0;
+// ---------- shared utilities (see ../shared/mockup-shared.js) ----------
+  var announce = MockShared.announce;
+  var MockState = MockShared.MockState;
+  var MockSync = MockShared.MockSync;
+
+  // ---------- persisted onboarding progress ----------
+  // `null` (not a fallback object) distinguishes "nothing saved yet" from
+  // "saved, and happens to match the defaults" — only the former should
+  // leave the slider's static starting position in the HTML untouched.
+  var storedOnboarding = MockState.load('mobile-onboarding:selections', null);
+  var hasPersistedOnboarding = !!storedOnboarding;
+  var onboardingState = storedOnboarding || { step: 0, plan: null, tone: null, focus: [], freqIdx: 0 };
+  var currentStep = onboardingState.step;
+
+  function saveOnboardingState(){
+    MockState.save('mobile-onboarding:selections', onboardingState);
+  }
 
   function goToStep(n){
     if(n < 0 || n > 4) return;
@@ -8,6 +24,8 @@
       d.classList.toggle('active', d.getAttribute('data-dot') === String(n));
     });
     currentStep = n;
+    onboardingState.step = n;
+    saveOnboardingState();
     if(n === 4) updateSummary();
     // keep the new step's own scroll area at the top
     var screen = document.querySelector('.step-page[data-step="' + n + '"] .screen');
@@ -18,6 +36,13 @@
     var btn = document.getElementById('finish-btn');
     btn.textContent = '✓ All set!';
     btn.setAttribute('disabled', 'true');
+
+    // MockState is what the feed mockup reads the *next* time it loads
+    // (a separate page load). MockSync is for whoever hosts this iframe
+    // right now — the viewer's compare mode, if a second pane is open.
+    MockState.save('onboarding-complete', true);
+    MockSync.broadcast('onboarding-finished', {});
+    announce('Onboarding complete — personalization is now set up.');
   }
 
   function skipToDefaults(){
@@ -35,13 +60,21 @@
     });
     el.classList.add('selected');
     el.querySelector('.opt-check').textContent = '✓';
+    if(group === 'plan' || group === 'tone'){
+      onboardingState[group] = el.getAttribute('data-summary');
+      saveOnboardingState();
+    }
   }
   function toggleChip(el){
     el.classList.toggle('selected');
+    if(el.classList.contains('time-chip')){
+      onboardingState.focus = Array.from(document.querySelectorAll('.time-chip.selected')).map(function(c){ return c.textContent; });
+      saveOnboardingState();
+    }
   }
 
   var sliderDisplay = {
-    freq: { idx: 0, labels: ['Light touch', 'Some check-ins', 'Frequent'] }
+    freq: { idx: onboardingState.freqIdx, labels: ['Light touch', 'Some check-ins', 'Frequent'] }
   };
 
   function setupSlider(trackId, fillId, knobId, labelId, labels, stateKey){
@@ -65,6 +98,10 @@
       var idx = pct < 34 ? 0 : (pct < 67 ? 1 : 2);
       label.textContent = labels[idx];
       sliderDisplay[stateKey].idx = idx;
+      if(stateKey === 'freq'){
+        onboardingState.freqIdx = idx;
+        saveOnboardingState();
+      }
     }
     function start(e){ dragging = true; update(pctFromEvent(e)); e.preventDefault(); }
     function move(e){ if(dragging){ update(pctFromEvent(e)); e.preventDefault(); } }
@@ -82,6 +119,13 @@
       if(e.key === 'ArrowRight' || e.key === 'ArrowUp'){ update(Math.min(100, current + 5)); e.preventDefault(); }
       if(e.key === 'ArrowLeft' || e.key === 'ArrowDown'){ update(Math.max(0, current - 5)); e.preventDefault(); }
     });
+
+    // Only override the slider's static starting position from the HTML
+    // if there's actually persisted state to restore.
+    if(stateKey === 'freq' && hasPersistedOnboarding){
+      var restoredPct = onboardingState.freqIdx === 0 ? 17 : (onboardingState.freqIdx === 1 ? 50 : 83);
+      update(restoredPct);
+    }
   }
   setupSlider('freq-track', 'freq-fill', 'freq-knob', 'freq-label', ['LIGHT TOUCH', 'SOME CHECK-INS', 'FREQUENT'], 'freq');
 
@@ -107,12 +151,31 @@
     link.textContent = open ? 'Show less ↑' : 'Learn more about how this data is used →';
   }
 
-  document.querySelectorAll('[tabindex="0"]').forEach(function(el){
-    if(!el.hasAttribute('role')) el.setAttribute('role','button');
-    el.addEventListener('keydown', function(e){
-      if(e.key === 'Enter' || e.key === ' '){
-        e.preventDefault();
-        el.click();
-      }
-    });
-  });
+  // ---------- keyboard support for div-as-button interactive elements ----------
+  MockShared.initKeyboardSupport();
+
+  // ---------- restore selections and jump back to the last step ----------
+  if(hasPersistedOnboarding){
+    if(onboardingState.plan){
+      document.querySelectorAll('[data-group="plan"]').forEach(function(o){
+        if(o.getAttribute('data-summary') === onboardingState.plan){
+          o.classList.add('selected');
+          o.querySelector('.opt-check').textContent = '✓';
+        }
+      });
+    }
+    if(onboardingState.tone){
+      document.querySelectorAll('[data-group="tone"]').forEach(function(o){
+        if(o.getAttribute('data-summary') === onboardingState.tone){
+          o.classList.add('selected');
+          o.querySelector('.opt-check').textContent = '✓';
+        }
+      });
+    }
+    if(onboardingState.focus && onboardingState.focus.length){
+      document.querySelectorAll('.time-chip').forEach(function(c){
+        if(onboardingState.focus.indexOf(c.textContent) !== -1) c.classList.add('selected');
+      });
+    }
+    goToStep(currentStep);
+  }

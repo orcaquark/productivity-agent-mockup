@@ -302,3 +302,6 @@
   .sheet-btn.danger{ background: var(--coral-warn); color:#fff; }
   .sheet-btn.primary{ background: var(--violet); color:#fff; }
   .sheet-btn.cancel{ background: var(--card-raised); color:var(--text); }
+
+/* ---- Pending state for simulateRequest()-wrapped actions. ---- */
+.pending{ opacity:.55; pointer-events:none; transition:opacity .15s ease; }
