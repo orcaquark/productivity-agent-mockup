@@ -1,4 +1,9 @@
 // ---------------- card data ----------------
+  // Shared utilities (see ../shared/mockup-shared.js).
+  var MockState = MockShared.MockState;
+  var announce = MockShared.announce;
+  var MockSync = MockShared.MockSync;
+
   var cardDefs = {
     briefing:{ label:"Today's briefing", glyph:"✦", glyphTone:"", kind:"info" },
     nudge:{ label:"Suggested nudge", glyph:"!", glyphTone:"", kind:"decision",
@@ -236,17 +241,27 @@
   }
 
   // ---------------- resolution + undo ----------------
+  function saveProgress(){
+    MockState.save('deck:progress', {
+      mode: mode,
+      queue: queue,
+      resolvedIds: Array.from(resolvedIds),
+      skipped: skipped
+    });
+  }
   function applyResolution(id, dir){
     var d = cardDefs[id];
     queue.shift();
     resolvedIds.add(id);
     lastAction = { id: id, dir: dir };
     if(d.kind === "decision"){
-      if(dir === "left"){ skipped.push({ id:id, reason:d.skipReason }); showToast(d.toastLeft, true); }
-      else { showToast(d.toastRight, true); }
+      if(dir === "left"){ skipped.push({ id:id, reason:d.skipReason }); showToast(d.toastLeft, true); announce(d.toastLeft); }
+      else { showToast(d.toastRight, true); announce(d.toastRight); }
+      MockSync.broadcast("card-resolved", { id: id, dir: dir });
     } else {
       hideToast();
     }
+    saveProgress();
     renderStack();
   }
   function undoLast(){
@@ -257,6 +272,8 @@
     if(dir === "left"){ skipped = skipped.filter(function(s){ return s.id !== id; }); }
     lastAction = null;
     hideToast();
+    announce("Undone.");
+    saveProgress();
     renderStack();
   }
   function showToast(text, withUndo){
@@ -422,10 +439,14 @@
     queue = queue.filter(function(q){ return q !== id; });
     queue.unshift(id);
     closeSheet();
+    saveProgress();
     renderStack();
   }
 
   // ---------------- state switch ----------------
+  // Resets progress on purpose — this is the demo control for "start over
+  // as new/active", not a resume. Page-load restoration is handled by
+  // initDeck() below, which reads persisted progress instead of resetting.
   function setState(s){
     mode = s;
     document.getElementById("pill-active").classList.toggle("active", s === "active");
@@ -437,7 +458,27 @@
     resolvedIds = new Set();
     skipped = [];
     lastAction = null;
+    saveProgress();
     if(s === "new") renderColdStart(); else renderStack();
   }
 
-  setState("active");
+  (function initDeck(){
+    var saved = MockState.load('deck:progress', null);
+    if(saved){
+      mode = saved.mode;
+      queue = saved.queue.slice();
+      resolvedIds = new Set(saved.resolvedIds);
+      skipped = saved.skipped.slice();
+      lastAction = null;
+      document.getElementById("pill-active").classList.toggle("active", mode === "active");
+      document.getElementById("pill-new").classList.toggle("active", mode === "new");
+      document.getElementById("greet-name").textContent = mode === "new" ? "Welcome, Maya." : "Evening, Maya.";
+      if(mode === "new") renderColdStart(); else renderStack();
+    } else {
+      setState(MockState.load('onboarding-complete', false) ? 'active' : 'new');
+    }
+  })();
+
+  MockSync.listen('onboarding-finished', function(){
+    setState('active');
+  });

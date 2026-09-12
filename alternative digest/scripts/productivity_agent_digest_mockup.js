@@ -1,10 +1,21 @@
+// ---------- shared utilities (see ../shared/mockup-shared.js) ----------
+  var announce = MockShared.announce;
+  var simulateRequest = MockShared.simulateRequest;
+  var MockState = MockShared.MockState;
+  var MockSync = MockShared.MockSync;
+
   function setState(s){
     document.getElementById('state-active').style.display = (s==='active') ? 'block' : 'none';
     document.getElementById('state-new').style.display = (s==='new') ? 'block' : 'none';
     document.getElementById('pill-active').classList.toggle('active', s==='active');
     document.getElementById('pill-new').classList.toggle('active', s==='new');
+    MockState.save('digest:view-state', s);
   }
 
+  // Generalized why-panel disclosure — panel/button ids are always
+  // "<id>-panel" / "<id>-btn" in this mockup, so this one function covers
+  // every disclosure instead of one per card (there's currently only one,
+  // but this is how the file already generalized it before these changes).
   function toggleDisclosure(id){
     var panel = document.getElementById(id + '-panel');
     var btn = document.getElementById(id + '-btn');
@@ -13,51 +24,127 @@
     btn.setAttribute('aria-expanded', open ? 'true' : 'false');
   }
 
-  function resolveNudge(kind){
-    document.getElementById('nudge-actions').style.display = 'none';
+  // ---------- nudge: persisted, simulated async, announced ----------
+  var nudgeResolution = MockState.load('digest:nudge', null); // 'moved' | 'dismissed' | null
+  function renderNudge(){
+    var resolved = !!nudgeResolution;
+    document.getElementById('nudge-actions').style.display = resolved ? 'none' : 'block';
     var r = document.getElementById('nudge-resolved');
-    r.classList.add('show');
-    if(kind === 'moved'){
+    r.classList.toggle('show', resolved);
+    if(nudgeResolution === 'moved'){
       r.innerHTML = '<span>Moved to 8:40am ✓</span><button class="undo" onclick="undoNudge()">Undo</button>';
-    } else {
+    } else if(nudgeResolution === 'dismissed'){
       r.innerHTML = '<span style="color:var(--text-muted)">Dismissed — won\'t ask again this week</span><button class="undo" onclick="undoNudge()">Undo</button>';
+    } else {
+      r.innerHTML = '';
     }
+  }
+  function resolveNudge(kind){
+    var actions = document.getElementById('nudge-actions');
+    actions.classList.add('pending');
+    simulateRequest(
+      function(){
+        nudgeResolution = kind;
+        MockState.save('digest:nudge', kind);
+      },
+      {
+        onSuccess: function(){
+          actions.classList.remove('pending');
+          renderNudge();
+          announce(kind === 'moved' ? 'Reading task moved to 8:40 AM.' : 'Nudge dismissed for this week.');
+          MockSync.broadcast('nudge-resolved', { kind: kind });
+        }
+      }
+    );
   }
   function undoNudge(){
-    document.getElementById('nudge-actions').style.display = 'block';
-    var r = document.getElementById('nudge-resolved');
-    r.classList.remove('show');
-    r.innerHTML = '';
+    nudgeResolution = null;
+    MockState.save('digest:nudge', null);
+    renderNudge();
+    announce('Undone — nudge restored.');
   }
+  renderNudge();
 
-  var missedCopy = {
-    expense: 'Moved to today ✓',
-    dentist: 'Time block added ✓'
+  // ---------- missed-task follow-ups: same pattern ----------
+  var missedActions = {
+    expense: { done: 'Moved to today ✓', announce: 'Expense report moved to today.' },
+    dentist: { done: 'Time block added ✓', announce: 'Time block added for calling the dentist.' }
   };
+  var resolvedMissed = MockState.load('digest:resolved-missed', {});
+  function renderMissed(id){
+    var isResolved = !!resolvedMissed[id];
+    document.getElementById('miss-cta-' + id).style.display = isResolved ? 'none' : 'inline';
+    document.getElementById('miss-resolved-' + id).innerHTML = isResolved
+      ? '<span>' + missedActions[id].done + '</span><button class="undo" onclick="undoMissed(\'' + id + '\')">Undo</button>'
+      : '';
+  }
   function resolveMissed(id){
-    document.getElementById('miss-cta-' + id).style.display = 'none';
-    document.getElementById('miss-resolved-' + id).innerHTML =
-      '<span>' + missedCopy[id] + '</span><button class="undo" onclick="undoMissed(\'' + id + '\')">Undo</button>';
+    var cta = document.getElementById('miss-cta-' + id);
+    cta.classList.add('pending');
+    simulateRequest(
+      function(){
+        resolvedMissed[id] = true;
+        MockState.save('digest:resolved-missed', resolvedMissed);
+      },
+      {
+        onSuccess: function(){
+          cta.classList.remove('pending');
+          renderMissed(id);
+          announce(missedActions[id].announce);
+          MockSync.broadcast('missed-resolved', { id: id });
+        }
+      }
+    );
   }
   function undoMissed(id){
-    document.getElementById('miss-cta-' + id).style.display = 'inline';
-    document.getElementById('miss-resolved-' + id).innerHTML = '';
+    delete resolvedMissed[id];
+    MockState.save('digest:resolved-missed', resolvedMissed);
+    renderMissed(id);
+    announce('Undone — item restored to missed list.');
   }
+  Object.keys(missedActions).forEach(renderMissed);
 
-  function resolveKudos(kind){
-    document.getElementById('kudos-actions').style.display = 'none';
+  // ---------- kudos: same pattern ----------
+  var kudosResolution = MockState.load('digest:kudos', null); // 'sent' | 'skipped' | null
+  function renderKudos(){
+    var resolved = !!kudosResolution;
+    document.getElementById('kudos-actions').style.display = resolved ? 'none' : 'inline';
     var r = document.getElementById('kudos-resolved');
-    if(kind === 'sent'){
+    if(kudosResolution === 'sent'){
       r.innerHTML = '<span>Kudos sent to Jordan ✓</span><button class="undo" onclick="undoKudos()">Undo</button>';
-    } else {
+    } else if(kudosResolution === 'skipped'){
       r.innerHTML = '<span style="color:var(--text-muted)">Skipped — we\'ll surface this less often</span><button class="undo" onclick="undoKudos()">Undo</button>';
+    } else {
+      r.innerHTML = '';
     }
   }
-  function undoKudos(){
-    document.getElementById('kudos-actions').style.display = 'inline';
-    document.getElementById('kudos-resolved').innerHTML = '';
+  function resolveKudos(kind){
+    var actions = document.getElementById('kudos-actions');
+    actions.classList.add('pending');
+    simulateRequest(
+      function(){
+        kudosResolution = kind;
+        MockState.save('digest:kudos', kind);
+      },
+      {
+        onSuccess: function(){
+          actions.classList.remove('pending');
+          renderKudos();
+          announce(kind === 'sent' ? 'Kudos sent to Jordan.' : 'Kudos skipped.');
+          MockSync.broadcast('kudos-resolved', { kind: kind });
+        }
+      }
+    );
   }
+  function undoKudos(){
+    kudosResolution = null;
+    MockState.save('digest:kudos', null);
+    renderKudos();
+    announce('Undone — kudos restored.');
+  }
+  renderKudos();
 
+  // ---------- nav modals ----------
   var navModalContent = {
     ring: {
       icon: '🔗',
@@ -80,3 +167,17 @@
   function closeNavModal(){
     document.getElementById('nav-modal-overlay').classList.remove('open');
   }
+
+  // ---------- keyboard support for div-as-button interactive elements ----------
+  // This file had no such binding at all before — a real accessibility gap
+  // for any keyboard-only reviewer stepping through the mockup.
+  MockShared.initKeyboardSupport();
+
+  // ---------- restore persisted view state on load ----------
+  setState(MockState.load(
+    'digest:view-state',
+    MockState.load('onboarding-complete', false) ? 'active' : 'new'
+  ));
+  MockSync.listen('onboarding-finished', function(){
+    setState('active');
+  });

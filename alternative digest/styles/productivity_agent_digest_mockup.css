@@ -214,3 +214,5 @@
   .nav-item.active .nav-dot{ background:var(--violet); border-radius:50%; }
 
   .wrap-outer{ display:flex; flex-direction:column; align-items:center; }
+/* ---- Pending state for simulateRequest()-wrapped actions. ---- */
+.pending{ opacity:.55; pointer-events:none; transition:opacity .15s ease; }
