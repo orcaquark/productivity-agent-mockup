@@ -17,3 +17,14 @@
   border-radius: 20px;
   z-index: 10;
 }
+
+/* ui interaction feedback */
+button.is-pressed,
+.btn.is-pressed,
+.cta.is-pressed,
+.chip.reply.is-pressed,
+.action-link.is-pressed,
+.kudos-btn.is-pressed,
+.miss-cta.is-pressed {
+  transform: scale(0.98);
+}

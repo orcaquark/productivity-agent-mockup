@@ -236,3 +236,14 @@ button, a, [tabindex], .clickable{ cursor:pointer; }
   align-items:center; justify-content:center; z-index:60;
 }
 .modal-overlay.open{ display:flex; }
+
+/* ui interaction feedback */
+button.is-pressed,
+.btn.is-pressed,
+.cta.is-pressed,
+.chip.reply.is-pressed,
+.action-link.is-pressed,
+.kudos-btn.is-pressed,
+.miss-cta.is-pressed {
+  transform: scale(0.98);
+}

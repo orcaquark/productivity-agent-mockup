@@ -216,3 +216,14 @@
   .wrap-outer{ display:flex; flex-direction:column; align-items:center; }
 /* ---- Pending state for simulateRequest()-wrapped actions. ---- */
 .pending{ opacity:.55; pointer-events:none; transition:opacity .15s ease; }
+
+/* ui interaction feedback */
+button.is-pressed,
+.btn.is-pressed,
+.cta.is-pressed,
+.chip.reply.is-pressed,
+.action-link.is-pressed,
+.kudos-btn.is-pressed,
+.miss-cta.is-pressed {
+  transform: scale(0.98);
+}
