@@ -7,13 +7,37 @@
   // `null` (not a fallback object) distinguishes "nothing saved yet" from
   // "saved, and happens to match the defaults" — only the former should
   // leave the slider's static starting position in the HTML untouched.
-  var storedOnboarding = MockState.load('mobile-onboarding:selections', null);
+  var storedOnboarding = MockShared.SharedState.get(
+    'onboarding',
+    null
+  );
+
+  if (storedOnboarding && storedOnboarding.completed) {
+    storedOnboarding = {
+      step: storedOnboarding.step,
+      plan: storedOnboarding.plan,
+      tone: storedOnboarding.tone,
+      focus: storedOnboarding.focus || [],
+      freqIdx: storedOnboarding.freqIdx || 0
+    };
+  }
   var hasPersistedOnboarding = !!storedOnboarding;
   var onboardingState = storedOnboarding || { step: 0, plan: null, tone: null, focus: [], freqIdx: 0 };
   var currentStep = onboardingState.step;
 
   function saveOnboardingState(){
-    MockState.save('mobile-onboarding:selections', onboardingState);
+    var shared = MockShared.SharedState.load();
+
+    shared.onboarding = {
+      step: onboardingState.step,
+      plan: onboardingState.plan,
+      tone: onboardingState.tone,
+      focus: onboardingState.focus.slice(),
+      freqIdx: onboardingState.freqIdx,
+      completed: shared.onboarding.completed || false
+    };
+
+    MockShared.SharedState.save(shared);
   }
 
   function goToStep(n){
@@ -40,6 +64,18 @@
     // MockState is what the feed mockup reads the *next* time it loads
     // (a separate page load). MockSync is for whoever hosts this iframe
     // right now — the viewer's compare mode, if a second pane is open.
+    var shared = MockShared.SharedState.load();
+
+    shared.onboarding = {
+      step: onboardingState.step,
+      plan: onboardingState.plan,
+      tone: onboardingState.tone,
+      focus: onboardingState.focus.slice(),
+      freqIdx: onboardingState.freqIdx,
+      completed: true
+    };
+
+    MockShared.SharedState.save(shared);
     MockState.save('onboarding-complete', true);
     MockSync.broadcast('onboarding-finished', {});
     announce('Onboarding complete — personalization is now set up.');

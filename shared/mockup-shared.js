@@ -49,6 +49,100 @@
     }
   };
 
+    // ---------------------------------------------------------------------
+  // Shared cross-mockup state.
+  //
+  // Unlike MockState, which is useful for screen-specific UI state,
+  // SharedState stores product state that should follow the user between
+  // desktop, mobile, digest, swiping, and texting mockups.
+  // ---------------------------------------------------------------------
+  var SHARED_STATE_KEY = 'shared:product-state';
+
+  var SharedState = {
+    defaults: {
+      onboarding: {
+        step: 0,
+        plan: null,
+        tone: null,
+        focus: [],
+        freqIdx: 0,
+        completed: false
+      },
+      tasks: {
+        expense: false,
+        dentist: false
+      },
+      nudge: null,
+      kudos: null
+    },
+
+    load: function () {
+      return MockState.load(
+        SHARED_STATE_KEY,
+        JSON.parse(JSON.stringify(this.defaults))
+      );
+    },
+
+    save: function (state) {
+      MockState.save(SHARED_STATE_KEY, state);
+
+      // Notify other open mockups in the same browser.
+      try {
+        global.dispatchEvent(new CustomEvent('kindred-shared-state', {
+          detail: state
+        }));
+      } catch (e) {}
+    },
+
+    update: function (path, value) {
+      var state = this.load();
+      var parts = path.split('.');
+      var target = state;
+
+      for (var i = 0; i < parts.length - 1; i++) {
+        if (!target[parts[i]] || typeof target[parts[i]] !== 'object') {
+          target[parts[i]] = {};
+        }
+        target = target[parts[i]];
+      }
+
+      target[parts[parts.length - 1]] = value;
+      this.save(state);
+      return state;
+    },
+
+    get: function (path, fallback) {
+      var state = this.load();
+
+      if (!path) return state;
+
+      var value = path.split('.').reduce(function (obj, key) {
+        return obj == null ? undefined : obj[key];
+      }, state);
+
+      return value === undefined ? fallback : value;
+    },
+
+    reset: function () {
+      this.save(JSON.parse(JSON.stringify(this.defaults)));
+    },
+
+    listen: function (handler) {
+      global.addEventListener('kindred-shared-state', function (event) {
+        if (event.detail) handler(event.detail);
+      });
+
+      // Also respond when another browser tab/window changes localStorage.
+      global.addEventListener('storage', function (event) {
+        if (event.key !== STORAGE_PREFIX + SHARED_STATE_KEY) return;
+
+        try {
+          handler(JSON.parse(event.newValue));
+        } catch (e) {}
+      });
+    }
+  };
+
   // ---------------------------------------------------------------------
   // Keyboard support for div-as-button interactive elements.
   // Identical to what each mockup already inlined.
@@ -219,6 +313,7 @@
 
   global.MockShared = {
     MockState: MockState,
+    SharedState: SharedState,
     initKeyboardSupport: initKeyboardSupport,
     bindKeyboard: bindKeyboard,
     createThemeController: createThemeController,

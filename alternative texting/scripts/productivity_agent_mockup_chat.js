@@ -3,6 +3,7 @@
   var simulateRequest = MockShared.simulateRequest;
   var MockState = MockShared.MockState;
   var MockSync = MockShared.MockSync;
+  var SharedState = MockShared.SharedState;
 
   var currentState = 'active';
 
@@ -120,8 +121,14 @@
   // Each record is self-contained (echo/confirm text, tone, which log and
   // chip it belongs to) so restoreResolvedReplies() can rebuild the exact
   // bubbles on the next page load without re-deriving them from "kind".
-  var resolvedReplies = MockState.load('texting:resolved', []);
+  var sharedState = SharedState.load();
+
+  var resolvedReplies = SharedState.get(
+    'texting.resolved',
+    MockState.load('texting:resolved', [])
+  );
   function saveResolvedReplies(){
+    SharedState.update('texting.resolved', resolvedReplies);
     MockState.save('texting:resolved', resolvedReplies);
   }
 

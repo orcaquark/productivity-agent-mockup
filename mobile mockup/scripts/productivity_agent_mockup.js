@@ -3,6 +3,7 @@
   var simulateRequest = MockShared.simulateRequest;
   var MockState = MockShared.MockState;
   var MockSync = MockShared.MockSync;
+  var SharedState = MockShared.SharedState;
 
   function setState(s){
     document.getElementById('state-active').style.display = (s==='active') ? 'block' : 'none';
@@ -49,7 +50,12 @@
     expense: { done: '✓ Moved to today', announce: 'Expense report moved to today.' },
     dentist: { done: '✓ Time block added', announce: 'Time block added for calling the dentist.' }
   };
-  var resolvedMissed = MockState.load('mobile-feed:resolved-missed', {});
+  var sharedTasks = SharedState.get('tasks', {});
+
+  var resolvedMissed = {
+    expense: !!sharedTasks.expense,
+    dentist: !!sharedTasks.dentist
+  };
 
   function renderMissed(id){
     var isResolved = !!resolvedMissed[id];
@@ -66,6 +72,7 @@
     simulateRequest(
       function(){
         resolvedMissed[id] = true;
+        SharedState.update('tasks.' + id, true);
         MockState.save('mobile-feed:resolved-missed', resolvedMissed);
       },
       {
@@ -80,6 +87,7 @@
   }
   function undoMissed(id){
     delete resolvedMissed[id];
+    SharedState.update('tasks.' + id, false);
     MockState.save('mobile-feed:resolved-missed', resolvedMissed);
     renderMissed(id);
     announce('Undone — item restored to missed list.');
@@ -87,7 +95,7 @@
   Object.keys(missedActions).forEach(renderMissed);
 
   // ---------- nudge: same pattern ----------
-  var nudgeResolution = MockState.load('mobile-feed:nudge', null); // 'moved' | 'dismissed' | null
+  var nudgeResolution = SharedState.get('nudge', null);
   function renderNudge(){
     var resolved = !!nudgeResolution;
     document.getElementById('nudge-actions').style.display = resolved ? 'none' : 'flex';
@@ -107,6 +115,7 @@
     simulateRequest(
       function(){
         nudgeResolution = kind;
+        SharedState.update('nudge', kind);
         MockState.save('mobile-feed:nudge', kind);
       },
       {
@@ -121,6 +130,7 @@
   }
   function undoNudge(){
     nudgeResolution = null;
+    SharedState.update('nudge', null);
     MockState.save('mobile-feed:nudge', null);
     renderNudge();
     announce('Undone — nudge restored.');
@@ -128,7 +138,7 @@
   renderNudge();
 
   // ---------- kudos: same pattern ----------
-  var kudosResolution = MockState.load('mobile-feed:kudos', null); // 'sent' | 'skipped' | null
+  var kudosResolution = SharedState.get('kudos', null);
   function renderKudos(){
     var resolved = !!kudosResolution;
     document.getElementById('kudos-actions').style.display = resolved ? 'none' : 'flex';
@@ -148,6 +158,7 @@
     simulateRequest(
       function(){
         kudosResolution = kind;
+        SharedState.update('kudos', kind);
         MockState.save('mobile-feed:kudos', kind);
       },
       {
@@ -162,6 +173,7 @@
   }
   function undoKudos(){
     kudosResolution = null;
+    SharedState.update('kudos', null);
     MockState.save('mobile-feed:kudos', null);
     renderKudos();
     announce('Undone — kudos restored.');
