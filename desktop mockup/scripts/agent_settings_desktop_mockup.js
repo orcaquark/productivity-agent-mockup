@@ -1,67 +1,54 @@
+// ---------- shared utilities (see ../shared/mockup-shared.js) ----------
+  var announce = MockShared.announce;
+  var simulateRequest = MockShared.simulateRequest;
+  var MockState = MockShared.MockState;
+  var bindKeyboard = MockShared.bindKeyboard;
+
   // ---------- sidebar collapse ----------
   function toggleSidebar(){
     document.getElementById('sidebar').classList.toggle('collapsed');
   }
 
   // ---------- keyboard support for div-as-button interactive elements ----------
-  function bindKeyboard(el){
-    el.addEventListener('keydown', function(e){
-      if(e.key === 'Enter' || e.key === ' '){
-        e.preventDefault();
-        el.click();
-      }
-    });
-  }
-  document.querySelectorAll('[tabindex="0"]').forEach(function(el){
-    if(!el.hasAttribute('role')) el.setAttribute('role','button');
-    bindKeyboard(el);
+  MockShared.initKeyboardSupport();
+
+  // ---------- theme: shared with every other mockup ----------
+  var theme = MockShared.createThemeController({
+    storageKey: 'theme',
+    defaultMode: 'light'
   });
-
-  // ---------- theme: light / dark / system, one source of truth ----------
-  var themeMode = 'light'; // 'light' | 'dark' | 'system'
-
-  function systemPrefersDark(){
-    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-  }
-  function effectiveTheme(){
-    return themeMode === 'system' ? (systemPrefersDark() ? 'dark' : 'light') : themeMode;
-  }
-  function applyTheme(){
-    var dark = effectiveTheme() === 'dark';
-    document.getElementById('app-shell').classList.toggle('dark-mode', dark);
-    var btn = document.getElementById('theme-toggle-icon');
-    if(btn) btn.setAttribute('href', dark ? '#ic-sun' : '#ic-moon');
-    var segs = document.querySelectorAll('[data-theme]');
-    segs.forEach(function(s){ s.classList.toggle('active', s.getAttribute('data-theme') === themeMode); });
-    if(typeof onThemeChange === 'function') onThemeChange(dark);
-  }
-  function setTheme(mode){
-    themeMode = mode;
-    applyTheme();
-  }
-  // Sidebar's quick toggle: a true bidirectional flip between light and dark,
-  // matching the mobile settings file's sun/moon behavior — an explicit choice,
-  // same source of truth the settings page's System/Light/Dark control reads from.
-  function quickToggleTheme(){
-    setTheme(effectiveTheme() === 'dark' ? 'light' : 'dark');
-  }
-  applyTheme();
+  function setTheme(mode){ theme.setTheme(mode); }
+  function quickToggleTheme(){ theme.quickToggle(); }
 
 
+  // ---------- toggle switches: persisted by element id ----------
+  var toggleState = MockState.load('desktop-settings:toggles', {});
   function toggleSwitch(id){
     var el = document.getElementById(id);
     var on = el.classList.toggle('on');
     el.setAttribute('aria-checked', on ? 'true' : 'false');
+    toggleState[id] = on;
+    MockState.save('desktop-settings:toggles', toggleState);
   }
+  function restoreToggles(){
+    Object.keys(toggleState).forEach(function(id){
+      var el = document.getElementById(id);
+      if(!el) return;
+      el.classList.toggle('on', toggleState[id]);
+      el.setAttribute('aria-checked', toggleState[id] ? 'true' : 'false');
+    });
+  }
+  restoreToggles();
 
-  // ---------- audit trail ----------
-  var auditLog = [
+  // ---------- audit trail: persisted so history survives a reload ----------
+  var auditLog = MockState.load('desktop-settings:audit-log', [
     { label: 'Peak focus times', value: 'Early AM, Mid AM', when: 'Jul 18 · inferred from your activity' },
     { label: 'Tone preference', value: 'Direct', when: 'Jul 12 · set during onboarding' },
     { label: 'Planning style', value: 'Night-before', when: 'Jul 12 · set during onboarding' }
-  ];
+  ]);
   function logAuditChange(label, value){
     auditLog.unshift({ label: label, value: value, when: 'Just now · you changed this' });
+    MockState.save('desktop-settings:audit-log', auditLog);
   }
   function openAuditModal(){
     document.getElementById('modal-icon').textContent = '🕘';
@@ -82,8 +69,9 @@
     document.getElementById('modal-overlay').classList.add('open');
   }
 
-  // ---------- learned-traits rows (each is single-select via an expandable chip panel,
-  //             same interaction model as Peak focus times) ----------
+  // ---------- learned-traits rows: selection persisted, restored on load ----------
+  var learnedState = MockState.load('desktop-settings:learned', { planning: null, tone: null, focus: [] });
+
   function togglePlanningPanel(){
     document.getElementById('planning-panel').classList.toggle('open');
   }
@@ -93,6 +81,9 @@
     var val = el.textContent;
     document.getElementById('planning-pill-wrap').innerHTML = '<div class="pill">' + val + '</div>';
     logAuditChange('Planning style', val);
+    learnedState.planning = val;
+    MockState.save('desktop-settings:learned', learnedState);
+    announce('Planning style set to ' + val + '.');
   }
 
   function toggleTonePanel(){
@@ -104,6 +95,9 @@
     var val = el.textContent;
     document.getElementById('tone-pill-wrap').innerHTML = '<div class="pill">' + val + '</div>';
     logAuditChange('Tone preference', val);
+    learnedState.tone = val;
+    MockState.save('desktop-settings:learned', learnedState);
+    announce('Tone preference set to ' + val + '.');
   }
 
   function toggleFocusPanel(){
@@ -114,6 +108,8 @@
     updateFocusSummary();
     var selected = Array.from(document.querySelectorAll('#focus-chip-grid .fchip.selected')).map(function(c){ return c.textContent; });
     logAuditChange('Peak focus times', selected.length ? selected.join(', ') : 'No pattern yet');
+    learnedState.focus = selected;
+    MockState.save('desktop-settings:learned', learnedState);
   }
   function updateFocusSummary(){
     var selected = Array.from(document.querySelectorAll('#focus-chip-grid .fchip.selected')).map(function(c){ return c.textContent; });
@@ -124,33 +120,72 @@
       wrap.innerHTML = selected.map(function(s){ return '<div class="pill">' + s + '</div>'; }).join('');
     }
   }
+  function restoreLearnedValues(){
+    if(learnedState.planning){
+      document.querySelectorAll('#planning-chip-grid .fchip').forEach(function(c){
+        if(c.textContent === learnedState.planning) c.classList.add('selected');
+      });
+      document.getElementById('planning-pill-wrap').innerHTML = '<div class="pill">' + learnedState.planning + '</div>';
+    }
+    if(learnedState.tone){
+      document.querySelectorAll('#tone-chip-grid .fchip').forEach(function(c){
+        if(c.textContent === learnedState.tone) c.classList.add('selected');
+      });
+      document.getElementById('tone-pill-wrap').innerHTML = '<div class="pill">' + learnedState.tone + '</div>';
+    }
+    if(learnedState.focus && learnedState.focus.length){
+      document.querySelectorAll('#focus-chip-grid .fchip').forEach(function(c){
+        if(learnedState.focus.indexOf(c.textContent) !== -1) c.classList.add('selected');
+      });
+    }
+    updateFocusSummary();
+  }
+  restoreLearnedValues();
 
   function resetLearnedValues(){
     document.querySelectorAll('#planning-chip-grid .fchip, #tone-chip-grid .fchip, #focus-chip-grid .fchip').forEach(function(c){ c.classList.remove('selected'); });
     document.getElementById('planning-pill-wrap').innerHTML = '<span style="font-size:11px;color:var(--text-faint);">Not set yet</span>';
     document.getElementById('tone-pill-wrap').innerHTML = '<span style="font-size:11px;color:var(--text-faint);">Not set yet</span>';
     updateFocusSummary();
-    auditLog.unshift({ label: 'Personalization', value: 'Reset to defaults', when: 'Just now · you reset this' });
+    logAuditChange('Personalization', 'Reset to defaults');
+    learnedState = { planning: null, tone: null, focus: [] };
+    MockState.save('desktop-settings:learned', learnedState);
   }
 
-  // ---------- nudges ----------
+  // ---------- nudges: frequency + quiet hours, persisted ----------
   var freqLabels = ['Light touch', 'Some check-ins', 'Frequent'];
-  var freqIndex = 0;
+  var freqIndex = MockState.load('desktop-settings:freq-index', 0);
+  function renderFrequency(){
+    for(var i=0;i<3;i++){
+      document.getElementById('freq-' + i).classList.toggle('active', i === freqIndex);
+    }
+  }
   function setFrequency(idx){
     freqIndex = idx;
-    for(var i=0;i<3;i++){
-      document.getElementById('freq-' + i).classList.toggle('active', i === idx);
-    }
+    renderFrequency();
     logAuditChange('Nudge frequency', freqLabels[idx]);
+    MockState.save('desktop-settings:freq-index', idx);
+    announce('Nudge frequency set to ' + freqLabels[idx] + '.');
   }
+  renderFrequency();
 
   function toggleQuietPanel(){
     document.getElementById('quiet-panel').classList.toggle('open');
   }
+  var quietSelection = MockState.load('desktop-settings:quiet', null);
   function selectQuietChip(el){
     document.querySelectorAll('#quiet-chip-grid .fchip').forEach(function(c){ c.classList.remove('selected'); });
     el.classList.add('selected');
-    document.getElementById('quiet-pill-wrap').innerHTML = '<div class="pill">' + el.textContent + '</div>';
+    quietSelection = el.textContent;
+    document.getElementById('quiet-pill-wrap').innerHTML = '<div class="pill">' + quietSelection + '</div>';
+    MockState.save('desktop-settings:quiet', quietSelection);
+    announce('Quiet hours set to ' + quietSelection + '.');
+  }
+  if(quietSelection){
+    document.querySelectorAll('#quiet-chip-grid .fchip').forEach(function(c){
+      if(c.textContent === quietSelection) c.classList.add('selected');
+    });
+    document.getElementById('quiet-pill-wrap').innerHTML = '<div class="pill">' + quietSelection + '</div>';
   }
 
   var pauseLabels = { today: 'Paused for the rest of today', week: 'Paused for 1 week', forever: 'Paused until you turn nudges back on' };
@@ -160,15 +195,22 @@
     document.getElementById('pause-status').textContent = pauseLabels[value];
   }
 
-  // ---------- data actions ----------
+  // ---------- data actions: simulated round trip + announced outcome ----------
   function exportData(){
-    var note = document.getElementById('export-note');
-    note.classList.add('show');
-    clearTimeout(window._exportTimer);
-    window._exportTimer = setTimeout(function(){ note.classList.remove('show'); }, 4000);
+    simulateRequest(function(){}, {
+      onSuccess: function(){
+        var note = document.getElementById('export-note');
+        note.classList.add('show');
+        announce('Personalization data exported.');
+        clearTimeout(window._exportTimer);
+        window._exportTimer = setTimeout(function(){ note.classList.remove('show'); }, 4000);
+      }
+    });
   }
 
-  // ---------- status banner (paused / turned off / deleted) ----------
+  // ---------- status banner (paused / turned off / deleted), persisted ----------
+  var bannerState = MockState.load('desktop-settings:banner', null); // { kind, detail } | null
+
   function showBanner(kind, detail){
     var banner = document.getElementById('status-banner');
     var text = document.getElementById('sb-text');
@@ -182,27 +224,37 @@
       action.textContent = 'Resume now';
       action.onclick = resumeAgent;
       dependent.classList.add('agent-disabled');
+      announce('Personalization paused ' + detail + '.');
     } else if(kind === 'turnedOff'){
       banner.classList.add('turnedOff');
       text.innerHTML = '<b>Personalization is off.</b> Your tasks and rings are unaffected.';
       action.textContent = 'Turn back on';
       action.onclick = resumeAgent;
       dependent.classList.add('agent-disabled');
+      announce('Personalization turned off.');
     } else if(kind === 'deleted'){
       banner.classList.add('turnedOff');
       text.innerHTML = '<b>Personalization data deleted.</b> Your patterns and history are gone — we\'ll start learning your personalization again from scratch. Tasks and rings are unaffected.';
       action.textContent = 'Dismiss';
       action.onclick = resumeAgent;
       dependent.classList.remove('agent-disabled');
+      announce('Personalization data deleted.');
     }
     banner.classList.add('show');
+
+    bannerState = { kind: kind, detail: detail };
+    MockState.save('desktop-settings:banner', bannerState);
   }
   function resumeAgent(){
     document.getElementById('status-banner').classList.remove('show');
     document.getElementById('agent-dependent-sections').classList.remove('agent-disabled');
+    bannerState = null;
+    MockState.save('desktop-settings:banner', null);
+    announce('Personalization resumed.');
   }
+  if(bannerState) showBanner(bannerState.kind, bannerState.detail);
 
-  // ---------- confirmation / info modal (was a bottom sheet on mobile) ----------
+  // ---------- confirmation / info modal ----------
   var modalContent = {
     pause: {
       icon: '⏸️',
@@ -239,6 +291,7 @@
             resetLearnedValues();
             var note = document.getElementById('reset-note');
             note.classList.add('show');
+            announce('Personalization reset to defaults.');
             clearTimeout(window._resetTimer);
             window._resetTimer = setTimeout(function(){ note.classList.remove('show'); }, 4000);
           } }
@@ -268,7 +321,16 @@
       btn.textContent = a.label;
       btn.setAttribute('tabindex', '0');
       btn.setAttribute('role', 'button');
-      btn.onclick = function(){ a.onClick && a.onClick(); closeModal(); };
+      btn.onclick = function(){
+        // Every confirmation action gets a brief simulated round trip —
+        // pausing, deleting, or resetting personalization would all hit
+        // the real backend once this ships, so the mockup shouldn't
+        // resolve instantly.
+        actionsEl.querySelectorAll('.modal-btn2').forEach(function(b){ b.classList.add('pending'); });
+        simulateRequest(function(){ a.onClick && a.onClick(); }, {
+          onSuccess: function(){ closeModal(); }
+        });
+      };
       bindKeyboard(btn);
       actionsEl.appendChild(btn);
     });

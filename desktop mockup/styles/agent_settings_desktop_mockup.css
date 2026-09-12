@@ -129,3 +129,6 @@
 .modal-btn2.primary:hover{ background:#7640ea; }
 .modal-btn2.cancel{ background: var(--card-raised); color:var(--text); }
 .modal-btn2.cancel:hover{ background:var(--sidebar-active); }
+
+/* ---- Pending state for simulateRequest()-wrapped actions. ---- */
+.pending{ opacity:.55; pointer-events:none; transition:opacity .15s ease; }

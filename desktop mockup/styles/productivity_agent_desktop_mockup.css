@@ -164,3 +164,7 @@
   font-size:13.5px; font-weight:600; border:none; font-family:inherit;
 }
 .modal-btn:hover{ background:#7640ea; }
+
+/* ---- Pending state for simulateRequest()-wrapped actions: brief dimmed,
+   non-interactive state while a "network" round trip is in flight. ---- */
+.pending{ opacity:.55; pointer-events:none; transition:opacity .15s ease; }
