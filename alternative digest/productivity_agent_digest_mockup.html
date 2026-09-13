@@ -73,11 +73,11 @@
       <ul class="missed-list">
         <li>
           <div class="miss-head"><span class="miss-name">Submit expense report</span><span class="miss-tag">2D AGO</span></div>
-          <div class="miss-why">Pushed three times — usually means it's not actually urgent. <button class="action-link" id="miss-cta-expense" onclick="resolveMissed('expense')">Move to today</button><span class="inline-resolved" id="miss-resolved-expense"></span></div>
+          <div class="miss-why">Pushed three times — usually means it's not actually urgent. <button class="action-link" id="miss-cta-expense" onclick="resolveMissed('expense')">Move to today</button><span class="inline-resolved" id="miss-resolved-expense"></span><span class="miss-insight" id="miss-insight-expense"></span></div>
         </li>
         <li>
           <div class="miss-head"><span class="miss-name">Call dentist</span><span class="miss-tag">TODAY</span></div>
-          <div class="miss-why">Created during a busy stretch, no time block set. <button class="action-link" id="miss-cta-dentist" onclick="resolveMissed('dentist')">Add a time block</button><span class="inline-resolved" id="miss-resolved-dentist"></span></div>
+          <div class="miss-why">Created during a busy stretch, no time block set. <button class="action-link" id="miss-cta-dentist" onclick="resolveMissed('dentist')">Add a time block</button><span class="inline-resolved" id="miss-resolved-dentist"></span><span class="miss-insight" id="miss-insight-dentist"></span></div>
         </li>
       </ul>
 
@@ -121,6 +121,7 @@
 <script src="../shared/mockup-shared.js"></script>
 <script src="../shared/ui-interactions.js"></script>
 <script src="../shared/agent-simulation.js"></script>
+<script src="../shared/agent-personalization.js"></script>
 <script src="scripts/productivity_agent_digest_mockup.js"></script>
 
 </body>

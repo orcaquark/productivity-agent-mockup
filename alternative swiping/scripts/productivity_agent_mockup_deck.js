@@ -133,6 +133,7 @@
         '<div class="card-label"><span class="lbl"><span class="glyph muted">·</span>What got missed</span><span class="cap-note">1 of 2</span></div>' +
         '<div class="miss-name">Submit expense report</div>' +
         '<div class="miss-why">Pushed 3 times — usually means it\'s not actually urgent</div>' +
+        '<div class="miss-insight" id="miss-insight-expense"></div>' +
         '<div class="miss-tag">2D AGO</div>'
       );
 
@@ -140,6 +141,7 @@
         '<div class="card-label"><span class="lbl"><span class="glyph muted">·</span>What got missed</span><span class="cap-note">2 of 2</span></div>' +
         '<div class="miss-name">Call dentist</div>' +
         '<div class="miss-why">Created during a busy stretch, no time block set</div>' +
+        '<div class="miss-insight" id="miss-insight-dentist"></div>' +
         '<div class="miss-tag">TODAY</div>'
       );
 
@@ -431,11 +433,13 @@
       // action-row button, since both paths land here.
       if (window.AgentSimulation) {
         if (id === "nudge") {
-          window.AgentSimulation.recordAction(dir === "right" ? "nudge-accepted" : "nudge-dismissed");
-        } else if ((id === "missExpense" || id === "missDentist") && dir === "right") {
-          window.AgentSimulation.recordAction("task-completed");
+          window.AgentSimulation.recordAction(dir === "right" ? "nudge-accepted" : "nudge-dismissed", { category: "nudge" });
+        } else if (id === "missExpense" && dir === "right") {
+          window.AgentSimulation.recordAction("task-completed", { taskId: "expense", category: "missed-task", size: "large", minutes: 45 });
+        } else if (id === "missDentist" && dir === "right") {
+          window.AgentSimulation.recordAction("task-completed", { taskId: "dentist", category: "missed-task", size: "small", minutes: 10 });
         } else if (id === "kudos" && dir === "right") {
-          window.AgentSimulation.recordAction("kudos-sent");
+          window.AgentSimulation.recordAction("kudos-sent", { category: "kudos" });
         }
       }
     } else {

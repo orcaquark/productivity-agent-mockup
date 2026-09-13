@@ -58,6 +58,29 @@
     SharedState.update(AGENT_STATE_KEY, state);
   }
 
+  // ---------------------------------------------------------------------
+  // Lightweight pub-sub so other shared modules (agent-personalization.js)
+  // can observe every recorded action — including its metadata — without
+  // agent-simulation.js needing to know they exist. Level 3 works fine
+  // with zero listeners; Level 4 subscribes to build a learned profile
+  // from the same event stream instead of duplicating the click wiring.
+  // ---------------------------------------------------------------------
+  var actionListeners = [];
+
+  function onAction(listener) {
+    if (typeof listener === 'function') actionListeners.push(listener);
+  }
+
+  function notifyListeners(type, meta) {
+    for (var i = 0; i < actionListeners.length; i++) {
+      try {
+        actionListeners[i](type, meta || {});
+      } catch (e) {
+        /* a listener failing shouldn't break the simulation layer */
+      }
+    }
+  }
+
   function increment(field) {
     var state = load();
     state[field] = Math.max(0, (state[field] || 0) + 1);
@@ -102,6 +125,25 @@
     };
   }
 
+  // ---------------------------------------------------------------------
+  // Indirection the UI-writing functions below call instead of
+  // getRecommendation() directly. If agent-personalization.js is loaded
+  // and has learned something specific enough to say, its recommendation
+  // wins; otherwise this falls back to the plain Level 3 reasoning above.
+  // Keeping this check in one place means Level 3 keeps working
+  // standalone (nothing here breaks if agent-personalization.js is never
+  // included), and Level 4 only has to implement getRecommendation() on
+  // its own object to take over.
+  // ---------------------------------------------------------------------
+  function resolveRecommendation() {
+    var personalization = global.AgentPersonalization;
+    if (personalization && typeof personalization.getRecommendation === 'function') {
+      var learned = personalization.getRecommendation();
+      if (learned) return learned;
+    }
+    return getRecommendation();
+  }
+
   function escapeHTML(value) {
     return String(value)
       .replace(/&/g, '&amp;')
@@ -135,7 +177,7 @@
     var existing = document.getElementById('agent-simulation-toast');
     if (existing) existing.remove();
 
-    var recommendation = getRecommendation();
+    var recommendation = resolveRecommendation();
     var container = getScreenContainer();
     var variant =
       container.id === 'app-shell' ? 'corner' :
@@ -184,7 +226,7 @@
   // has an actual pattern to report.
   // ---------------------------------------------------------------------
   function applyNudgeCopy() {
-    var recommendation = getRecommendation();
+    var recommendation = resolveRecommendation();
     if (recommendation.isDefault) return;
 
     var el = document.getElementById('nudge-desc');
@@ -192,7 +234,7 @@
     el.textContent = recommendation.body;
   }
 
-  function recordAction(type) {
+  function recordAction(type, meta) {
     switch (type) {
       case 'task-completed':
         increment('completedTasks');
@@ -210,6 +252,7 @@
         return;
     }
 
+    notifyListeners(type, meta);
     applyNudgeCopy();
     global.setTimeout(createAgentToast, 350);
   }
@@ -231,13 +274,23 @@
     var anchor = document.getElementById('why-panel') || document.getElementById('nudge-why-panel');
     if (!anchor) return;
 
-    var recommendation = getRecommendation();
+    var recommendation = resolveRecommendation();
+    var learned =
+      global.AgentPersonalization && typeof global.AgentPersonalization.getExplanation === 'function'
+        ? global.AgentPersonalization.getExplanation()
+        : null;
 
     var panel = document.createElement('div');
     panel.id = 'agent-explanation';
     panel.innerHTML =
       '<div class="agent-explanation-title">Why this recommendation?</div>' +
-      '<div class="agent-explanation-body">' + escapeHTML(recommendation.body) + '</div>';
+      '<div class="agent-explanation-body">' + escapeHTML(recommendation.body) + '</div>' +
+      (learned
+        ? '<div class="agent-explanation-learned">' +
+            '<span class="agent-explanation-learned-label">Learned preference</span>' +
+            escapeHTML(learned) +
+          '</div>'
+        : '');
 
     anchor.parentNode.insertBefore(panel, anchor.nextSibling);
   }
@@ -266,13 +319,15 @@
       var text = (target.textContent || '').trim().toLowerCase();
 
       if (text.indexOf('move it') !== -1) {
-        recordAction('nudge-accepted');
+        recordAction('nudge-accepted', { category: 'nudge' });
       } else if (text === 'not now') {
-        recordAction('nudge-dismissed');
-      } else if (text.indexOf('move to today') !== -1 || text.indexOf('add a time block') !== -1) {
-        recordAction('task-completed');
+        recordAction('nudge-dismissed', { category: 'nudge' });
+      } else if (text.indexOf('move to today') !== -1) {
+        recordAction('task-completed', { taskId: 'expense', category: 'missed-task', size: 'large', minutes: 45 });
+      } else if (text.indexOf('add a time block') !== -1) {
+        recordAction('task-completed', { taskId: 'dentist', category: 'missed-task', size: 'small', minutes: 10 });
       } else if (text.indexOf('send kudos') !== -1) {
-        recordAction('kudos-sent');
+        recordAction('kudos-sent', { category: 'kudos' });
       }
     });
 
@@ -321,7 +376,15 @@
         'background:var(--card-raised,#f1eef8);color:var(--text,#221d33);' +
       '}' +
       '.agent-explanation-title{font-weight:650;margin-bottom:4px;font-size:.85rem;}' +
-      '.agent-explanation-body{color:var(--text-muted,#5b5570);font-size:.85rem;line-height:1.45;}';
+      '.agent-explanation-body{color:var(--text-muted,#5b5570);font-size:.85rem;line-height:1.45;}' +
+      '.agent-explanation-learned{' +
+        'margin-top:8px;padding-top:8px;border-top:1px solid var(--border,rgba(0,0,0,.08));' +
+        'font-size:.82rem;line-height:1.4;color:var(--text,#221d33);' +
+      '}' +
+      '.agent-explanation-learned-label{' +
+        'display:block;font-weight:650;font-size:.7rem;text-transform:uppercase;' +
+        'letter-spacing:.03em;color:var(--violet,#854dff);margin-bottom:3px;' +
+      '}';
 
     document.head.appendChild(style);
   }
@@ -329,6 +392,9 @@
   function reset() {
     persist(cloneDefaults());
     applyNudgeCopy();
+    if (global.AgentPersonalization && typeof global.AgentPersonalization.reset === 'function') {
+      global.AgentPersonalization.reset();
+    }
   }
 
   function init() {
@@ -343,6 +409,7 @@
     recordAction: recordAction,
     getRecommendation: getRecommendation,
     explainRecommendation: explainRecommendation,
+    onAction: onAction,
     reset: reset,
     autoTrackClicks: true
   };
