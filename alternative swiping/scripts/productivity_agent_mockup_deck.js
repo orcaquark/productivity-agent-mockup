@@ -5,6 +5,15 @@
   var announce = MockShared.announce;
   var MockSync = MockShared.MockSync;
 
+  // The deck's drag gesture and its fallback action-row button both
+  // resolve through applyResolution() below, which calls
+  // AgentSimulation.recordAction() directly. Turn off the shared
+  // document-level click detection here so the button path isn't
+  // counted twice.
+  if (window.AgentSimulation) {
+    window.AgentSimulation.autoTrackClicks = false;
+  }
+
   var cardDefs = {
     briefing:{ label:"Today's briefing", glyph:"✦", glyphTone:"", kind:"info" },
     nudge:{ label:"Suggested nudge", glyph:"!", glyphTone:"", kind:"decision",
@@ -100,7 +109,7 @@
       case "nudge": return (
         '<div class="card-label"><span class="lbl"><span class="glyph">!</span>Suggested nudge</span><span class="cap-note">1 of 2 today</span></div>' +
         '<div class="nudge-title">Move "Read 20 min" to 8:40am?</div>' +
-        '<div class="nudge-desc">You complete reading tasks 3x more often when they\'re scheduled before your commute.</div>' +
+        '<div class="nudge-desc" id="nudge-desc">You complete reading tasks 3x more often when they\'re scheduled before your commute.</div>' +
         '<button class="why-link" id="nudge-why-btn" aria-expanded="false" onclick="toggleWhy()">Why am I seeing this</button>' +
         '<div class="why-panel" id="nudge-why-panel">Based on <b>14 days</b> of task timing: reading tasks completed before 9am finished 3x more often than the same task scheduled later. This nudge will stop appearing if you dismiss it twice in a row.</div>'
       );
@@ -417,6 +426,18 @@
         id: id,
         dir: dir
       });
+
+      // Feed the shared agent — covers both the drag gesture and the
+      // action-row button, since both paths land here.
+      if (window.AgentSimulation) {
+        if (id === "nudge") {
+          window.AgentSimulation.recordAction(dir === "right" ? "nudge-accepted" : "nudge-dismissed");
+        } else if ((id === "missExpense" || id === "missDentist") && dir === "right") {
+          window.AgentSimulation.recordAction("task-completed");
+        } else if (id === "kudos" && dir === "right") {
+          window.AgentSimulation.recordAction("kudos-sent");
+        }
+      }
     } else {
       hideToast();
     }

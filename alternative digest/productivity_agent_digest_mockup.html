@@ -31,7 +31,7 @@
 
       <blockquote class="nudge-quote">
         <div class="nudge-line">Move "Read 20 min" to 8:40am?</div>
-        <div class="nudge-sub">You complete reading tasks 3x more often when they're scheduled before your commute.</div>
+        <div class="nudge-sub" id="nudge-desc">You complete reading tasks 3x more often when they're scheduled before your commute.</div>
         <button class="disclosure" id="why-btn" onclick="toggleDisclosure('why')" aria-expanded="false"><span class="car">▸</span>Why am I seeing this</button>
         <div class="disclosure-panel" id="why-panel">Based on <b>14 days</b> of task timing: reading tasks completed before 9am finished 3x more often than the same task scheduled later. This nudge stops appearing if you dismiss it twice in a row.</div>
         <div class="nudge-actions" id="nudge-actions">
@@ -120,6 +120,7 @@
 
 <script src="../shared/mockup-shared.js"></script>
 <script src="../shared/ui-interactions.js"></script>
+<script src="../shared/agent-simulation.js"></script>
 <script src="scripts/productivity_agent_digest_mockup.js"></script>
 
 </body>
