@@ -56,49 +56,50 @@
     document.getElementById('sheet-overlay').style.display = 'flex';
   }
 
-  // ---------- learned-traits rows: cycle-through selects, index persisted ----------
-  var planningOptions = ['Night-before','Morning of','No real plan','Varies week to week'];
-  var planningIndex = MockState.load('mobile-settings:planning-index', 0);
-  function renderPlanning(){
-    document.getElementById('planning-text').textContent = planningOptions[planningIndex];
-  }
-  function cyclePlanning(){
-    planningIndex = (planningIndex + 1) % planningOptions.length;
-    renderPlanning();
-    logAuditChange('Planning style', planningOptions[planningIndex]);
-    MockState.save('mobile-settings:planning-index', planningIndex);
-    announce('Planning style set to ' + planningOptions[planningIndex] + '.');
-  }
-  renderPlanning();
+  // ---------- learned-traits rows: selection persisted, restored on load ----------
+  var learnedState = MockState.load('mobile-settings:learned', { planning: null, tone: null, focus: [] });
 
-  var toneOptions = ['Direct','Cheerful','Quiet'];
-  var toneIndex = MockState.load('mobile-settings:tone-index', 0);
-  function renderTone(){
-    document.getElementById('tone-text').textContent = toneOptions[toneIndex];
+  function togglePlanningPanel(){
+    document.getElementById('planning-panel').classList.toggle('open');
   }
-  function cycleTone(){
-    toneIndex = (toneIndex + 1) % toneOptions.length;
-    renderTone();
-    logAuditChange('Tone preference', toneOptions[toneIndex]);
-    MockState.save('mobile-settings:tone-index', toneIndex);
-    announce('Tone preference set to ' + toneOptions[toneIndex] + '.');
+  function selectPlanningChip(el){
+    document.querySelectorAll('#planning-chip-grid .fchip').forEach(function(c){ c.classList.remove('selected'); });
+    el.classList.add('selected');
+    var val = el.textContent;
+    document.getElementById('planning-pill-wrap').innerHTML = '<div class="pill">' + val + '</div>';
+    logAuditChange('Planning style', val);
+    learnedState.planning = val;
+    MockState.save('mobile-settings:learned', learnedState);
+    announce('Planning style set to ' + val + '.');
   }
-  renderTone();
+
+  function toggleTonePanel(){
+    document.getElementById('tone-panel').classList.toggle('open');
+  }
+  function selectToneChip(el){
+    document.querySelectorAll('#tone-chip-grid .fchip').forEach(function(c){ c.classList.remove('selected'); });
+    el.classList.add('selected');
+    var val = el.textContent;
+    document.getElementById('tone-pill-wrap').innerHTML = '<div class="pill">' + val + '</div>';
+    logAuditChange('Tone preference', val);
+    learnedState.tone = val;
+    MockState.save('mobile-settings:learned', learnedState);
+    announce('Tone preference set to ' + val + '.');
+  }
 
   function toggleFocusPanel(){
     document.getElementById('focus-panel').classList.toggle('open');
   }
-  var focusSelection = MockState.load('mobile-settings:focus', []);
   function toggleFocusChip(el){
     el.classList.toggle('selected');
     updateFocusSummary();
-    var selected = Array.from(document.querySelectorAll('.fchip.selected')).map(function(c){ return c.textContent; });
+    var selected = Array.from(document.querySelectorAll('#focus-chip-grid .fchip.selected')).map(function(c){ return c.textContent; });
     logAuditChange('Peak focus times', selected.length ? selected.join(', ') : 'No pattern yet');
-    focusSelection = selected;
-    MockState.save('mobile-settings:focus', focusSelection);
+    learnedState.focus = selected;
+    MockState.save('mobile-settings:learned', learnedState);
   }
   function updateFocusSummary(){
-    var selected = Array.from(document.querySelectorAll('.fchip.selected')).map(function(c){ return c.textContent; });
+    var selected = Array.from(document.querySelectorAll('#focus-chip-grid .fchip.selected')).map(function(c){ return c.textContent; });
     var wrap = document.getElementById('focus-pill-wrap');
     if(selected.length === 0){
       wrap.innerHTML = '<span style="font-size:11px;color:var(--text-faint);">No pattern yet</span>';
@@ -106,63 +107,74 @@
       wrap.innerHTML = selected.map(function(s){ return '<div class="pill">' + s + '</div>'; }).join('');
     }
   }
-  if(focusSelection.length){
-    document.querySelectorAll('.fchip').forEach(function(c){
-      if(focusSelection.indexOf(c.textContent) !== -1) c.classList.add('selected');
-    });
+  function restoreLearnedValues(){
+    if(learnedState.planning){
+      document.querySelectorAll('#planning-chip-grid .fchip').forEach(function(c){
+        if(c.textContent === learnedState.planning) c.classList.add('selected');
+      });
+      document.getElementById('planning-pill-wrap').innerHTML = '<div class="pill">' + learnedState.planning + '</div>';
+    }
+    if(learnedState.tone){
+      document.querySelectorAll('#tone-chip-grid .fchip').forEach(function(c){
+        if(c.textContent === learnedState.tone) c.classList.add('selected');
+      });
+      document.getElementById('tone-pill-wrap').innerHTML = '<div class="pill">' + learnedState.tone + '</div>';
+    }
+    if(learnedState.focus && learnedState.focus.length){
+      document.querySelectorAll('#focus-chip-grid .fchip').forEach(function(c){
+        if(learnedState.focus.indexOf(c.textContent) !== -1) c.classList.add('selected');
+      });
+    }
+    updateFocusSummary();
   }
-  updateFocusSummary();
+  restoreLearnedValues();
 
   function resetLearnedValues(){
-    planningIndex = 0;
-    toneIndex = 0;
-    renderPlanning();
-    renderTone();
-    document.getElementById('planning-text').textContent = 'Not set yet';
-    document.getElementById('tone-text').textContent = 'Not set yet';
-    document.querySelectorAll('.fchip').forEach(function(c){ c.classList.remove('selected'); });
-    focusSelection = [];
+    document.querySelectorAll('#planning-chip-grid .fchip, #tone-chip-grid .fchip, #focus-chip-grid .fchip').forEach(function(c){ c.classList.remove('selected'); });
+    document.getElementById('planning-pill-wrap').innerHTML = '<span style="font-size:11px;color:var(--text-faint);">Not set yet</span>';
+    document.getElementById('tone-pill-wrap').innerHTML = '<span style="font-size:11px;color:var(--text-faint);">Not set yet</span>';
     updateFocusSummary();
     logAuditChange('Personalization', 'Reset to defaults');
-    MockState.save('mobile-settings:planning-index', 0);
-    MockState.save('mobile-settings:tone-index', 0);
-    MockState.save('mobile-settings:focus', []);
+    learnedState = { planning: null, tone: null, focus: [] };
+    MockState.save('mobile-settings:learned', learnedState);
     MockSync.broadcast('personalization-reset', {});
   }
 
-  // ---------- nudges: frequency + quiet hours, index persisted ----------
-  var freqOptions = [
-    { label: 'Light touch', pct: 28 },
-    { label: 'Some check-ins', pct: 55 },
-    { label: 'Frequent', pct: 85 }
-  ];
+  // ---------- nudges: frequency + quiet hours, persisted ----------
+  var freqLabels = ['Light touch', 'Some check-ins', 'Frequent'];
   var freqIndex = MockState.load('mobile-settings:freq-index', 0);
   function renderFrequency(){
-    var f = freqOptions[freqIndex];
-    document.getElementById('freq-label').textContent = f.label;
-    document.getElementById('freq-fill').style.width = f.pct + '%';
-    document.getElementById('freq-knob').style.left = f.pct + '%';
+    for(var i=0;i<3;i++){
+      document.getElementById('freq-' + i).classList.toggle('active', i === freqIndex);
+    }
   }
-  function cycleFrequency(){
-    freqIndex = (freqIndex + 1) % freqOptions.length;
+  function setFrequency(idx){
+    freqIndex = idx;
     renderFrequency();
-    MockState.save('mobile-settings:freq-index', freqIndex);
-    announce('Nudge frequency set to ' + freqOptions[freqIndex].label + '.');
+    logAuditChange('Nudge frequency', freqLabels[idx]);
+    MockState.save('mobile-settings:freq-index', idx);
+    announce('Nudge frequency set to ' + freqLabels[idx] + '.');
   }
   renderFrequency();
 
-  var quietOptions = ['9pm–7am','10pm–8am','Off'];
-  var quietIndex = MockState.load('mobile-settings:quiet-index', 0);
-  function renderQuietHours(){
-    document.getElementById('quiet-text').textContent = quietOptions[quietIndex];
+  function toggleQuietPanel(){
+    document.getElementById('quiet-panel').classList.toggle('open');
   }
-  function cycleQuietHours(){
-    quietIndex = (quietIndex + 1) % quietOptions.length;
-    renderQuietHours();
-    MockState.save('mobile-settings:quiet-index', quietIndex);
-    announce('Quiet hours set to ' + quietOptions[quietIndex] + '.');
+  var quietSelection = MockState.load('mobile-settings:quiet', null);
+  function selectQuietChip(el){
+    document.querySelectorAll('#quiet-chip-grid .fchip').forEach(function(c){ c.classList.remove('selected'); });
+    el.classList.add('selected');
+    quietSelection = el.textContent;
+    document.getElementById('quiet-pill-wrap').innerHTML = '<div class="pill">' + quietSelection + '</div>';
+    MockState.save('mobile-settings:quiet', quietSelection);
+    announce('Quiet hours set to ' + quietSelection + '.');
   }
-  renderQuietHours();
+  if(quietSelection){
+    document.querySelectorAll('#quiet-chip-grid .fchip').forEach(function(c){
+      if(c.textContent === quietSelection) c.classList.add('selected');
+    });
+    document.getElementById('quiet-pill-wrap').innerHTML = '<div class="pill">' + quietSelection + '</div>';
+  }
 
   var pauseLabels = { today: 'Paused for the rest of today', week: 'Paused for 1 week', forever: 'Paused until you turn nudges back on' };
   function selectPause(el, value){

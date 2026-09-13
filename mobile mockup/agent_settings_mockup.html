@@ -24,12 +24,23 @@
     <div id="agent-dependent-sections">
       <div class="eyebrow">Your personalization</div>
       <div class="group">
-        <div class="row clickable" tabindex="0" role="button" onclick="cyclePlanning()">
+        <div class="row clickable" tabindex="0" role="button" onclick="togglePlanningPanel()">
           <div class="row-text">
             <div class="t">Planning style <span class="inferred-tag">From you</span></div>
             <div class="d">Used to time evening check-ins</div>
           </div>
-          <div class="row-value"><span id="planning-text">Night-before</span><span class="chev">›</span></div>
+          <div class="pill-wrap" id="planning-pill-wrap">
+            <div class="pill">Night-before</div>
+          </div>
+        </div>
+        <div class="focus-panel" id="planning-panel">
+          <div class="focus-chip-grid" id="planning-chip-grid">
+            <div class="fchip selected" tabindex="0" role="button" onclick="selectPlanningChip(this)">Night-before</div>
+            <div class="fchip" tabindex="0" role="button" onclick="selectPlanningChip(this)">Morning of</div>
+            <div class="fchip" tabindex="0" role="button" onclick="selectPlanningChip(this)">No real plan</div>
+            <div class="fchip" tabindex="0" role="button" onclick="selectPlanningChip(this)">Varies week to week</div>
+          </div>
+          <div class="focus-hint">Tap to choose how you plan — updates the summary above immediately.</div>
         </div>
 
         <div class="row clickable" tabindex="0" role="button" onclick="toggleFocusPanel()">
@@ -43,7 +54,7 @@
           </div>
         </div>
         <div class="focus-panel" id="focus-panel">
-          <div class="focus-chip-grid">
+          <div class="focus-chip-grid" id="focus-chip-grid">
             <div class="fchip selected" tabindex="0" role="button" onclick="toggleFocusChip(this)">Early AM</div>
             <div class="fchip selected" tabindex="0" role="button" onclick="toggleFocusChip(this)">Mid AM</div>
             <div class="fchip" tabindex="0" role="button" onclick="toggleFocusChip(this)">Early PM</div>
@@ -54,12 +65,22 @@
           <div class="focus-hint">Tap to add or remove a window — updates the summary above immediately.</div>
         </div>
 
-        <div class="row clickable" tabindex="0" role="button" onclick="cycleTone()">
+        <div class="row clickable" tabindex="0" role="button" onclick="toggleTonePanel()">
           <div class="row-text">
             <div class="t">Tone preference <span class="inferred-tag">From you</span></div>
             <div class="d">Shapes nudge and digest wording</div>
           </div>
-          <div class="row-value"><span id="tone-text">Direct</span><span class="chev">›</span></div>
+          <div class="pill-wrap" id="tone-pill-wrap">
+            <div class="pill">Direct</div>
+          </div>
+        </div>
+        <div class="focus-panel" id="tone-panel">
+          <div class="focus-chip-grid" id="tone-chip-grid">
+            <div class="fchip selected" tabindex="0" role="button" onclick="selectToneChip(this)">Direct</div>
+            <div class="fchip" tabindex="0" role="button" onclick="selectToneChip(this)">Cheerful</div>
+            <div class="fchip" tabindex="0" role="button" onclick="selectToneChip(this)">Quiet</div>
+          </div>
+          <div class="focus-hint">Tap to choose a tone — updates the summary above immediately.</div>
         </div>
       </div>
 
@@ -88,22 +109,33 @@
           </div>
           <div class="switch on" id="sw-nudges" tabindex="0" role="switch" aria-checked="true" onclick="toggleSwitch('sw-nudges')"><div class="knob"></div></div>
         </div>
-        <div class="row clickable" tabindex="0" role="button" onclick="cycleFrequency()">
+        <div class="row stack">
           <div class="row-text">
             <div class="t">Frequency</div>
-            <div class="d" id="freq-label">Light touch</div>
+            <div class="d">How often personalization suggests a nudge</div>
           </div>
-          <div class="mini-track">
-            <div class="fill" id="freq-fill" style="width:28%"></div>
-            <div class="knob" id="freq-knob" style="left:28%"></div>
+          <div class="seg-pill-track" role="group" aria-label="Nudge frequency">
+            <div class="seg-pill-opt active" id="freq-0" tabindex="0" role="button" onclick="setFrequency(0)">Light touch</div>
+            <div class="seg-pill-opt" id="freq-1" tabindex="0" role="button" onclick="setFrequency(1)">Some check-ins</div>
+            <div class="seg-pill-opt" id="freq-2" tabindex="0" role="button" onclick="setFrequency(2)">Frequent</div>
           </div>
         </div>
-        <div class="row clickable" tabindex="0" role="button" onclick="cycleQuietHours()">
+        <div class="row clickable" tabindex="0" role="button" onclick="toggleQuietPanel()">
           <div class="row-text">
             <div class="t">Quiet hours</div>
             <div class="d">No nudges sent during this window</div>
           </div>
-          <div class="row-value"><span id="quiet-text">9pm–7am</span><span class="chev">›</span></div>
+          <div class="pill-wrap" id="quiet-pill-wrap">
+            <div class="pill">9pm–7am</div>
+          </div>
+        </div>
+        <div class="focus-panel" id="quiet-panel">
+          <div class="focus-chip-grid" id="quiet-chip-grid">
+            <div class="fchip selected" tabindex="0" role="button" onclick="selectQuietChip(this)">9pm–7am</div>
+            <div class="fchip" tabindex="0" role="button" onclick="selectQuietChip(this)">10pm–8am</div>
+            <div class="fchip" tabindex="0" role="button" onclick="selectQuietChip(this)">Off</div>
+          </div>
+          <div class="focus-hint">Tap to choose a window — updates the summary above immediately.</div>
         </div>
         <div class="row">
           <div class="row-text">

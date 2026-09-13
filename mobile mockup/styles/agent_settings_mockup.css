@@ -17,6 +17,7 @@
     --text: #221d33;
     --text-muted: #6f6a82;
     --text-faint: #7a7488;
+    --seg-active: #ffffff;
   }
 
     html,body{
@@ -48,13 +49,13 @@
     --thread:#332d44; --text:#f1ecf9; --text-muted:#a39cb3; --text-faint:#7d7690;
     --violet-dim:#854dff3a; --violet-soft:#854dff22;
     --sage-dim:#93c08f33; --coral-warn-dim:#d9714e26;
+    --seg-active:#2b2740;
   }
   .phone.dark-mode .notch{ background:#000; }
   .phone.dark-mode .row{ border-bottom-color:#2c2738; }
   .phone.dark-mode .group{ border-color:#2c2738; }
   .phone.dark-mode .switch{ background:#332d44; }
   .phone.dark-mode .switch .knob{ background:#e9e4f2; }
-  .phone.dark-mode .mini-track,
   .phone.dark-mode .seg-btn,
   .phone.dark-mode .pause-pill,
   .phone.dark-mode .fchip{ background:#262131; border-color:#332d44; }
@@ -118,7 +119,7 @@
   .row:last-child{ border-bottom:none; }
   .row.clickable{ cursor:pointer; }
   .row.clickable:focus-visible, .danger-row:focus-visible, .pause-pill:focus-visible,
-  .seg-btn:focus-visible, .fchip:focus-visible, .switch:focus-visible, .sheet-btn:focus-visible{
+  .seg-btn:focus-visible, .seg-pill-opt:focus-visible, .fchip:focus-visible, .switch:focus-visible, .sheet-btn:focus-visible{
     outline:2px solid var(--violet); outline-offset:2px;
   }
 
@@ -156,26 +157,12 @@
   }
   .switch.on .knob{ left:21px; }
 
-  /* mini slider (click-to-cycle, since a true drag isn't meaningful in a static mock) */
-  .mini-track{
-    width:90px;
-    height:5px; border-radius:3px;
-    background:#e3ddf0;
-    position:relative;
-    cursor:pointer;
-  }
-  .mini-track .fill{
-    position:absolute; left:0; top:0; bottom:0;
-    border-radius:3px;
-    background: var(--violet);
-    transition:width .2s;
-  }
-  .mini-track .knob{
-    position:absolute; top:50%; transform:translate(-50%,-50%);
-    width:14px; height:14px; border-radius:50%;
-    background:#fff; border:2.5px solid var(--violet);
-    transition:left .2s;
-  }
+  .row.stack{ flex-direction:column; align-items:stretch; }
+  .row.stack .row-text{ margin-bottom:2px; }
+
+  .seg-pill-track{ display:flex; gap:3px; background:var(--card-raised); border-radius:12px; padding:4px; margin-top:10px; }
+  .seg-pill-opt{ flex:1; text-align:center; padding:8px 4px; border-radius:9px; font-size:11.5px; font-weight:500; color:var(--text-muted); cursor:pointer; }
+  .seg-pill-opt.active{ background: var(--seg-active); color:var(--text); font-weight:700; box-shadow:0 1px 3px rgba(0,0,0,0.12); }
 
   /* tag pills for focus times / chips */
   .pill-wrap{ display:flex; flex-wrap:wrap; gap:6px; max-width:170px; justify-content:flex-end; }
