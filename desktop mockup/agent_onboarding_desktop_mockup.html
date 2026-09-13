@@ -8,7 +8,6 @@
 </head>
 
 <body>
-<!-- Reusable icon defs — simple 24x24 stroke icons, generic geometric shapes -->
 <svg width="0" height="0" style="position:absolute">
 <defs>
 <g id="ic-bell"><path d="M12 4a5 5 0 0 0-5 5v3.2c0 .6-.22 1.18-.62 1.63L5 15.5h14l-1.38-1.67A2.5 2.5 0 0 1 17 12.2V9a5 5 0 0 0-5-5Z" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linejoin="round"/><path d="M10 18.5a2 2 0 0 0 4 0" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linecap="round"/></g>
@@ -94,8 +93,6 @@
       <div class="onboard-backdrop">
         <div class="onboard-stack">
         <div class="onboard-modal" role="dialog" aria-modal="true" aria-label="Personalization onboarding">
-
-          <!-- STEP 0: Welcome / what to expect -->
           <div class="step-page active" data-step="0">
             <div class="ob-topbar">
               <button class="ob-back" aria-label="Go back" disabled><svg viewBox="0 0 24 24"><use href="#ic-back"/></svg></button>
@@ -128,7 +125,6 @@
             </div>
           </div>
 
-          <!-- STEP 1: How do you plan -->
           <div class="step-page" data-step="1">
             <div class="ob-topbar">
               <button class="ob-back" aria-label="Go back" tabindex="0" onclick="goToStep(0)"><svg viewBox="0 0 24 24"><use href="#ic-back"/></svg></button>
@@ -166,7 +162,6 @@
             </div>
           </div>
 
-          <!-- STEP 2: nudge intensity -->
           <div class="step-page" data-step="2">
             <div class="ob-topbar">
               <button class="ob-back" aria-label="Go back" tabindex="0" onclick="goToStep(1)"><svg viewBox="0 0 24 24"><use href="#ic-back"/></svg></button>
@@ -217,7 +212,6 @@
             </div>
           </div>
 
-          <!-- STEP 3: peak focus time -->
           <div class="step-page" data-step="3">
             <div class="ob-topbar">
               <button class="ob-back" aria-label="Go back" tabindex="0" onclick="goToStep(2)"><svg viewBox="0 0 24 24"><use href="#ic-back"/></svg></button>
@@ -248,7 +242,6 @@
             </div>
           </div>
 
-          <!-- STEP 4: summary / confirm -->
           <div class="step-page" data-step="4">
             <div class="ob-topbar">
               <button class="ob-back" aria-label="Go back" tabindex="0" onclick="goToStep(3)"><svg viewBox="0 0 24 24"><use href="#ic-back"/></svg></button>
@@ -280,7 +273,6 @@
               <div class="cta" tabindex="0" id="finish-btn" onclick="finishOnboarding()">Start using Kindred</div>
             </div>
           </div>
-
         </div>
 
         <div class="label-row">
@@ -291,7 +283,6 @@
         </div>
         </div>
       </div>
-
     </div>
   </main>
   <div class="rings-widget" aria-label="Today's rings, 3 left">

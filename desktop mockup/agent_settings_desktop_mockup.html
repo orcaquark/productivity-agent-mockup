@@ -8,7 +8,6 @@
 </head>
 
 <body>
-<!-- Reusable icon defs — simple 24x24 stroke icons, generic geometric shapes -->
 <svg width="0" height="0" style="position:absolute">
 <defs>
 <g id="ic-bell"><path d="M12 4a5 5 0 0 0-5 5v3.2c0 .6-.22 1.18-.62 1.63L5 15.5h14l-1.38-1.67A2.5 2.5 0 0 1 17 12.2V9a5 5 0 0 0-5-5Z" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linejoin="round"/><path d="M10 18.5a2 2 0 0 0 4 0" stroke="currentColor" stroke-width="1.7" fill="none" stroke-linecap="round"/></g>
@@ -81,7 +80,6 @@
         <button class="collapse-btn" tabindex="0" onclick="toggleSidebar()" aria-label="Collapse sidebar"><svg viewBox="0 0 24 24"><use href="#ic-collapse"/></svg></button>
       </div>
       <div class="top-strip-right">
-        
       </div>
     </div>
     <div class="content-scroll">
@@ -96,8 +94,6 @@
       </div>
 
       <div id="agent-dependent-sections">
-
-        <!-- ===== APPEARANCE — folded into production's real section, not duplicated ===== -->
         <div class="eyebrow">Appearance</div>
         <div class="group">
           <div class="row stack">
@@ -113,7 +109,6 @@
           </div>
         </div>
 
-        <!-- ===== NOTIFICATIONS — nudges get folded in here, frequency rebuilt as a segmented pill ===== -->
         <div class="eyebrow">Notifications</div>
         <div class="group">
           <div class="row">
@@ -172,7 +167,6 @@
           <div class="pause-status" id="pause-status">Paused for the rest of today</div>
         </div>
 
-        <!-- ===== PERSONALIZATION — new category; combines learned traits and reports/briefings ===== -->
         <div class="eyebrow">Personalization</div>
         <div class="group">
           <div class="row clickable" tabindex="0" role="button" onclick="togglePlanningPanel()">
@@ -293,8 +287,7 @@
             <div class="switch" id="sw-share" tabindex="0" role="switch" aria-checked="false" onclick="toggleSwitch('sw-share')"><div class="knob"></div></div>
           </div>
         </div>
-
-      </div><!-- /agent-dependent-sections -->
+      </div>
 
       <div class="group-spacer"></div>
       <div class="eyebrow">Personalization data</div>
@@ -353,7 +346,6 @@
           <div class="modal-actions" id="modal-actions"></div>
         </div>
       </div>
-
     </div>
   </main>
   <div class="rings-widget" aria-label="Today's rings, 3 left">

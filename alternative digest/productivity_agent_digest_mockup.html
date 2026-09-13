@@ -20,7 +20,6 @@
       <button class="state-pill" id="pill-new" onclick="setState('new')">New user</button>
     </div>
 
-    <!-- ===== ACTIVE / POPULATED STATE ===== -->
     <div id="state-active">
 
       <div class="salutation"><span class="mark">✦</span>Evening, <span class="name">Maya</span>.</div>
@@ -86,12 +85,9 @@
         <span id="kudos-actions"><button class="action-link" onclick="resolveKudos('sent')">Send kudos</button><span class="sep">·</span><button class="action-link" onclick="resolveKudos('skipped')">Skip</button></span>
         <span class="inline-resolved" id="kudos-resolved"></span>
       </p>
-
       <div class="signoff">— sent by your thread, every evening.</div>
-
     </div>
 
-    <!-- ===== NEW / COLD-START STATE ===== -->
     <div id="state-new" style="display:none;">
       <div class="salutation"><span class="mark">✦</span>Welcome, <span class="name">Maya</span>.</div>
       <p class="cold-p">Your personalization hasn't kicked in yet — the first digest lands here once we've seen a few days of tasks and rings. Add a couple of tasks today, and check back tomorrow evening. Kudos worth sending will start showing up here too, once you've <button class="action-link sage" onclick="openNavModal('friends')">added a few friends →</button></p>

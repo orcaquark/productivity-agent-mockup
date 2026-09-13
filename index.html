@@ -9,20 +9,13 @@
 </head>
 
 <body>
-
-    <!-- =========================
-         HEADER
-    ========================== -->
-
     <header class="header">
 
         <div class="brand">
             <div class="brand-mark">K</div>
-
             <span>
                 Productivity Agent
             </span>
-
             <span class="brand-subtitle">
                 Design Viewer
             </span>
@@ -50,13 +43,7 @@
             <span class="control-divider" aria-hidden="true"></span>
             <button class="icon-button theme-button" id="theme-button" type="button" title="Switch viewer to dark mode" aria-label="Switch viewer to dark mode" aria-pressed="false">◐</button>
         </div>
-
     </header>
-
-
-    <!-- =========================
-         DESIGN SELECTOR
-    ========================== -->
 
     <nav
         class="subnav"
@@ -69,22 +56,14 @@
         <select id="compare-select" aria-label="Choose comparison mockup"></select>
     </div>
 
-
-    <!-- =========================
-         VIEWER
-    ========================== -->
-
     <main class="viewer">
-
         <div class="frame-container">
-
             <iframe
                 id="mockup-frame"
                 class="mockup-frame"
                 title="Productivity Agent mockup"
                 loading="eager"
             ></iframe>
-
             <div
                 class="loading"
                 id="loading"
@@ -94,7 +73,6 @@
                     Loading design...
                 </div>
             </div>
-
             <div
                 class="error-message"
                 id="error-message"
@@ -107,10 +85,8 @@
                     matches the repository structure.
                 </p>
             </div>
-
         </div>
 </main>
-
 
     <button class="fullscreen-exit" id="fullscreen-exit-button" type="button" title="Exit fullscreen (Esc)"><span aria-hidden="true">×</span> Exit fullscreen</button>
 
