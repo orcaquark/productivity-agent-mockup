@@ -112,29 +112,50 @@
   }
 
   // ---------------------------------------------------------------------
-  // Toast. Deliberately NOT themed off the page's CSS variables: it's
-  // appended to document.body so position:fixed isn't clipped by the
-  // desktop mockup's .device-frame (overflow:hidden), and #app-shell —
-  // the only element dark-mode variables are scoped to — isn't in that
-  // ancestor chain from body, so inherited theming wouldn't work anyway.
-  // A fixed dark snackbar is the simpler, correct choice here.
+  // Which element represents "the screen" for this mockup. The toast is
+  // appended inside it (not document.body) so it's clipped to, and reads
+  // as part of, the actual device/window mockup rather than floating in
+  // the browser chrome around it. Both containers are position:relative
+  // with overflow:hidden, so an absolutely-positioned child is contained
+  // correctly and — for desktop — still inherits #app-shell's dark-mode
+  // variables, which body-level placement never could.
+  // ---------------------------------------------------------------------
+  function getScreenContainer() {
+    return document.getElementById('app-shell') || document.querySelector('.phone') || document.body;
+  }
+
+  // ---------------------------------------------------------------------
+  // Toast, styled like an actual push notification (icon + app name +
+  // timestamp row, bold title, body) rather than a generic snackbar.
+  // Placement follows the container: a banner dropping in below the
+  // notch on the phone mockups, a corner card sliding in top-right on
+  // desktop (matching where each platform actually shows notifications).
   // ---------------------------------------------------------------------
   function createAgentToast() {
     var existing = document.getElementById('agent-simulation-toast');
     if (existing) existing.remove();
 
     var recommendation = getRecommendation();
+    var container = getScreenContainer();
+    var variant =
+      container.id === 'app-shell' ? 'corner' :
+      container.classList && container.classList.contains('phone') ? 'banner' :
+      'fallback';
 
     var toast = document.createElement('div');
     toast.id = 'agent-simulation-toast';
+    toast.className = 'agent-toast agent-toast--' + variant;
     toast.setAttribute('role', 'status');
     toast.innerHTML =
-      '<div class="agent-toast-title"><span class="agent-toast-spark">\u2726</span>' +
-        escapeHTML(recommendation.title) +
+      '<div class="agent-toast-head">' +
+        '<span class="agent-toast-icon">\u2726</span>' +
+        '<span class="agent-toast-app">Kindred</span>' +
+        '<span class="agent-toast-time">now</span>' +
       '</div>' +
+      '<div class="agent-toast-title">' + escapeHTML(recommendation.title) + '</div>' +
       '<div class="agent-toast-body">' + escapeHTML(recommendation.body) + '</div>';
 
-    document.body.appendChild(toast);
+    container.appendChild(toast);
 
     requestAnimationFrame(function () {
       toast.classList.add('show');
@@ -144,7 +165,7 @@
       toast.classList.remove('show');
       global.setTimeout(function () {
         if (toast.parentNode) toast.parentNode.removeChild(toast);
-      }, 250);
+      }, 280);
     }, 4200);
   }
 
@@ -268,17 +289,32 @@
     var style = document.createElement('style');
     style.id = 'agent-simulation-styles';
     style.textContent =
-      '#agent-simulation-toast{' +
-        'position:fixed;right:20px;bottom:20px;width:min(340px,calc(100vw - 32px));' +
-        'padding:14px 16px;border-radius:12px;background:#1c1a24;color:#fff;' +
-        'box-shadow:0 14px 40px rgba(0,0,0,.32);opacity:0;transform:translateY(12px);' +
-        'transition:opacity .22s ease,transform .22s ease;z-index:9999;pointer-events:none;' +
-        'font-family:\'Inter\',sans-serif;' +
+      '.agent-toast{' +
+        'position:absolute;width:min(300px,calc(100% - 24px));box-sizing:border-box;' +
+        'padding:11px 13px;border-radius:16px;' +
+        'background:var(--card,#fff);border:1px solid var(--border,rgba(0,0,0,.08));' +
+        'box-shadow:0 12px 30px rgba(0,0,0,.2);opacity:0;z-index:9999;pointer-events:none;' +
+        'transition:opacity .25s ease,transform .25s ease;font-family:\'Inter\',sans-serif;' +
       '}' +
-      '#agent-simulation-toast.show{opacity:1;transform:translateY(0);}' +
-      '.agent-toast-title{font-weight:650;margin-bottom:5px;font-size:.95rem;}' +
-      '.agent-toast-spark{margin-right:6px;color:#a78bfa;}' +
-      '.agent-toast-body{color:#c7c5d1;font-size:.87rem;line-height:1.45;}' +
+      '.agent-toast.show{opacity:1;}' +
+      '.agent-toast--banner{top:46px;left:50%;transform:translate(-50%,-130%);}' +
+      '.agent-toast--banner.show{transform:translate(-50%,0);}' +
+      '.agent-toast--corner{top:16px;right:16px;transform:translateX(120%);}' +
+      '.agent-toast--corner.show{transform:translateX(0);}' +
+      '.agent-toast--fallback{position:fixed;right:20px;bottom:20px;transform:translateY(14px);}' +
+      '.agent-toast--fallback.show{transform:translateY(0);}' +
+      '.agent-toast-head{display:flex;align-items:center;gap:6px;margin-bottom:6px;}' +
+      '.agent-toast-icon{' +
+        'width:18px;height:18px;border-radius:6px;background:var(--violet,#854dff);color:#fff;' +
+        'font-size:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0;' +
+      '}' +
+      '.agent-toast-app{' +
+        'font-size:.7rem;font-weight:700;color:var(--text,#221d33);' +
+        'text-transform:uppercase;letter-spacing:.03em;' +
+      '}' +
+      '.agent-toast-time{font-size:.7rem;color:var(--text-muted,#8a8398);margin-left:auto;}' +
+      '.agent-toast-title{font-weight:650;font-size:.88rem;color:var(--text,#221d33);margin-bottom:2px;}' +
+      '.agent-toast-body{color:var(--text-muted,#5b5570);font-size:.82rem;line-height:1.4;}' +
       '#agent-explanation{' +
         'margin:10px 0 0;padding:12px 14px;border-radius:8px;' +
         'border-left:2px solid var(--violet,#854dff);' +
