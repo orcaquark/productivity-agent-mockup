@@ -251,6 +251,7 @@
 
     var recommendation = resolveRecommendation();
     var container = getScreenContainer();
+
     var variant =
       container.id === 'app-shell' ? 'corner' :
       container.classList && container.classList.contains('phone') ? 'banner' :
@@ -260,26 +261,115 @@
     toast.id = 'agent-simulation-toast';
     toast.className = 'agent-toast agent-toast--' + variant;
     toast.setAttribute('role', 'status');
+
     toast.innerHTML =
       '<div class="agent-toast-head">' +
         '<span class="agent-toast-icon">\u2726</span>' +
         '<span class="agent-toast-app">Kindred</span>' +
         '<span class="agent-toast-time">now</span>' +
+        '<button class="agent-toast-dismiss" type="button" aria-label="Dismiss notification">' +
+          '&times;' +
+        '</button>' +
       '</div>' +
       '<div class="agent-toast-title">' + escapeHTML(recommendation.title) + '</div>' +
       '<div class="agent-toast-body">' + escapeHTML(recommendation.body) + '</div>';
 
     container.appendChild(toast);
 
+    var dismissTimer = null;
+    var removeTimer = null;
+    var startX = null;
+    var currentX = 0;
+    var dragging = false;
+
+    function dismiss() {
+      if (!toast.parentNode) return;
+
+      toast.classList.remove('show');
+      toast.classList.add('dismissed');
+
+      if (dismissTimer) {
+        global.clearTimeout(dismissTimer);
+        dismissTimer = null;
+      }
+
+      if (removeTimer) {
+        global.clearTimeout(removeTimer);
+      }
+
+      removeTimer = global.setTimeout(function () {
+        if (toast.parentNode) {
+          toast.parentNode.removeChild(toast);
+        }
+      }, 280);
+    }
+
+    /* Desktop: X button */
+    var dismissButton = toast.querySelector('.agent-toast-dismiss');
+
+    dismissButton.addEventListener('click', function (event) {
+      event.stopPropagation();
+      dismiss();
+    });
+
+    /* Mobile: horizontal swipe to dismiss */
+    if (variant === 'banner') {
+      toast.addEventListener('pointerdown', function (event) {
+        startX = event.clientX;
+        currentX = 0;
+        dragging = true;
+
+        toast.classList.add('dragging');
+        toast.setPointerCapture(event.pointerId);
+      });
+
+      toast.addEventListener('pointermove', function (event) {
+        if (!dragging || startX === null) return;
+
+        currentX = event.clientX - startX;
+
+        toast.style.transform =
+          'translate(calc(-50% + ' + currentX + 'px), 0)';
+      });
+
+      toast.addEventListener('pointerup', function (event) {
+        if (!dragging) return;
+
+        dragging = false;
+        toast.classList.remove('dragging');
+
+        var swipeDistance = currentX;
+        startX = null;
+
+        // Swipe either direction far enough -> dismiss.
+        if (Math.abs(swipeDistance) >= 70) {
+          var direction = swipeDistance > 0 ? 1 : -1;
+
+          toast.style.transform =
+            'translate(calc(-50% + ' + (direction * 120) + '%), 0)';
+
+          dismiss();
+          return;
+        }
+
+        // Swipe wasn't far enough; snap back.
+        toast.style.transform = '';
+      });
+
+      toast.addEventListener('pointercancel', function () {
+        dragging = false;
+        startX = null;
+        toast.classList.remove('dragging');
+        toast.style.transform = '';
+      });
+    }
+
     requestAnimationFrame(function () {
       toast.classList.add('show');
     });
 
-    global.setTimeout(function () {
-      toast.classList.remove('show');
-      global.setTimeout(function () {
-        if (toast.parentNode) toast.parentNode.removeChild(toast);
-      }, 280);
+    dismissTimer = global.setTimeout(function () {
+      dismiss();
     }, 4200);
   }
 
@@ -427,9 +517,24 @@
         'position:absolute;width:min(300px,calc(100% - 24px));box-sizing:border-box;' +
         'padding:11px 13px;border-radius:16px;' +
         'background:var(--card,#fff);border:1px solid var(--border,rgba(0,0,0,.08));' +
-        'box-shadow:0 12px 30px rgba(0,0,0,.2);opacity:0;z-index:9999;pointer-events:none;' +
+        'box-shadow:0 12px 30px rgba(0,0,0,.2);opacity:0;z-index:9999;pointer-events:auto;' +
         'transition:opacity .25s ease,transform .25s ease;font-family:\'Inter\',sans-serif;' +
       '}' +
+      '.agent-toast.dismissed{pointer-events:none;}' +
+      '.agent-toast.dragging{transition:none !important;}' +
+      '.agent-toast-dismiss{' +
+        'margin-left:auto;border:0;background:none;padding:0;width:22px;height:22px;' +
+        'display:flex;align-items:center;justify-content:center;' +
+        'font-size:20px;line-height:1;color:var(--text-muted,#8a8398);' +
+        'cursor:pointer;border-radius:50%;flex-shrink:0;' +
+      '}' +
+      '.agent-toast-dismiss:hover{' +
+        'background:rgba(0,0,0,.06);color:var(--text,#221d33);' +
+      '}' +
+      '.agent-toast-dismiss:focus-visible{' +
+        'outline:2px solid var(--violet,#854dff);outline-offset:2px;' +
+      '}' +
+      '.agent-toast--banner .agent-toast-dismiss{display:none;}' +
       '.agent-toast.show{opacity:1;}' +
       '.agent-toast--banner{top:46px;left:50%;transform:translate(-50%,-130%);}' +
       '.agent-toast--banner.show{transform:translate(-50%,0);}' +
