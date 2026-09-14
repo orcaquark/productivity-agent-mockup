@@ -11,17 +11,17 @@
 <div class="header">
   <div class="eyebrow">Personalization · Design Alternative 2 of 3 · Deck</div>
   <h1>Why the deck works the way it does</h1>
-  <p>A walkthrough of the swipeable card-stack alternative to the personalization thread, organized by the reasoning behind each decision. This reviews one screen only — the interaction shell around the same five underlying cards, not the onboarding or settings screens, which are unchanged. Items tagged <span class="tag open">OPEN</span> are known gaps worth a ticket. Items tagged <span class="tag new">NEW</span> are decisions this format required that didn't exist in the thread version.</p>
+  <p>Review of the swipeable card-stack alternative for the same five personalization cards. Only the interaction shell changes; onboarding and settings remain unchanged. <span class="tag open">OPEN</span> marks known gaps. <span class="tag new">NEW</span> marks decisions introduced by the deck.</p>
 </div>
 
 <div class="compare-box">
   <div class="compare-col">
     <h3>What the deck trades away</h3>
-    <p>The thread let you skim all five cards at a glance and act on whichever one you wanted, in any order, or scroll past the rest. The deck forces one deliberate decision at a time — nothing gets passively skimmed past unread, but a quick glance at "everything today" is no longer possible, and it wouldn't scale gracefully much past six cards.</p>
+    <p>The thread supported scanning all five cards and acting in any order. The deck requires one decision at a time, prevents passive skipping, and does not scale well beyond about six cards.</p>
   </div>
   <div class="compare-col win">
     <h3>What it's built for instead</h3>
-    <p>Every card in this feature already ends in some kind of action. The deck makes resolving that action the whole mechanic, rather than one option among several ways to interact with a card. It's a deliberate bet that "one decision, then the next" beats "a report you scan" for a feature that's fundamentally a short daily to-do list of its own.</p>
+    <p>Each card ends in an action. The deck makes resolving that action the core interaction: a short daily decision list rather than a report to scan.</p>
   </div>
 </div>
 
@@ -29,7 +29,7 @@
   <div class="section">
     <div class="frame-col">
       <div class="section-title">Personalization deck</div>
-      <div class="section-sub">Drag a card left or right, or use the buttons underneath. Try the "New user" toggle, the ⟲ revisit pill once you've left a card for later, and the arrow keys.</div>
+      <div class="section-sub">Drag a card left or right, or use the buttons. Try the "New user" toggle, the ⟲ revisit pill after deferring a card, and the arrow keys.</div>
       <div class="frame"><iframe src="productivity_agent_mockup_deck.html" scrolling="no"></iframe></div>
     </div>
     <div class="notes">
@@ -38,137 +38,137 @@
       <div class="note">
         <div class="num">1</div>
         <div class="note-text"><div class="t">Swipe stamps and buttons stay violet / sage — never red / green</div>
-        <div class="d">A left-right decision format invites a stock "reject vs. accept" color scheme. Instead every card keeps the color it already had in the thread model: violet for the system's own suggestions (nudge, missed tasks), sage for the social one (kudos), and a neutral gray for whichever direction means "not now." Nothing reads as a wrong answer.</div></div>
+        <div class="d">Avoid reject/accept color coding. Cards retain thread colors: violet for system suggestions, sage for social content, and gray for "not now." No action is framed as wrong.</div></div>
       </div>
       <div class="note">
         <div class="num">2</div>
         <div class="note-text"><div class="t">Missed-task and dismissal copy is unchanged from the thread</div>
-        <div class="d">"Pushed 3 times," "no time block set," "won't ask again this week" — same neutral, descriptive language, just now living in a full-bleed card instead of a compact one.</div></div>
+        <div class="d">"Pushed 3 times," "no time block set," and "won't ask again this week" remain neutral and descriptive; only the card layout changes.</div></div>
       </div>
       <div class="note">
         <div class="num">3</div>
         <div class="note-text"><div class="t">Briefing and trend never get forced into an accept/reject shape</div>
-        <div class="d">Swiping either direction on a read-only card does the same thing — advance — and both stamps just say "Next." The deck format's left/right mechanic doesn't get applied somewhere it doesn't belong just for consistency's sake.</div></div>
+        <div class="d">Either swipe advances read-only cards, and both stamps say "Next." The left/right mechanic is not applied where no decision exists.</div></div>
       </div>
 
       <div class="cat-label">Every card resolves to a decision</div>
       <div class="note">
         <div class="num">4</div>
         <div class="note-text"><div class="t">Missed tasks split into two separate cards<span class="tag new">NEW</span></div>
-        <div class="d">The thread showed both missed items in one card, each with its own small CTA. The deck can only resolve one thing per swipe, so "Submit expense report" and "Call dentist" are now two cards, each with its own specific action — "Move to today" and "Add a time block" respectively — instead of one generic pair.</div></div>
+        <div class="d">The thread grouped both missed tasks with separate CTAs. The deck resolves one item per swipe, so each task gets its own card and action: "Move to today" or "Add a time block."</div></div>
       </div>
       <div class="note">
         <div class="num">5</div>
         <div class="note-text"><div class="t">Decision cards needed a real negative action, so one was invented<span class="tag new">NEW</span></div>
-        <div class="d">The thread's missed-task items only had a positive link ("Move to today") with no explicit opposite — you just didn't tap it. A card that must resolve one way or the other can't leave a direction blank, so the left swipe now means something specific: "Leave for now." This is a genuine new decision point the deck format introduces, not a port of something that existed before.</div></div>
+        <div class="d">Thread items only offered a positive action. The deck requires both directions, so left swipe means "Leave for now." This is a new decision introduced by the format.</div></div>
       </div>
       <div class="note">
         <div class="num">6</div>
         <div class="note-text"><div class="t">Local counters ("1 of 2 today," "1 of 2") stay separate from the deck's own count</div>
-        <div class="d">The nudge card's "1 of 2 today" describes a queue of nudges that exists independent of this deck — there may be a second nudge waiting elsewhere today. The missed-task cards' "1 of 2" describes their own pair. Neither is the same number as "3 of 6" in the header, and none of them are conflated into one counter.</div></div>
+        <div class="d">Nudge and missed-task counters describe their own queues. They are distinct from the deck progress count, such as "3 of 6 today."</div></div>
       </div>
 
       <div class="cat-label">Reversibility & the review list</div>
       <div class="note">
         <div class="num">7</div>
         <div class="note-text"><div class="t">Undo is a toast, not an inline row, and it doesn't expire on a timer</div>
-        <div class="d">Once a card leaves the stack it's off-screen, so the thread's inline confirm/undo row (which stayed visible next to the card itself) doesn't have anywhere to live. A toast takes its place — but, matching the thread's own precedent, it stays up until you tap Undo or resolve the next card, rather than auto-hiding after a few seconds and quietly becoming permanent.</div></div>
+        <div class="d">Resolved cards leave the stack, so inline undo is replaced by a toast. It remains until the user taps Undo or resolves the next card.</div></div>
       </div>
       <div class="note">
         <div class="num">8</div>
         <div class="note-text"><div class="t">A same-session "to revisit" sheet<span class="tag new">NEW</span></div>
-        <div class="d">The design-alternatives brief left this as an open question — should a skipped card reappear tomorrow, or land in a same-session review list? This builds the second option: every "Not now" / "Leave for now" / "Skip" adds an entry to a ⟲ pill next to the progress dots, which opens a short list with a working "Reconsider" action per item.</div></div>
+        <div class="d">"Not now," "Leave for now," and "Skip" add items to the ⟲ revisit pill beside the progress dots. The sheet provides a "Reconsider" action for each item.</div></div>
       </div>
       <div class="note">
         <div class="num">9</div>
         <div class="note-text"><div class="t">Reconsidering re-queues a card instead of losing it</div>
-        <div class="d">Tapping "Reconsider" removes the item from the revisit list and puts it back at the very front of the stack — it becomes the next card you see, with a fresh set of buttons, rather than just being marked as changed your mind somewhere in the background.</div></div>
+        <div class="d">"Reconsider" removes an item from the revisit list and returns it to the front of the stack as the next card.</div></div>
       </div>
       <div class="note">
         <div class="num">10</div>
         <div class="note-text"><div class="t">Only the most recent action is undo-able<span class="tag open">OPEN</span></div>
-        <div class="d">Because only one card is visible at a time, the toast can only ever refer to the last thing you did — resolve two cards in a row and the first one's Undo is gone (though a left-swipe is still reachable through the revisit sheet; a right-swipe is not). The thread's model didn't have this limitation, since every card's undo stayed visible at once. Flagging rather than solving, since a multi-level undo stack is a bigger interaction to design well.</div></div>
+        <div class="d">The toast supports only the latest action. After a second resolution, the first undo is unavailable. Deferred items remain reachable through revisit; right-swipe actions do not. A multi-level undo stack needs separate design work.</div></div>
       </div>
 
       <div class="cat-label">Accessibility & reliability</div>
       <div class="note">
         <div class="num">11</div>
         <div class="note-text"><div class="t">The buttons under the stack are the primary path, not a fallback</div>
-        <div class="d">The brief itself calls gesture-only risky for a task app. Every card, decision or not, has real buttons doing the exact same thing a swipe does — nothing here is reachable only by dragging.</div></div>
+        <div class="d">Every card has buttons that perform the same actions as swipes. No action requires dragging.</div></div>
       </div>
       <div class="note">
         <div class="num">12</div>
         <div class="note-text"><div class="t">Real &lt;button&gt; elements throughout, not div + tabindex + role shim</div>
-        <div class="d">The thread mockups used clickable divs with a hand-rolled keydown handler to make them keyboard-operable. Everything actionable in the deck — state pills, action-row buttons, the why-link, reconsider rows — is a native button, so focus order, Enter/Space activation, and screen-reader semantics come from the browser instead of being reimplemented.</div></div>
+        <div class="d">All interactive controls are native buttons, including pills, actions, why-links, and reconsider rows. Browser-provided focus, Enter/Space support, and screen-reader semantics are retained.</div></div>
       </div>
       <div class="note">
         <div class="num">13</div>
         <div class="note-text"><div class="t">Reduced-motion turns physics into a snap</div>
-        <div class="d">Spring-back, fly-off, and the card-advancing cascade are all real CSS transitions, and a <code>prefers-reduced-motion</code> query collapses their duration to effectively zero. The interaction still works exactly the same way — it just doesn't animate for anyone who's asked their system not to.</div></div>
+        <div class="d">A <code>prefers-reduced-motion</code> query reduces spring, fly-off, and cascade transitions to effectively zero duration without changing behavior.</div></div>
       </div>
       <div class="note">
         <div class="num">14</div>
         <div class="note-text"><div class="t">Arrow keys are a keyboard-native swipe<span class="tag new">NEW</span></div>
-        <div class="d">Left/Right on the keyboard resolve the top card in that direction, same as a drag or a tap — one more way in besides the visible buttons, for anyone driving the deck without a pointer.</div></div>
+        <div class="d">Left and Right arrow keys resolve the top card in the matching direction, equivalent to dragging or tapping.</div></div>
       </div>
       <div class="note">
         <div class="num">15</div>
         <div class="note-text"><div class="t">Tapping "why am I seeing this" doesn't get swallowed by the drag gesture</div>
-        <div class="d">The whole card is a drag target, which could easily make small inline controls (the why-link, the trend's month toggle, the ring chip) fire a swipe by accident. A short movement threshold means a tap is only ever treated as a tap — dragging only engages once the pointer has actually moved a few pixels.</div></div>
+        <div class="d">A movement threshold distinguishes taps from drags, preventing inline controls from accidentally triggering swipes.</div></div>
       </div>
       <div class="note">
         <div class="num">16</div>
         <div class="note-text"><div class="t">Peeking cards keep their glyph, not just their color</div>
-        <div class="d">The two cards visible behind the top one are abstracted down to a label and a small badge — but that badge still uses the thread's own shape-plus-glyph coding (✦ briefing, ! nudge, ~ trend, · missed, ♥ kudos), so what's coming next is identifiable without reading full text.</div></div>
+        <div class="d">Cards behind the top card retain thread shape-and-glyph coding: ✦ briefing, ! nudge, ~ trend, · missed, and ♥ kudos.</div></div>
       </div>
 
       <div class="cat-label">Honesty about state</div>
       <div class="note">
         <div class="num">17</div>
         <div class="note-text"><div class="t">Cold start is one explanatory card, not five empty ones<span class="tag new">NEW</span></div>
-        <div class="d">A literal per-card port of the thread's "New user" state would mean swiping through five separate "nothing here yet" cards before reaching the end — busywork with no payoff, regardless of interaction model. A single card explains what's missing and points at "Add friends," matching the spirit (though not the letter) of the brief's own cold-start guidance for its other alternatives.</div></div>
+        <div class="d">New users see one card explaining missing content and linking to "Add friends," instead of swiping through five empty cards.</div></div>
       </div>
       <div class="note">
         <div class="num">18</div>
         <div class="note-text"><div class="t">"You're all caught up" links somewhere real</div>
-        <div class="d">The end card doesn't just dead-end — its two buttons open the same "this would open X" pattern already used for the ring chip, pointing at Tasks and Rings, and it notes how many items are still sitting in the revisit list if any are.</div></div>
+        <div class="d">The end card links to Tasks and Rings using the existing "this would open X" pattern, and shows any remaining revisit items.</div></div>
       </div>
       <div class="note">
         <div class="num">19</div>
         <div class="note-text"><div class="t">Dots and a counter always show where you are</div>
-        <div class="d">Six dots track resolved / current / upcoming, plus a plain "3 of 6 today" — the deck never asks you to just remember how far you've gotten.</div></div>
+        <div class="d">Six dots show resolved, current, and upcoming cards, alongside a count such as "3 of 6 today."</div></div>
       </div>
 
       <div class="cat-label">Open</div>
       <div class="note">
         <div class="num">20</div>
         <div class="note-text"><div class="t">Revisit items don't persist past this session<span class="tag open">OPEN</span></div>
-        <div class="d">The brief's own question — reappear tomorrow, or same-session list — is answered here with "same-session list," but that's a real product decision, not just a UI one. Closing the app with two items still in "to revisit" currently means they're gone; whether they should roll into tomorrow's deck instead is unresolved.</div></div>
+        <div class="d">Revisit items are lost when the app closes. Whether they should appear in tomorrow's deck is unresolved.</div></div>
       </div>
       <div class="note">
         <div class="num">21</div>
         <div class="note-text"><div class="t">Card order is fixed<span class="tag open">OPEN</span></div>
-        <div class="d">Briefing, nudge, trend, missed ×2, kudos — always in that order. The brief flags this directly: order becomes a real design decision once cards must be resolved one at a time. No priority logic exists yet for what should lead when, say, two nudges qualify the same day.</div></div>
+        <div class="d">Order is always briefing, nudge, trend, missed ×2, kudos. Priority logic does not yet handle multiple qualifying cards, such as two nudges.</div></div>
       </div>
       <div class="note">
         <div class="num">22</div>
         <div class="note-text"><div class="t">Swipe direction isn't mirrored for RTL<span class="tag open">OPEN</span></div>
-        <div class="d">Right = positive, left = negative is a strong left-to-right assumption baked into both the drag physics and the button order. An Arabic or Hebrew layout would need this reasoned through, not just flipped automatically.</div></div>
+        <div class="d">Right = positive and left = negative assumes a left-to-right layout. RTL behavior needs deliberate interaction design, not automatic flipping.</div></div>
       </div>
       <div class="note">
         <div class="num">23</div>
         <div class="note-text"><div class="t">Gesture-first has a real cost even with every safety net in place<span class="tag open">OPEN</span></div>
-        <div class="d">Fallback buttons, keyboard arrows, and reduced-motion handling all soften this, but a drag-to-resolve interaction is still more physically demanding than scrolling and tapping a link — worth keeping in mind for anyone with limited fine motor control, even though nothing here is gesture-only.</div></div>
+        <div class="d">Buttons, arrow keys, and reduced motion help, but drag-to-resolve remains more physically demanding than scrolling and tapping.</div></div>
       </div>
       <div class="note">
         <div class="num">24</div>
         <div class="note-text"><div class="t">Missed task names are visible on a shared or unlocked screen<span class="tag open">OPEN</span></div>
-        <div class="d">Carried over unresolved from the thread model — "Submit expense report" filling most of a card is more exposed here, not less, since it's the only thing on screen.</div></div>
+        <div class="d">Task names remain exposed, and may be more prominent because a single card fills the screen.</div></div>
       </div>
       <div class="note">
         <div class="num">25</div>
         <div class="note-text"><div class="t">Jordan's streak is shown without Jordan's consent<span class="tag open">OPEN</span></div>
-        <div class="d">Also carried over unresolved — this needs its own opt-in on Jordan's side, not just Maya's settings. Same limitation as the thread model; the deck doesn't make it better or worse.</div></div>
+        <div class="d">Showing Jordan's streak requires Jordan's opt-in, not only Maya's settings. This issue is unchanged from the thread model.</div></div>
       </div>
     </div>
   </div>
@@ -176,54 +176,54 @@
 
 <div class="deferred">
   <h2>Considered, not yet designed</h2>
-  <p>Real problems worth a ticket, but solving them changes scope beyond this screen — flagging so they don't get lost between this review and a spec.</p>
+  <p>These issues require work beyond this screen and should be tracked in the specification.</p>
   <ul>
     <li>Loading and network-error states for the deck</li>
-    <li>Where a same-day second nudge goes — a seventh card, or held for tomorrow</li>
-    <li>Priority/ordering logic when more cards qualify than fit comfortably in one sitting</li>
-    <li>Whether "to revisit" items roll into tomorrow's deck or reset at midnight</li>
+    <li>Placement of a second same-day nudge: seventh card or tomorrow</li>
+    <li>Priority logic when too many cards qualify</li>
+    <li>Whether revisit items carry into tomorrow or reset at midnight</li>
     <li>Cross-device sync of in-session revisit state</li>
-    <li>Calendar-conflict checking before suggesting a specific nudge time</li>
-    <li>Blurring or hiding sensitive task names on lock screen / screen-share</li>
-    <li>Friend-side consent for surfacing their streaks in someone else's kudos card</li>
-    <li>Customizable kudos message instead of a single canned send</li>
-    <li>Longer translated strings breaking the two-button row or the swipe stamps (i18n)</li>
+    <li>Calendar-conflict checks before suggesting a nudge time</li>
+    <li>Hiding sensitive task names on lock screens or screen shares</li>
+    <li>Friend consent for showing streaks in another person's kudos card</li>
+    <li>Customizable kudos messages</li>
+    <li>i18n support for longer labels and swipe stamps</li>
     <li>Full RTL layout and swipe-direction mirroring</li>
-    <li>Age-appropriate defaults if the product is ever opened to minors</li>
+    <li>Age-appropriate defaults if the product supports minors</li>
   </ul>
 </div>
 
 <div class="legend">
   <h2>Guardrails these decisions map back to</h2>
-  <p>Mostly the same principles as the thread model's review — carried over deliberately, since this is a shell change around the same feature, not a different product.</p>
+  <p>These principles carry over from the thread model because the feature is unchanged; only the interaction shell differs.</p>
   <div class="legend-grid">
     <div class="legend-cat">
       <h3>Tone & framing</h3>
       <ul>
-        <li><b>Describe, don't judge</b> — carried over unchanged in every card's copy</li>
-        <li><b>No accept/reject color coding</b> — violet and sage stay tied to who's speaking, not to "yes" and "no"</li>
+        <li><b>Describe, don't judge</b> — neutral copy across all cards</li>
+        <li><b>No accept/reject color coding</b> — violet and sage identify the source, not yes or no</li>
       </ul>
     </div>
     <div class="legend-cat">
       <h3>Reversibility</h3>
       <ul>
-        <li><b>Undo where it's cheap</b> — a non-expiring toast for the last action</li>
-        <li><b>A path back for what's harder to reverse</b> — the revisit sheet, for this session at least</li>
+        <li><b>Undo where it's cheap</b> — a non-expiring toast for the latest action</li>
+        <li><b>A path back for harder reversals</b> — a same-session revisit sheet</li>
       </ul>
     </div>
     <div class="legend-cat">
       <h3>Accessibility</h3>
       <ul>
-        <li><b>Gesture is never the only path</b> — buttons and arrow keys do everything a drag does</li>
-        <li><b>Motion is opt-out-able</b>, and native controls carry their own semantics</li>
+        <li><b>Gesture is never the only path</b> — buttons and arrow keys match drag actions</li>
+        <li><b>Motion is opt-out-able</b>, and native controls provide semantics</li>
       </ul>
     </div>
     <div class="legend-cat">
       <h3>Honesty about state</h3>
       <ul>
-        <li><b>Cold start is designed, not blank</b> — even when that means one card instead of a literal port</li>
-        <li><b>Position is always visible</b> — dots, a counter, and a real end state</li>
-        <li><b>Nothing dead-ends</b> — the caught-up card and the ring chip both point somewhere</li>
+        <li><b>Cold start is designed, not blank</b> — one explanatory card replaces empty cards</li>
+        <li><b>Position is always visible</b> — dots, counter, and an end state</li>
+        <li><b>Nothing dead-ends</b> — the caught-up card and ring chip link onward</li>
       </ul>
     </div>
   </div>
