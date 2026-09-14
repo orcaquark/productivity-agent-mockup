@@ -28,6 +28,68 @@ body{
 h1{ font-family: var(--font-serif); font-weight:500; font-size:34px; margin-bottom:10px; }
 .header p{ color:var(--muted); font-size:14px; max-width:720px; line-height:1.6; }
 
+/* At-a-glance trade-off summary */
+.glance{
+  max-width:1180px;
+  margin:0 auto 44px;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:16px;
+}
+
+.glance-col{
+  background:var(--card);
+  border:1px solid var(--line);
+  border-radius:16px;
+  padding:18px 20px;
+}
+
+.glance-col h3{
+  font-family:'Fraunces', serif;
+  font-weight:500;
+  font-size:15px;
+  margin-bottom:10px;
+  display:flex;
+  align-items:center;
+  gap:7px;
+}
+
+.glance-col.gained h3{
+  color:var(--sage);
+}
+
+.glance-col.traded h3{
+  color:var(--coral);
+}
+
+.glance-col ul{
+  list-style:none;
+}
+
+.glance-col li{
+  font-size:12.5px;
+  color:var(--muted);
+  line-height:1.65;
+  padding-left:15px;
+  position:relative;
+  margin-bottom:5px;
+}
+
+.glance-col.gained li::before{
+  content:"+";
+  position:absolute;
+  left:0;
+  color:var(--sage);
+  font-weight:700;
+}
+
+.glance-col.traded li::before{
+  content:"–";
+  position:absolute;
+  left:0;
+  color:var(--coral);
+  font-weight:700;
+}
 .compare-box{
   max-width:1180px; margin:0 auto 40px; background:var(--card); border:1px solid var(--line);
   border-radius:16px; padding:18px 22px; display:flex; gap:26px; flex-wrap:wrap;
