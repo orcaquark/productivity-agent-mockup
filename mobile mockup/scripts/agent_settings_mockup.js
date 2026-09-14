@@ -70,6 +70,7 @@
     logAuditChange('Planning style', val);
     learnedState.planning = val;
     MockState.save('mobile-settings:learned', learnedState);
+    if(window.AgentPersonalization) window.AgentPersonalization.setStatedPreference('planning', val);
     announce('Planning style set to ' + val + '.');
   }
 
@@ -84,6 +85,7 @@
     logAuditChange('Tone preference', val);
     learnedState.tone = val;
     MockState.save('mobile-settings:learned', learnedState);
+    if(window.AgentPersonalization) window.AgentPersonalization.setStatedPreference('tone', val);
     announce('Tone preference set to ' + val + '.');
   }
 
@@ -108,17 +110,25 @@
     }
   }
   function restoreLearnedValues(){
-    if(learnedState.planning){
+    // Fall back to AgentPersonalization's stated preference (seeded from
+    // onboarding, or set from this same settings page on another mockup)
+    // only when this page has never recorded its own choice — a value
+    // picked here always takes precedence over that fallback.
+    var seeded = window.AgentPersonalization ? window.AgentPersonalization.getProfile().preferences : {};
+    var planningValue = learnedState.planning || seeded.planningStyle;
+    var toneValue = learnedState.tone || seeded.tone;
+
+    if(planningValue){
       document.querySelectorAll('#planning-chip-grid .fchip').forEach(function(c){
-        if(c.textContent === learnedState.planning) c.classList.add('selected');
+        if(c.textContent === planningValue) c.classList.add('selected');
       });
-      document.getElementById('planning-pill-wrap').innerHTML = '<div class="pill">' + learnedState.planning + '</div>';
+      document.getElementById('planning-pill-wrap').innerHTML = '<div class="pill">' + planningValue + '</div>';
     }
-    if(learnedState.tone){
+    if(toneValue){
       document.querySelectorAll('#tone-chip-grid .fchip').forEach(function(c){
-        if(c.textContent === learnedState.tone) c.classList.add('selected');
+        if(c.textContent === toneValue) c.classList.add('selected');
       });
-      document.getElementById('tone-pill-wrap').innerHTML = '<div class="pill">' + learnedState.tone + '</div>';
+      document.getElementById('tone-pill-wrap').innerHTML = '<div class="pill">' + toneValue + '</div>';
     }
     if(learnedState.focus && learnedState.focus.length){
       document.querySelectorAll('#focus-chip-grid .fchip').forEach(function(c){
@@ -137,6 +147,7 @@
     logAuditChange('Personalization', 'Reset to defaults');
     learnedState = { planning: null, tone: null, focus: [] };
     MockState.save('mobile-settings:learned', learnedState);
+    if(window.AgentPersonalization) window.AgentPersonalization.reset();
     MockSync.broadcast('personalization-reset', {});
   }
 
@@ -198,10 +209,46 @@
   }
   setTheme(MockState.load('theme', 'light'));
 
-  // ---------- data actions: simulated round trip + announced outcome ----------
+  // ---------- data actions: real download, simulated request delay ----------
+  function buildExportPayload(){
+    return {
+      exportedAt: new Date().toISOString(),
+      settings: {
+        planningStyle: learnedState.planning,
+        tonePreference: learnedState.tone,
+        peakFocusTimes: learnedState.focus,
+        nudgeFrequency: freqLabels[freqIndex],
+        quietHours: quietSelection
+      },
+      agent: window.AgentPersonalization ? window.AgentPersonalization.exportData() : null,
+      agentCounters: window.MockShared.SharedState.get('agent-simulation', null)
+    };
+  }
+
+  function downloadJSON(data, filename){
+    try {
+      var blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+      return true;
+    } catch (e) {
+      // Blob/URL unsupported or blocked — the visible confirmation still
+      // shows below either way, matching the mocked round trip this
+      // replaces, but nothing was actually written to disk.
+      return false;
+    }
+  }
+
   function exportData(){
-    simulateRequest(function(){}, {
-      onSuccess: function(){
+    simulateRequest(function(){ return buildExportPayload(); }, {
+      onSuccess: function(payload){
+        downloadJSON(payload, 'kindred-personalization-export.json');
         var note = document.getElementById('export-note');
         note.classList.add('show');
         announce('Personalization data exported.');

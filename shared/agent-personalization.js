@@ -19,6 +19,21 @@
  * There's no random or generated-sounding text; a given event history
  * always produces the same profile and the same copy.
  *
+ * Two preferences are stated, not inferred: planning style and tone.
+ * getEffectiveStated() reads them with onboarding's answers (SharedState's
+ * 'onboarding' key) as a live fallback — not copied in once, since a
+ * one-time copy made at this module's load time can't know onboarding
+ * will finish moments later in the same tab. setStatedPreference() is
+ * what settings pages call on every later change; it writes directly, so
+ * it always wins over the onboarding fallback from then on. Tone actually
+ * changes the agent's copy — see TONE_MESSAGES below and its counterpart
+ * in agent-simulation.js — so it's a setting that genuinely does
+ * something, not just a stored value.
+ *
+ * Every write here also fires a MockSync broadcast, so a second mockup
+ * open in a separate browser tab (not just a compare-mode iframe) updates
+ * its own copy live instead of only picking up the change on next load.
+ *
  * Include this AFTER agent-simulation.js and BEFORE a mockup's own
  * script:
  *   <script src="../shared/agent-simulation.js"></script>
@@ -29,6 +44,7 @@
   'use strict';
 
   var SharedState = global.MockShared && global.MockShared.SharedState;
+  var MockSync = global.MockShared && global.MockShared.MockSync;
   var AgentSimulation = global.AgentSimulation;
 
   var STATE_KEY = 'agent-personalization';
@@ -40,14 +56,25 @@
   var MIN_BUCKET_SAMPLES = 3;
   var MIN_TASK_SAMPLES = 2;
 
-  var defaults = { events: [] };
+  // `stated` preferences are told to us directly (onboarding answers,
+  // settings choices) rather than inferred from event history — kept
+  // separate from computeProfile()'s inferred fields so one stays a pure
+  // function of `events` and the other is a plain, immediately-available
+  // fact. getProfile() merges the two into one preferences object.
+  var defaults = { events: [], stated: { planning: null, tone: null } };
 
   function cloneDefaults() {
     return JSON.parse(JSON.stringify(defaults));
   }
 
   function load() {
-    return SharedState.get(STATE_KEY, cloneDefaults());
+    var state = SharedState.get(STATE_KEY, cloneDefaults());
+    // Defensive upgrade for state saved before `stated` existed — avoids
+    // crashing on state.stated.* for anyone with an older event log
+    // already in localStorage.
+    if (!state.events) state.events = [];
+    if (!state.stated) state.stated = { planning: null, tone: null };
+    return state;
   }
 
   function persist(state) {
@@ -147,7 +174,32 @@
   }
 
   function getProfile() {
-    return computeProfile(load().events);
+    var state = load();
+    var profile = computeProfile(state.events);
+    var stated = getEffectiveStated();
+    profile.preferences.planningStyle = stated.planning;
+    profile.preferences.tone = stated.tone;
+    return profile;
+  }
+
+  // Defaults to 'Direct' (matching the settings UI's own default
+  // selection) so copy always has a definite voice to render in, even
+  // before onboarding or settings has ever set one.
+  function getTone() {
+    return getEffectiveStated().tone || 'Direct';
+  }
+
+  // Settings pages call this to record a stated preference — always
+  // written directly, so it takes precedence over getEffectiveStated()'s
+  // onboarding fallback from this point on. Broadcasts a quiet cross-tab
+  // refresh — no toast, since nothing the user *did* just happened, the
+  // agent's voice just needs to catch up elsewhere.
+  function setStatedPreference(key, value) {
+    var state = load();
+    state.stated[key] = value;
+    persist(state);
+    updateProfile();
+    if (MockSync) MockSync.broadcast('agent-preference-changed', { key: key, value: value });
   }
 
   function getPreferredNudgeTime() {
@@ -188,6 +240,48 @@
   }
 
   // ---------------------------------------------------------------------
+  // Same two messages, three voices — mirrors agent-simulation.js's
+  // TONE_MESSAGES. {bucket} is replaced with the actual preferred time of
+  // day after picking the variant.
+  // ---------------------------------------------------------------------
+  var TONE_MESSAGES = {
+    smallerSteps: {
+      direct: {
+        title: 'Smaller steps work better for you',
+        body: 'You tend to put off bigger tasks \u2014 I\u2019ll suggest breaking them into smaller pieces when I can.'
+      },
+      cheerful: {
+        title: 'Small wins add up!',
+        body: 'Bigger tasks tend to stall out for you \u2014 let\u2019s break them into smaller pieces so the wins keep coming!'
+      },
+      quiet: {
+        title: 'Smaller steps',
+        body: 'Bigger tasks tend to stall. I\u2019ll suggest smaller pieces instead.'
+      }
+    },
+    timedForYou: {
+      direct: {
+        title: 'Timed for you',
+        body: 'You respond to nudges best in the {bucket} \u2014 I\u2019ll keep timing suggestions around then.'
+      },
+      cheerful: {
+        title: 'Found your sweet spot!',
+        body: 'Turns out the {bucket} is when you\u2019re most likely to act on a nudge \u2014 I\u2019ll time things around then!'
+      },
+      quiet: {
+        title: 'Timed for you',
+        body: 'You respond best in the {bucket}. I\u2019ll time things accordingly.'
+      }
+    }
+  };
+
+  function toneVariant(key) {
+    var tone = getTone().toLowerCase();
+    var group = TONE_MESSAGES[key];
+    return group[tone] || group.direct;
+  }
+
+  // ---------------------------------------------------------------------
   // The recommendation AgentSimulation.resolveRecommendation() prefers
   // over its own generic thresholds, once there's something genuinely
   // more specific to say than "you've accepted N nudges." Returns null
@@ -200,17 +294,15 @@
     var prefs = profile.preferences;
 
     if (prefs.preferredTaskSize === 'small') {
-      return {
-        title: 'Smaller steps work better for you',
-        body: 'You tend to put off bigger tasks \u2014 I\u2019ll suggest breaking them into smaller pieces when I can.'
-      };
+      var smallerSteps = toneVariant('smallerSteps');
+      return { title: smallerSteps.title, body: smallerSteps.body };
     }
 
     if (prefs.preferredNudgeTime) {
+      var timedForYou = toneVariant('timedForYou');
       return {
-        title: 'Timed for you',
-        body: 'You respond to nudges best in the ' + prefs.preferredNudgeTime +
-          ' \u2014 I\u2019ll keep timing suggestions around then.'
+        title: timedForYou.title,
+        body: timedForYou.body.replace('{bucket}', prefs.preferredNudgeTime)
       };
     }
 
@@ -330,9 +422,77 @@
     updateProfile();
   }
 
+  // ---------------------------------------------------------------------
+  // Day-one seed data: onboarding already asks for planning style and
+  // tone (see the desktop/mobile onboarding scripts' `onboardingState`),
+  // and its answers are saved to the same MockShared.SharedState blob
+  // this module reads everything else from — under the 'onboarding' key,
+  // not this module's own STATE_KEY. Without this, personalization starts
+  // completely blank even for a user who just answered these exact
+  // questions, and Level 4 reads as disconnected from onboarding instead
+  // of a continuation of it.
+  //
+  // Only fills in a field that's still null — a later settings change
+  // (setStatedPreference, called directly, unconditionally) always wins
+  // and this never runs again for that field. Checked on every init()
+  // rather than once-and-flagged, since onboarding might not have been
+  // completed yet the first time some other mockup loads.
+  // ---------------------------------------------------------------------
+  // Onboarding's option copy ("Morning-of planner", "Direct,
+  // matter-of-fact") is written for a wizard question, not a settings
+  // chip — normalized here to the exact label the settings pages' chips
+  // use, so a seeded value highlights the right chip instead of just
+  // showing an oddly-worded pill with nothing selected underneath it.
+  var ONBOARDING_PLAN_LABELS = {
+    'Night-before planner': 'Night-before',
+    'Morning-of planner': 'Morning of'
+  };
+  var ONBOARDING_TONE_LABELS = {
+    'Direct, matter-of-fact': 'Direct'
+  };
+
+  // Live fallback, not a one-time copy: reads onboarding's answers fresh
+  // every time, so it's correct the instant onboarding finishes even in
+  // the same tab that's still open (a copy made once at this module's
+  // load time — before onboarding necessarily finished — would miss
+  // that). A stated preference set directly (below) always overrides it.
+  function getEffectiveStated() {
+    var state = load();
+    var onboarding = SharedState.get('onboarding', null);
+    var fromOnboarding = onboarding && onboarding.completed ? onboarding : null;
+
+    return {
+      planning: state.stated.planning ||
+        (fromOnboarding && fromOnboarding.plan
+          ? (ONBOARDING_PLAN_LABELS[fromOnboarding.plan] || fromOnboarding.plan)
+          : null),
+      tone: state.stated.tone ||
+        (fromOnboarding && fromOnboarding.tone
+          ? (ONBOARDING_TONE_LABELS[fromOnboarding.tone] || fromOnboarding.tone)
+          : null)
+    };
+  }
+
+  // ---------------------------------------------------------------------
+  // Everything this module has on the user, as one plain object — real
+  // event log, the profile derived from it, and stated preferences.
+  // Bundled by the settings pages' "Export my personalization data" into
+  // a downloaded file alongside Level 3's counters and the page's own
+  // settings state (frequency, quiet hours, peak focus times).
+  // ---------------------------------------------------------------------
+  function exportData() {
+    var state = load();
+    return {
+      events: state.events,
+      stated: state.stated,
+      profile: computeProfile(state.events)
+    };
+  }
+
   function reset() {
     persist(cloneDefaults());
     applyMissInsights();
+    if (MockSync) MockSync.broadcast('agent-preference-changed', { reason: 'reset' });
   }
 
   function injectStyles() {
@@ -349,9 +509,22 @@
     document.head.appendChild(style);
   }
 
+  function setupCrossTabSync() {
+    if (!MockSync) return;
+    // Another tab recorded a real action or changed a stated preference —
+    // either way, this tab's own miss-insight copy might now be stale.
+    // No toast here; agent-simulation.js owns that half of the reaction.
+    MockSync.listen('agent-simulation-changed', applyMissInsights);
+    MockSync.listen('agent-preference-changed', applyMissInsights);
+    // Onboarding finishing elsewhere just made getEffectiveStated()'s
+    // fallback available for the first time — refresh to pick it up.
+    MockSync.listen('onboarding-finished', applyMissInsights);
+  }
+
   function init() {
     if (!SharedState || !AgentSimulation) return;
     injectStyles();
+    setupCrossTabSync();
     applyMissInsights();
   }
 
@@ -359,10 +532,13 @@
     init: init,
     getProfile: getProfile,
     getPreferredNudgeTime: getPreferredNudgeTime,
+    getTone: getTone,
+    setStatedPreference: setStatedPreference,
     shouldNudge: shouldNudge,
     getTaskRecommendation: getTaskRecommendation,
     getRecommendation: getRecommendation,
     getExplanation: getExplanation,
+    exportData: exportData,
     seedDemoHistory: seedDemoHistory,
     reset: reset
   };

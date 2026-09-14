@@ -280,19 +280,48 @@
   }
 
   // ---------------------------------------------------------------------
-  // Cross-mockup sync via postMessage. A mockup running inside the design
-  // viewer's iframe can broadcast a state change (theme, onboarding
-  // finished, a card resolved) up to the parent; the parent — main.js in
-  // the viewer, or another mockup in compare mode — can relay it onward or
-  // react to it. All messages are tagged with SYNC_CHANNEL so mockups can
-  // safely ignore messages meant for something else on the page.
+  // Cross-mockup sync via postMessage and BroadcastChannel (see the full
+  // MockSync definition below for the split between the two). A mockup
+  // running inside the design viewer's iframe can broadcast a state change
+  // (theme, onboarding finished, a card resolved) up to the parent, which
+  // can relay it onward or react to it — and the same broadcast reaches
+  // any other mockup open in a separate browser tab on the same origin.
+  // All messages are tagged with SYNC_CHANNEL so mockups can safely ignore
+  // messages meant for something else on the page.
+  // ---------------------------------------------------------------------
+  // ---------------------------------------------------------------------
+  // Cross-mockup sync. Two separate transports, both tagged with
+  // SYNC_CHANNEL so listeners can ignore anything not meant for them:
+  //
+  //   - postMessage to window.parent: for a mockup running inside the
+  //     design viewer's iframe (compare mode) — unchanged from before.
+  //   - BroadcastChannel: for two mockups open in genuinely separate
+  //     browser tabs/windows on the same origin, which iframes/postMessage
+  //     can't reach at all. This is what makes broadcast()/listen() calls
+  //     that already existed (e.g. 'onboarding-finished') update a second
+  //     open tab live, instead of only taking effect on that tab's next
+  //     reload.
+  //
+  // BroadcastChannel isn't available in every environment (older browsers,
+  // some embedded contexts) — everything degrades gracefully to
+  // iframe-only sync if it's missing, same as before this existed.
   // ---------------------------------------------------------------------
   var SYNC_CHANNEL = 'kindred-mock-sync';
+  var broadcastChannel = null;
+  try {
+    if (typeof global.BroadcastChannel === 'function') {
+      broadcastChannel = new global.BroadcastChannel(SYNC_CHANNEL);
+    }
+  } catch (e) {}
+
   var MockSync = {
     broadcast: function (type, payload) {
       var message = { channel: SYNC_CHANNEL, type: type, payload: payload };
       if (global.parent && global.parent !== global) {
         global.parent.postMessage(message, '*');
+      }
+      if (broadcastChannel) {
+        try { broadcastChannel.postMessage(message); } catch (e) {}
       }
     },
     // Send into a specific iframe (used by the viewer to relay a message
@@ -302,12 +331,15 @@
       targetWindow.postMessage({ channel: SYNC_CHANNEL, type: type, payload: payload }, '*');
     },
     listen: function (type, handler) {
-      global.addEventListener('message', function (event) {
-        var data = event.data;
+      function handleMessage(data) {
         if (!data || data.channel !== SYNC_CHANNEL) return;
         if (type && data.type !== type) return;
         handler(data.payload, data.type);
-      });
+      }
+      global.addEventListener('message', function (event) { handleMessage(event.data); });
+      if (broadcastChannel) {
+        broadcastChannel.addEventListener('message', function (event) { handleMessage(event.data); });
+      }
     }
   };
 

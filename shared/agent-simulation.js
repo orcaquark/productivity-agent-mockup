@@ -31,6 +31,7 @@
   'use strict';
 
   var SharedState = global.MockShared && global.MockShared.SharedState;
+  var MockSync = global.MockShared && global.MockShared.MockSync;
 
   var AGENT_STATE_KEY = 'agent-simulation';
 
@@ -90,6 +91,86 @@
   }
 
   // ---------------------------------------------------------------------
+  // Same four messages, three voices. Tone preference lives in
+  // agent-personalization.js (it's a stated preference, not something
+  // this module infers), so this only ever reads it through the same
+  // defensive check resolveRecommendation() uses below — Level 3 keeps
+  // working, and defaulting to Direct, even if that module isn't loaded.
+  // ---------------------------------------------------------------------
+  var TONE_MESSAGES = {
+    easeUp: {
+      direct: {
+        title: 'I\u2019ll ease up',
+        body: 'You\u2019ve dismissed a few nudges. I\u2019ll be more selective about when I interrupt you.'
+      },
+      cheerful: {
+        title: 'Backing off a bit!',
+        body: 'Looks like these nudges aren\u2019t landing \u2014 I\u2019ll pick my moments more carefully from here!'
+      },
+      quiet: {
+        title: 'Easing up',
+        body: 'Fewer interruptions from here.'
+      }
+    },
+    scheduleWorking: {
+      direct: {
+        title: 'Your schedule is working',
+        body: 'You\u2019ve been acting on my timing suggestions. I\u2019ll keep prioritizing schedule adjustments like this.'
+      },
+      cheerful: {
+        title: 'You\u2019re on a roll!',
+        body: 'You\u2019ve been saying yes to these timing nudges \u2014 I\u2019ll keep leaning into schedule tweaks like this!'
+      },
+      quiet: {
+        title: 'Working well',
+        body: 'These timing suggestions are landing. I\u2019ll keep at it.'
+      }
+    },
+    momentum: {
+      direct: {
+        title: 'You\u2019re building momentum',
+        body: 'You\u2019ve cleared what was sitting missed. I\u2019ll prioritize keeping your next actions small and actionable.'
+      },
+      cheerful: {
+        title: 'Look at you go!',
+        body: 'You\u2019ve knocked out what was sitting missed \u2014 nice work! I\u2019ll keep your next steps small and easy.'
+      },
+      quiet: {
+        title: 'Building momentum',
+        body: 'What was missed is cleared. Next steps will stay small.'
+      }
+    },
+    coldStart: {
+      direct: {
+        title: 'One thing at a time',
+        body: 'I\u2019ll learn from what you act on and use that to make future suggestions more useful.'
+      },
+      cheerful: {
+        title: 'Getting to know you!',
+        body: 'I\u2019ll pay attention to what you act on so I can make better suggestions down the line!'
+      },
+      quiet: {
+        title: 'One thing at a time',
+        body: 'I\u2019ll learn from what you do here, quietly, over time.'
+      }
+    }
+  };
+
+  function currentTone() {
+    var personalization = global.AgentPersonalization;
+    if (personalization && typeof personalization.getTone === 'function') {
+      var tone = (personalization.getTone() || '').toLowerCase();
+      if (tone === 'cheerful' || tone === 'quiet') return tone;
+    }
+    return 'direct';
+  }
+
+  function toneVariant(key) {
+    var group = TONE_MESSAGES[key];
+    return group[currentTone()] || group.direct;
+  }
+
+  // ---------------------------------------------------------------------
   // The agent's "reasoning": four hard-coded rules over the shared
   // counters, checked in priority order. This is the only place that
   // decides what the agent says.
@@ -98,31 +179,22 @@
     var state = load();
 
     if (state.dismissedNudges >= 2 && state.acceptedNudges === 0) {
-      return {
-        title: 'I\u2019ll ease up',
-        body: 'You\u2019ve dismissed a few nudges. I\u2019ll be more selective about when I interrupt you.'
-      };
+      var easeUp = toneVariant('easeUp');
+      return { title: easeUp.title, body: easeUp.body };
     }
 
     if (state.acceptedNudges >= 2) {
-      return {
-        title: 'Your schedule is working',
-        body: 'You\u2019ve been acting on my timing suggestions. I\u2019ll keep prioritizing schedule adjustments like this.'
-      };
+      var scheduleWorking = toneVariant('scheduleWorking');
+      return { title: scheduleWorking.title, body: scheduleWorking.body };
     }
 
     if (state.completedTasks >= 2) {
-      return {
-        title: 'You\u2019re building momentum',
-        body: 'You\u2019ve cleared what was sitting missed. I\u2019ll prioritize keeping your next actions small and actionable.'
-      };
+      var momentum = toneVariant('momentum');
+      return { title: momentum.title, body: momentum.body };
     }
 
-    return {
-      title: 'One thing at a time',
-      body: 'I\u2019ll learn from what you act on and use that to make future suggestions more useful.',
-      isDefault: true
-    };
+    var coldStart = toneVariant('coldStart');
+    return { title: coldStart.title, body: coldStart.body, isDefault: true };
   }
 
   // ---------------------------------------------------------------------
@@ -255,6 +327,13 @@
     notifyListeners(type, meta);
     applyNudgeCopy();
     global.setTimeout(createAgentToast, 350);
+
+    // Tell any other open tab on this origin the same thing just happened,
+    // so it can update live instead of only picking this up on its next
+    // load. The receiving tab re-reads shared state fresh (below) rather
+    // than trusting this payload, so it stays correct even if two tabs
+    // fire actions close together.
+    if (MockSync) MockSync.broadcast('agent-simulation-changed', { type: type });
   }
 
   // ---------------------------------------------------------------------
@@ -389,18 +468,44 @@
     document.head.appendChild(style);
   }
 
+  // ---------------------------------------------------------------------
+  // The other side of the broadcast above: when a real recorded action
+  // happens in another tab, mirror it here — same copy refresh, same
+  // toast, on the same ~350ms delay, so both tabs visibly react together.
+  // A quiet preference change (tone, in another tab's settings) only gets
+  // the copy refresh, no toast — nothing actually *happened* here to
+  // announce, the agent's phrasing just needs to catch up.
+  // ---------------------------------------------------------------------
+  function setupCrossTabSync() {
+    if (!MockSync) return;
+    MockSync.listen('agent-simulation-changed', function () {
+      applyNudgeCopy();
+      global.setTimeout(createAgentToast, 350);
+    });
+    MockSync.listen('agent-preference-changed', function () {
+      applyNudgeCopy();
+    });
+    // Onboarding finishing elsewhere may have just made a tone/planning
+    // preference available for the first time — refresh copy to match.
+    MockSync.listen('onboarding-finished', function () {
+      applyNudgeCopy();
+    });
+  }
+
   function reset() {
     persist(cloneDefaults());
     applyNudgeCopy();
     if (global.AgentPersonalization && typeof global.AgentPersonalization.reset === 'function') {
       global.AgentPersonalization.reset();
     }
+    if (MockSync) MockSync.broadcast('agent-preference-changed', { reason: 'reset' });
   }
 
   function init() {
     if (!SharedState) return;
     injectStyles();
     observeActions();
+    setupCrossTabSync();
     applyNudgeCopy();
   }
 
