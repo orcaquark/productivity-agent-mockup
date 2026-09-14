@@ -1,6 +1,7 @@
 // ---------- shared utilities (see ../shared/mockup-shared.js) ----------
   var announce = MockShared.announce;
   var MockState = MockShared.MockState;
+  var theme = MockShared.createThemeController({ shellId: 'phone', storageKey: 'theme', defaultMode: 'light' });
   var MockSync = MockShared.MockSync;
 
   // ---------- persisted onboarding progress ----------

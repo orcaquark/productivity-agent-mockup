@@ -228,3 +228,35 @@ button.is-pressed,
 .miss-cta.is-pressed {
   transform: scale(0.98);
 }
+
+/* Dark mode — uses the same palette as the existing mobile settings mockup. */
+.phone.dark-mode{
+  --bg:#15131c;
+  --card:#1e1b27;
+  --card-raised:#262131;
+  --text:#f1ecf9;
+  --text-muted:#a39cb3;
+  --text-faint:#7d7690;
+  --violet-dim:#854dff3a;
+  --violet-soft:#854dff22;
+  --divider:#332d44;
+}
+.phone.dark-mode .notch{background:#000;}
+.phone.dark-mode .state-switch{background:var(--card-raised);}
+.phone.dark-mode .state-pill.active{background:var(--card);color:var(--violet);}
+.phone.dark-mode .lede,
+.phone.dark-mode .flow,
+.phone.dark-mode .closing,
+.phone.dark-mode .cold-p{color:#c5becf;}
+.phone.dark-mode .nudge-line,
+.phone.dark-mode .disclosure-panel,
+.phone.dark-mode .missed-list{border-color:#332d44;}
+.phone.dark-mode .disclosure-panel{background:var(--card);}
+.phone.dark-mode .missed-list,
+.phone.dark-mode .nudge-line{background:var(--card);}
+.phone.dark-mode .modal-overlay{background:rgba(8,7,12,.72);}
+.phone.dark-mode .modal-box{background:var(--card);border-color:#332d44;}
+.phone.dark-mode .modal-btn.ghost{background:var(--card-raised);color:var(--text);}
+.phone.dark-mode .navbar{background:var(--card);border-top-color:#332d44;}
+.phone.dark-mode .nav-item{color:var(--text-muted);}
+.phone.dark-mode .nav-item.active{color:var(--violet);}

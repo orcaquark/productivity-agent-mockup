@@ -254,3 +254,40 @@ html,body{
 .nav-item.active .nav-dot{ background:var(--violet); border-radius:50%; }
 
 .wrap-outer{ display:flex; flex-direction:column; align-items:center; }
+
+/* Dark mode — uses the same palette as the existing mobile settings mockup. */
+.phone.dark-mode{
+  --bg:#15131c;
+  --card:#1e1b27;
+  --card-raised:#262131;
+  --text:#f1ecf9;
+  --text-muted:#a39cb3;
+  --text-faint:#7d7690;
+  --violet-dim:#854dff3a;
+  --sage-dim:#93c08f33;
+}
+.phone.dark-mode .notch{background:#000;}
+.phone.dark-mode .chat-header{border-bottom-color:#332d44;}
+.phone.dark-mode .state-switch{background:var(--card-raised);}
+.phone.dark-mode .state-pill.active{background:var(--card);color:var(--violet);}
+.phone.dark-mode .date-divider::before,
+.phone.dark-mode .date-divider::after{background:#332d44;}
+.phone.dark-mode .bubble{
+  background:var(--card);
+  border-color:#332d44;
+}
+.phone.dark-mode .bubble.confirm{background:var(--card-raised);}
+.phone.dark-mode .input-bar{background:var(--bg);border-top-color:#332d44;}
+.phone.dark-mode .input-pill{background:var(--card-raised);border-color:#332d44;color:var(--text);}
+.phone.dark-mode .quick-replies .reply{background:var(--card-raised);border-color:#332d44;}
+.phone.dark-mode .miss-item,
+.phone.dark-mode .kudos-row{background:var(--card);border-color:#332d44;}
+.phone.dark-mode .briefing-text,
+.phone.dark-mode .empty-text,
+.phone.dark-mode .nudge-copy{color:#c5becf;}
+.phone.dark-mode .modal-overlay{background:rgba(8,7,12,.72);}
+.phone.dark-mode .modal-box{background:var(--card);border-color:#332d44;}
+.phone.dark-mode .modal-btn.ghost{background:var(--card-raised);color:var(--text);}
+.phone.dark-mode .navbar{background:var(--card);border-top-color:#332d44;}
+.phone.dark-mode .nav-item{color:var(--text-muted);}
+.phone.dark-mode .nav-item.active{color:var(--violet);}

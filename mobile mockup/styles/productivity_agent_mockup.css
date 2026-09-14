@@ -268,5 +268,47 @@
 
   .wrap-outer{ display:flex; flex-direction:column; align-items:center; }
 
-/* ---- Pending state for simulateRequest()-wrapped actions. ---- */
-.pending{ opacity:.55; pointer-events:none; transition:opacity .15s ease; }
+  /* ---- Pending state for simulateRequest()-wrapped actions. ---- */
+  .pending{ opacity:.55; pointer-events:none; transition:opacity .15s ease; }
+
+  /* Dark mode — uses the same palette as the existing mobile settings mockup. */
+  .phone.dark-mode{
+    --bg:#15131c;
+    --card:#1e1b27;
+    --card-raised:#262131;
+    --thread:#332d44;
+    --text:#f1ecf9;
+    --text-muted:#a39cb3;
+    --text-faint:#7d7690;
+    --violet-dim:#854dff3a;
+    --violet-soft:#854dff22;
+    --sage-dim:#93c08f33;
+  }
+  .phone.dark-mode .notch{background:#000;}
+  .phone.dark-mode .card,
+  .phone.dark-mode .chip.task,
+  .phone.dark-mode .kudos-card,
+  .phone.dark-mode .miss-item,
+  .phone.dark-mode .modal-box{
+    border-color:#332d44;
+  }
+  .phone.dark-mode .card,
+  .phone.dark-mode .kudos-card,
+  .phone.dark-mode .miss-item,
+  .phone.dark-mode .modal-box{background:var(--card);}
+  .phone.dark-mode .chip,
+  .phone.dark-mode .state-switch,
+  .phone.dark-mode .state-pill.active{background:var(--card-raised);}
+  .phone.dark-mode .state-pill.active{color:var(--violet);}
+  .phone.dark-mode .chip.task{background:var(--card);color:var(--text);}
+  .phone.dark-mode .briefing-text,
+  .phone.dark-mode .trend-note,
+  .phone.dark-mode .miss-body,
+  .phone.dark-mode .miss-why,
+  .phone.dark-mode .nudge-copy{color:#c5becf;}
+  .phone.dark-mode .modal-overlay{background:rgba(8,7,12,.72);}
+  .phone.dark-mode .modal-btn.ghost{background:var(--card-raised);color:var(--text);}
+  .phone.dark-mode .bar{background:#332d44;}
+  .phone.dark-mode .navbar{background:var(--card);border-top-color:#332d44;}
+  .phone.dark-mode .nav-item{color:var(--text-muted);}
+  .phone.dark-mode .nav-item.active{color:var(--violet);}

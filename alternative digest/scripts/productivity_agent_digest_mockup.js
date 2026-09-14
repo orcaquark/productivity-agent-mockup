@@ -2,6 +2,7 @@
   var announce = MockShared.announce;
   var simulateRequest = MockShared.simulateRequest;
   var MockState = MockShared.MockState;
+  var theme = MockShared.createThemeController({ shellId: 'phone', storageKey: 'theme', defaultMode: 'light' });
   var MockSync = MockShared.MockSync;
   var SharedState = MockShared.SharedState;
 

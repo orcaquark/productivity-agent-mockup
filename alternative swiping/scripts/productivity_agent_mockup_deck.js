@@ -1,6 +1,7 @@
 // ---------------- card data ----------------
   // Shared utilities (see ../shared/mockup-shared.js).
   var MockState = MockShared.MockState;
+  var theme = MockShared.createThemeController({ shellId: 'phone', storageKey: 'theme', defaultMode: 'light' });
   var SharedState = MockShared.SharedState;
   var announce = MockShared.announce;
   var MockSync = MockShared.MockSync;

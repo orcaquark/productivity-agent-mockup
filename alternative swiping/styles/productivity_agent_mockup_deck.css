@@ -152,3 +152,42 @@ html,body{
 .sheet-reconsider{ font-size:11px; font-weight:700; color:var(--violet); min-height:30px; padding:0 4px; flex-shrink:0; }
 
 .wrap-outer{ display:flex; flex-direction:column; align-items:center; }
+
+/* Dark mode — uses the same palette as the existing mobile settings mockup. */
+.phone.dark-mode{
+  --card:#1e1b27;
+  --card-raised:#262131;
+  --phone-bg:#15131c;
+  --line:#332d44;
+  --text:#f1ecf9;
+  --text-muted:#a39cb3;
+  --text-faint:#7d7690;
+  --border-soft:#332d44;
+  --text-soft:#c5becf;
+  --violet-dim:#854dff3a;
+  --violet-soft:#854dff22;
+}
+.phone.dark-mode .notch{background:#000;}
+.phone.dark-mode .state-switch{background:var(--card-raised);}
+.phone.dark-mode .state-pill.active{background:var(--card);color:var(--violet);}
+.phone.dark-mode .stack-card,
+.phone.dark-mode .cold-card,
+.phone.dark-mode .end-card{
+  background:var(--card);
+  border-color:var(--border-soft);
+}
+.phone.dark-mode .briefing-text,
+.phone.dark-mode .empty-text,
+.phone.dark-mode .nudge-desc,
+.phone.dark-mode .miss-why,
+.phone.dark-mode .trend-note{color:var(--text-soft);}
+.phone.dark-mode .chip{background:var(--card-raised);border-color:var(--border-soft);}
+.phone.dark-mode .chip.task{background:var(--card);color:var(--text);}
+.phone.dark-mode .sheet-list,
+.phone.dark-mode .sheet-item{background:var(--card);border-color:var(--border-soft);}
+.phone.dark-mode .modal-overlay{background:rgba(8,7,12,.72);}
+.phone.dark-mode .modal-box{background:var(--card);border-color:var(--border-soft);}
+.phone.dark-mode .modal-btn.ghost{background:var(--card-raised);color:var(--text);}
+.phone.dark-mode .navbar{background:var(--card);border-top-color:var(--border-soft);}
+.phone.dark-mode .nav-item{color:var(--text-muted);}
+.phone.dark-mode .nav-item.active{color:var(--violet);}

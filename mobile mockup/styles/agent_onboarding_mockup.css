@@ -131,3 +131,36 @@
   .page-dot{ font-size:11px; color:#8a84a0; font-family:'Inter'; transition:color .15s, font-weight .15s; }
   .page-dot.active{ color:var(--violet); font-weight:600; }
   .wrap-outer{ display:flex; flex-direction:column; align-items:center; gap:16px; }
+
+  /* Dark mode — uses the same palette as the existing mobile settings mockup. */
+  .phone.dark-mode{
+    --bg:#15131c;
+    --card:#1e1b27;
+    --card-raised:#262131;
+    --thread:#332d44;
+    --text:#f1ecf9;
+    --text-muted:#a39cb3;
+    --text-faint:#7d7690;
+    --violet-dim:#854dff3a;
+    --violet-soft:#854dff22;
+  }
+  .phone.dark-mode .notch{background:#000;}
+  .phone.dark-mode .progress .seg,
+  .phone.dark-mode .track{background:#332d44;}
+  .phone.dark-mode .back,
+  .phone.dark-mode .opt-icon{background:var(--card-raised);color:var(--text-muted);}
+  .phone.dark-mode .option,
+  .phone.dark-mode .slider-card,
+  .phone.dark-mode .summary-card{
+    background:var(--card);
+    border-color:#332d44;
+  }
+  .phone.dark-mode .option.selected{background:var(--violet-soft);border-color:var(--violet);}
+  .phone.dark-mode .option.selected .opt-icon{background:var(--violet-dim);}
+  .phone.dark-mode .track .knob{background:#e9e4f2;}
+  .phone.dark-mode .preview-card{background:var(--card);border-color:#332d44;}
+  .phone.dark-mode .preview-text,
+  .phone.dark-mode .privacy-note,
+  .phone.dark-mode .save-note{color:#c5becf;}
+  .phone.dark-mode .learn-more-panel{background:var(--violet-soft);color:var(--text-muted);}
+  .phone.dark-mode .footer{background:var(--bg);border-top-color:#332d44;}
